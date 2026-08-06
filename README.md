@@ -6,7 +6,7 @@ Offline service-orientation prototypes for the 1990 Lexus LS400 (UCF10), with em
 
 Use the GitHub Releases page:
 
-- `LS400Toolbox-Android-v1.3.0.apk` — December-1989 UCF10L evidence update with corrected receiver/pressure-switch assembly, passenger-firewall low port, receiver-side high port, and early A/B/C/D/E plus suction B/C/E routing. No WebView, browser, private server, internet permission, or network dependency.
+- `LS400Toolbox-Android-v1.4.0.apk` — adds factory-bulletin-based pre-May-1991 suction routing, pre-August-1990 EPR identification, and pre-April-1990 power-steering return-tube context. No WebView, browser, private server, internet permission, or network dependency.
 - `LS400Toolbox-Windows-v1.0.0.zip` — complete Windows desktop package. Extract the ZIP and run `LS400Toolbox.exe`.
 - `LS400Toolbox.exe` — Windows launcher only; use the ZIP unless the adjacent runtime and model folders are already present.
 

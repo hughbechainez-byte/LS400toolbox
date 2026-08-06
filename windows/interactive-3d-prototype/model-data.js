@@ -267,9 +267,9 @@ export const COMPONENTS = [
   },
   {
     ...commonAC, id: 'AC_EPR', legacyIds: ['AC-016'], displayName: 'Evaporator pressure regulator (EPR)', aliases: ['evaporator pressure regulator'], function: 'Regulates evaporator pressure in the original system arrangement.',
-    connectsTo: ['AC_EVAPORATOR_RETURN_INTERNAL', 'AC_SUCTION_LINE', 'AC_EQUALIZER_TUBE'], pressureSide: 'LOW', confidence: 'high-location / approximate-dimensions', source: 'CHARM A/C locator; CHARM evaporator service',
+    connectsTo: ['AC_EVAPORATOR_RETURN_INTERNAL', 'AC_SUCTION_LINE', 'AC_EQUALIZER_TUBE'], pressureSide: 'LOW', confidence: 'high-location / approximate-dimensions', source: 'CHARM A/C locator; Lexus L-AC002-91 (pre-8/90 EPR 88503-50010/50020)',
     mountTo: 'HVAC_CASE', location: 'Evaporator outlet/firewall region', geometryStatus: 'true_form_simplified', important: true,
-    notes: 'Do not flush through the EPR. Build-month-specific exact shape remains to be verified.', tags: ['ac', 'cabin', 'firewall', 'no-flush']
+    notes: 'December-1989 target uses the pre-August-1990 EPR family. Do not flush through the EPR; exterior dimensions remain unmeasured.', tags: ['ac', 'cabin', 'firewall', 'no-flush']
   },
   {
     ...commonAC, id: 'HVAC_CASE', displayName: 'HVAC case', aliases: ['cooling and blower unit', 'air-conditioning case'], system: 'HVAC', function: 'Houses the evaporator, blower and air doors behind the passenger side of the dashboard.',
@@ -344,9 +344,9 @@ export const ROUTES = [
   {
     id: 'AC_SUCTION_LINE', legacyIds: ['AC-013','AC-014','AC-C012','AC-C013','AC-C017'], displayName: 'Firewall-to-compressor suction-line group', aliases: ['suction pipes and hoses A/B/C'],
     system: 'AIR_CONDITIONING', pressureSide: 'LOW', fluidType: 'low-pressure refrigerant vapor', from: 'AC_EPR', to: 'AC_SUCTION_PORT', direction: 'firewall/EPR to compressor',
-    source: '12/1989 Amayama EPC MEP444E/MEQ413D; newdocs near-firewall port lead', partNumbers: ['88717-50090','88712-50040','88717-50010','88717-50020','88712-50010'], confidence: 'catalog route / installed bends approximate', serviceRole: 'Professional recovery boundary. Isolate compressor and EPR before approved line flushing.',
-    geometryStatus: 'continuous_true_form_approximate', points: [[-1.00,-0.42,0.67],[-0.88,-0.47,0.76],[-0.72,-0.48,0.82],[-0.48,-0.42,0.83],[-0.25,-0.25,0.80],[-0.04,0.02,0.78],[0.10,0.27,0.72],[0.27,0.42,0.59]],
-    sections: [{from:0,to:2,type:'hard',radius:0.018},{from:2,to:4,type:'flex',radius:0.026},{from:4,to:6,type:'hard',radius:0.018},{from:6,to:7,type:'flex',radius:0.026}], crimps:[2,4,6], clamps:[1,3,5], flow:[0.16,0.42,0.68,0.88], tags:['ac','line','engine-bay']
+    source: '12/1989 Amayama EPC MEP444E/MEQ413D; Lexus L-AC003-91 and TSB0054L pre-5/91 suction-pipe illustration', partNumbers: ['88717-50090','88712-50040','88717-50010','88717-50020','88712-50010'], confidence: 'factory silhouette and sequence / installed bends approximate', serviceRole: 'Professional recovery boundary. Isolate compressor and EPR before approved line flushing.',
+    geometryStatus: 'continuous_true_form_approximate', points: [[-1.00,-0.42,0.67],[-0.88,-0.47,0.76],[-0.78,-0.47,0.84],[-0.52,-0.60,0.76],[-0.18,-0.66,0.61],[0.22,-0.67,0.47],[0.54,-0.55,0.37],[0.55,-0.10,0.34],[0.48,0.24,0.42],[0.27,0.42,0.59]],
+    sections: [{from:0,to:3,type:'hard',radius:0.018},{from:3,to:5,type:'flex',radius:0.026},{from:5,to:8,type:'hard',radius:0.018},{from:8,to:9,type:'flex',radius:0.026}], crimps:[3,5,8], clamps:[1,4,6,7], flow:[0.14,0.38,0.65,0.86], notes:'Target predates the May-1991 oil-tank suction pipe 88717-50100; no oil reservoir is modeled.', tags:['ac','line','engine-bay','pre-5-91']
   },
   {
     id: 'AC_EQUALIZER_TUBE', legacyIds: ['AC-017','AC-C018','AC-C019'], displayName: 'EPR equalizer tube', aliases: ['pressure reference tube'], system: 'AIR_CONDITIONING', pressureSide: 'LOW',
@@ -396,8 +396,8 @@ export const ROUTES = [
   },
   {
     id: 'POWER_STEERING_RETURN', displayName: 'Power-steering return hose', system: 'POWER_STEERING', pressureSide: 'NONE', fluidType: 'power-steering fluid', from: 'LANDMARK_FRONT_FRAME_RAILS', to: 'ENGINE_POWER_STEERING_PUMP', direction: 'steering gear to reservoir/pump',
-    source: 'catalog relationship; installed route approximate', confidence: 'approximate', serviceRole: 'Hydraulic context only.', geometryStatus: 'continuous_context', points: [[-0.34,0.66,0.30],[-0.02,0.62,0.49],[0.18,0.42,0.59]],
-    sections: [{from:0,to:2,type:'flex',radius:0.011}], crimps:[], clamps:[1], flow:[], tags:['context-line','engine-bay','power-steering']
+    source: 'Lexus L-ST001-90 pre-4/90 No. 2/No. 3 return-tube illustration', confidence: 'factory location / bends approximate', serviceRole: 'Hydraulic context only.', geometryStatus: 'continuous_context', points: [[0.62,0.58,0.28],[0.48,0.48,0.30],[0.35,0.41,0.36],[0.20,0.32,0.52]],
+    sections: [{from:0,to:3,type:'hard',radius:0.010}], crimps:[], clamps:[1,2], flow:[], notes:'Uses the tighter pre-April-1990 return-tube bend applicable to the December-1989 target.', tags:['context-line','engine-bay','power-steering','pre-4-90']
   }
 ];
 

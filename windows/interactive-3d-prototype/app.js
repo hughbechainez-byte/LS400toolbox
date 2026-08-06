@@ -1113,6 +1113,12 @@ function buildHvac() {
   const dome=cylinder(.047,.035,0xb5bcbc,'z',{radiusTop:.032,radiusBottom:.047,metalness:.74,roughness:.34,segments:24});
   dome.position.z=-.064;
   epr.add(dome);
+  const eprPiston=cylinder(.023,.055,0x71797b,'z',{metalness:.76,roughness:.32,segments:20});
+  eprPiston.position.z=.062;
+  epr.add(eprPiston);
+  const eprFlange=torus(.041,.006,0x697174,'z',{metalness:.72,roughness:.35,tubularSegments:26});
+  eprFlange.position.z=.045;
+  epr.add(eprFlange);
   registerComponent(epr,'AC_EPR',{minLod:3});
 
   const blowerHousing=new THREE.Group();

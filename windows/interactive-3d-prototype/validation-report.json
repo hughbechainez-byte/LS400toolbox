@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T15:29:47.3264542Z",
+  "generatedAt": "2026-08-06T23:45:00.0000000Z",
   "vehicle": {
     "name": "1990 Lexus LS 400 (UCF10)",
     "units": "metres (1 scene unit = 1000 mm)",
@@ -182,7 +182,8 @@
     "AC_LOW_SERVICE_PORT exact original/retrofit fitting position",
     "AC_LIQUID_LINE_DRIER_FIREWALL A/B/C/D/E individual crosswalk",
     "target-vehicle electrical harness branches, clips and connector poses",
-    "target-vehicle measured line splines, clamps, bend radii and fitting clocking"
+    "target-vehicle measured line splines, clamps, bend radii and fitting clocking",
+    "pre-May-1991 suction-pipe exact installed bend radii below the condenser"
   ],
   "privateReferenceIds": [
     "USER_FRONT_HOOD_OPEN",
@@ -203,7 +204,8 @@
     "Installed refrigerant, oil, retrofit adapters and conversion workmanship cannot be determined from photographs.",
     "Exact A/C tube bend coordinates, clamp holes, fitting clocking and under-cover access need physical measurements or scan data.",
     "Factory evidence conflicts with the prior registry mapping for the high service port; the model places it on the high-pressure liquid route but does not claim an exact tube landing.",
-    "The early EPC establishes the A/B/C/D/E and suction B/C/E sequence; installed centerlines and fitting clock angles remain provisional until measured.",
+    "The early EPC establishes the A/B/C/D/E and suction B/C/E sequence; Lexus L-AC003-91 and TSB0054L establish the lower-front suction-pipe silhouette and that the oil-tank pipe begins in May 1991, but installed centerlines remain provisional until measured.",
+    "The December-1989 target predates the August-1990 EPR revision and April-1990 power-steering return-tube revision; pre-change families are modeled from L-AC002-91 and L-ST001-90.",
     "EPR and expansion-valve hidden dimensions are approximate because no measured HVAC-case scan is available.",
     "Full body, hood hinge, bumper reinforcement, dashboard and underbody shapes are recognizable service landmarks, not production CAD."
   ],

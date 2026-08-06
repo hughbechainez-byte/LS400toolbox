@@ -142,7 +142,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         cylinder("AC_LOW_SERVICE_PORT","Low-side service port",LOW,-.78f,-.47f,.84f,.15f,.11f,.11f,low,"Passenger-side rear engine bay on the large near-firewall suction assembly; verify physical adapter.");
         box("AC_EXPANSION_VALVE","Expansion valve area",HIGH,-1.00f,-.47f,.72f,.16f,.12f,.16f,high,"Passenger firewall/HVAC case. Never flush through it.");
         box("AC_EVAPORATOR","Evaporator core",LOW,-1.20f,-.41f,.66f,.32f,.52f,.25f,new float[]{.45f,.72f,.78f,1},"Inside passenger-side HVAC case.");
-        cylinder("AC_EPR","Evaporator pressure regulator",LOW,-1.00f,-.42f,.67f,.20f,.15f,.15f,low,"Low-side regulator at evaporator outlet. Never flush through it.").rx=90;
+        cylinder("AC_EPR","Evaporator pressure regulator",LOW,-1.00f,-.42f,.67f,.20f,.15f,.15f,low,"December-1989 pre-8/90 EPR at evaporator outlet. Never flush through it.").rx=90;
         box("HVAC_CASE","HVAC case",AC,-1.27f,-.28f,.65f,.48f,.78f,.55f,new float[]{.25f,.28f,.33f,.72f},"Cabin case containing evaporator, blower and heater core.");
         cylinder("HVAC_BLOWER_HOUSING","Blower housing",AC,-1.33f,-.64f,.63f,.35f,.35f,.35f,dark,"Passenger-side blower scroll housing.").rx=90;
         cylinder("HVAC_BLOWER_MOTOR","Blower motor and fan",AC,-1.34f,-.65f,.62f,.24f,.22f,.22f,metal,"Electrical blower motor in passenger footwell.").rx=90;
@@ -199,7 +199,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         route("AC_LIQUID_LINE_DRIER_FIREWALL",HIGH,high,new float[][]{{.60f,-.72f,.59f},{.58f,-.72f,.79f},{.48f,-.75f,.78f},{.28f,-.78f,.81f},{-.02f,-.79f,.82f},{-.34f,-.78f,.84f},{-.62f,-.69f,.85f},{-.82f,-.58f,.80f},{-1.00f,-.47f,.72f}});
         route("AC_EVAPORATOR_FEED_INTERNAL",LOW,low,new float[][]{{-1.00f,-.47f,.72f},{-1.10f,-.45f,.70f},{-1.19f,-.42f,.70f}});
         route("AC_EVAPORATOR_RETURN_INTERNAL",LOW,low,new float[][]{{-1.19f,-.42f,.66f},{-1.09f,-.42f,.67f},{-1.00f,-.42f,.67f}});
-        route("AC_SUCTION_LINE",LOW,low,new float[][]{{-1.00f,-.42f,.67f},{-.88f,-.47f,.76f},{-.72f,-.48f,.82f},{-.48f,-.42f,.83f},{-.25f,-.25f,.80f},{-.04f,.02f,.78f},{.10f,.27f,.72f},{.27f,.42f,.59f}});
+        route("AC_SUCTION_LINE",LOW,low,new float[][]{{-1.00f,-.42f,.67f},{-.88f,-.47f,.76f},{-.78f,-.47f,.84f},{-.52f,-.60f,.76f},{-.18f,-.66f,.61f},{.22f,-.67f,.47f},{.54f,-.55f,.37f},{.55f,-.10f,.34f},{.48f,.24f,.42f},{.27f,.42f,.59f}});
         route("AC_EQUALIZER_TUBE",LOW,low,new float[][]{{-1.18f,-.35f,.75f},{-1.10f,-.35f,.77f},{-1.02f,-.40f,.72f}});
         route("HVAC_DRAIN_ROUTE",AC,rubber,new float[][]{{-1.16f,-.42f,.46f},{-1.12f,-.43f,.31f},{-1.06f,-.43f,.20f}});
         route("COOLING_UPPER_HOSE",LANDMARK,coolant,new float[][]{{.48f,-.42f,.78f},{.20f,-.26f,.82f},{-.04f,-.12f,.78f}});
@@ -209,7 +209,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         route("ELECTRICAL_AC_HARNESS",LANDMARK,wire,new float[][]{{.58f,-.72f,.82f},{.20f,-.62f,.84f},{-.16f,-.42f,.78f},{.28f,.38f,.62f}});
         route("BRAKE_VACUUM_HOSE",LANDMARK,rubber,new float[][]{{-.98f,.50f,.80f},{-.65f,.34f,.80f},{-.30f,.20f,.75f}});
         route("POWER_STEERING_HIGH_PRESSURE",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.23f,.25f,.56f},{.05f,.34f,.48f},{-.20f,.40f,.42f}});
-        route("POWER_STEERING_RETURN",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.20f,.22f,.52f},{.02f,.30f,.58f},{-.22f,.38f,.55f}});
+        route("POWER_STEERING_RETURN",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.62f,.58f,.28f},{.48f,.48f,.30f},{.35f,.41f,.36f},{.20f,.32f,.52f}});
     }
 
     private Part box(String id,String name,int cat,float f,float l,float u,float sf,float sl,float su,float[] color,String note){Part p=new Part(id,name,cat,-l,u,-f,sl,su,sf,color,note);parts.add(p);return p;}
