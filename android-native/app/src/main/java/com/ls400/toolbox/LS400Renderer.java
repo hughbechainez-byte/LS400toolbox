@@ -134,12 +134,12 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("AC_CONDENSER","A/C condenser",HIGH,.75f,0,.64f,.07f,1.30f,.58f,fin,"Thin high-side heat exchanger ahead of the radiator.");
         cylinder("AC_CONDENSER_INLET","Condenser inlet fitting",HIGH,.64f,.61f,.70f,.08f,.06f,.06f,high,"Receives compressor discharge vapor.");
         cylinder("AC_CONDENSER_OUTLET","Condenser outlet fitting",HIGH,.64f,-.62f,.48f,.08f,.06f,.06f,high,"Sends high-pressure liquid toward receiver-drier.");
-        cylinder("AC_RECEIVER_DRIER","Receiver-drier",HIGH,.60f,-.72f,.59f,.34f,.12f,.12f,aluminum,"Passenger-side support canister. Replace as required; never flush through it.");
+        cylinder("AC_RECEIVER_DRIER","Receiver-drier 88470-50020",HIGH,.60f,-.72f,.59f,.34f,.12f,.12f,aluminum,"Early-production passenger-side support canister with top pipe block. Replace as required; never flush through it.");
         box("AC_RECEIVER_DRIER_BRACKET","Receiver-drier clamp and bracket",AC,.60f,-.78f,.59f,.30f,.05f,.10f,metal,"Clamp and radiator-support mounting point.");
-        cylinder("AC_PRESSURE_SWITCH","A/C pressure switch",HIGH,.10f,-.78f,.83f,.08f,.07f,.07f,wire,"Electrical pressure-control branch on high-side liquid route.");
+        cylinder("AC_PRESSURE_SWITCH","Pressure switch 88645-50010",HIGH,.58f,-.72f,.79f,.08f,.07f,.07f,wire,"Early-production switch on the receiver top/liquid-pipe block.");
         cylinder("AC_SIGHT_GLASS","Receiver sight glass",HIGH,.60f,-.72f,.76f,.04f,.05f,.05f,new float[]{.40f,.85f,.90f,.9f},"Original-system inspection feature near receiver top.");
-        cylinder("AC_HIGH_SERVICE_PORT","High-side service port",HIGH,.03f,-.78f,.865f,.13f,.09f,.09f,high,"Passenger side, high-pressure liquid route; exact target-car landing remains approximate.");
-        cylinder("AC_LOW_SERVICE_PORT","Low-side service port",LOW,-.32f,-.20f,.82f,.15f,.11f,.11f,low,"Passenger-side/firewall suction route; verify physical adapter.");
+        cylinder("AC_HIGH_SERVICE_PORT","High-side service port",HIGH,.42f,-.75f,.82f,.13f,.09f,.09f,high,"Passenger-front receiver-side liquid pipe A; exact Dec-1989 fitting remains approximate.");
+        cylinder("AC_LOW_SERVICE_PORT","Low-side service port",LOW,-.78f,-.47f,.84f,.15f,.11f,.11f,low,"Passenger-side rear engine bay on the large near-firewall suction assembly; verify physical adapter.");
         box("AC_EXPANSION_VALVE","Expansion valve area",HIGH,-1.00f,-.47f,.72f,.16f,.12f,.16f,high,"Passenger firewall/HVAC case. Never flush through it.");
         box("AC_EVAPORATOR","Evaporator core",LOW,-1.20f,-.41f,.66f,.32f,.52f,.25f,new float[]{.45f,.72f,.78f,1},"Inside passenger-side HVAC case.");
         cylinder("AC_EPR","Evaporator pressure regulator",LOW,-1.00f,-.42f,.67f,.20f,.15f,.15f,low,"Low-side regulator at evaporator outlet. Never flush through it.").rx=90;
@@ -196,17 +196,17 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         // Seven refrigerant routes plus nine surrounding service routes = 16.
         route("AC_DISCHARGE_LINE",HIGH,high,new float[][]{{.30f,.40f,.58f},{.50f,.38f,.68f},{.72f,.55f,.70f},{.64f,.61f,.70f}});
         route("AC_LIQUID_LINE_CONDENSER_DRIER",HIGH,high,new float[][]{{.64f,-.62f,.48f},{.64f,-.69f,.52f},{.60f,-.72f,.59f}});
-        route("AC_LIQUID_LINE_DRIER_FIREWALL",HIGH,high,new float[][]{{.60f,-.72f,.59f},{.18f,-.78f,.78f},{-.45f,-.70f,.84f},{-1.00f,-.47f,.72f}});
+        route("AC_LIQUID_LINE_DRIER_FIREWALL",HIGH,high,new float[][]{{.60f,-.72f,.59f},{.58f,-.72f,.79f},{.48f,-.75f,.78f},{.28f,-.78f,.81f},{-.02f,-.79f,.82f},{-.34f,-.78f,.84f},{-.62f,-.69f,.85f},{-.82f,-.58f,.80f},{-1.00f,-.47f,.72f}});
         route("AC_EVAPORATOR_FEED_INTERNAL",LOW,low,new float[][]{{-1.00f,-.47f,.72f},{-1.10f,-.45f,.70f},{-1.19f,-.42f,.70f}});
         route("AC_EVAPORATOR_RETURN_INTERNAL",LOW,low,new float[][]{{-1.19f,-.42f,.66f},{-1.09f,-.42f,.67f},{-1.00f,-.42f,.67f}});
-        route("AC_SUCTION_LINE",LOW,low,new float[][]{{-1.00f,-.42f,.67f},{-.62f,-.34f,.78f},{-.08f,-.15f,.76f},{.27f,.42f,.59f}});
+        route("AC_SUCTION_LINE",LOW,low,new float[][]{{-1.00f,-.42f,.67f},{-.88f,-.47f,.76f},{-.72f,-.48f,.82f},{-.48f,-.42f,.83f},{-.25f,-.25f,.80f},{-.04f,.02f,.78f},{.10f,.27f,.72f},{.27f,.42f,.59f}});
         route("AC_EQUALIZER_TUBE",LOW,low,new float[][]{{-1.18f,-.35f,.75f},{-1.10f,-.35f,.77f},{-1.02f,-.40f,.72f}});
         route("HVAC_DRAIN_ROUTE",AC,rubber,new float[][]{{-1.16f,-.42f,.46f},{-1.12f,-.43f,.31f},{-1.06f,-.43f,.20f}});
         route("COOLING_UPPER_HOSE",LANDMARK,coolant,new float[][]{{.48f,-.42f,.78f},{.20f,-.26f,.82f},{-.04f,-.12f,.78f}});
         route("COOLING_LOWER_HOSE",LANDMARK,coolant,new float[][]{{.48f,.38f,.42f},{.22f,.26f,.35f},{-.06f,.10f,.38f}});
         route("HVAC_HEATER_HOSE_FEED",LANDMARK,coolant,new float[][]{{-.98f,.16f,.79f},{-.62f,.12f,.76f},{-.30f,.08f,.72f}});
         route("HVAC_HEATER_HOSE_RETURN",LANDMARK,coolant,new float[][]{{-.98f,.26f,.75f},{-.62f,.22f,.70f},{-.30f,.18f,.66f}});
-        route("ELECTRICAL_AC_HARNESS",LANDMARK,wire,new float[][]{{.10f,-.78f,.84f},{-.10f,-.56f,.82f},{-.28f,-.28f,.76f},{.28f,.38f,.62f}});
+        route("ELECTRICAL_AC_HARNESS",LANDMARK,wire,new float[][]{{.58f,-.72f,.82f},{.20f,-.62f,.84f},{-.16f,-.42f,.78f},{.28f,.38f,.62f}});
         route("BRAKE_VACUUM_HOSE",LANDMARK,rubber,new float[][]{{-.98f,.50f,.80f},{-.65f,.34f,.80f},{-.30f,.20f,.75f}});
         route("POWER_STEERING_HIGH_PRESSURE",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.23f,.25f,.56f},{.05f,.34f,.48f},{-.20f,.40f,.42f}});
         route("POWER_STEERING_RETURN",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.20f,.22f,.52f},{.02f,.30f,.58f},{-.22f,.38f,.55f}});

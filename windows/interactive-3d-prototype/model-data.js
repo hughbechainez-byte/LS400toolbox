@@ -4,7 +4,7 @@ export const VEHICLE = {
   coordinateContract: '+X vehicle forward, +Y vehicle-left (driver side), +Z up',
   dimensions: { length: 4.995, width: 1.820, height: 1.400, wheelbase: 2.815 },
   origin: 'front axle centre projected to the ground plane',
-  configuration: '1990 U.S.-market baseline; VIN/build month, Federal/California, TRAC and refrigerant conversion state are unverified'
+  configuration: 'Target: December 1989 U.S. UCF10L-AEPGKA, CA emissions, air suspension, original R12 context; VIN and retrofit state remain unverified'
 };
 
 export const SYSTEMS = {
@@ -222,8 +222,8 @@ export const COMPONENTS = [
   {
     ...commonAC, id: 'AC_RECEIVER_DRIER', legacyIds: ['AC-006'], displayName: 'Receiver-drier', aliases: ['receiver', 'filter-drier'], function: 'Stores/filters high-pressure liquid refrigerant and removes moisture.',
     connectsTo: ['AC_LIQUID_LINE_CONDENSER_DRIER', 'AC_LIQUID_LINE_DRIER_FIREWALL', 'AC_SIGHT_GLASS'], pressureSide: 'HIGH', confidence: 'high-location / approximate-dimensions',
-    source: 'EPC condenser/fans 17822844; CHARM locator', mountTo: 'AC_RECEIVER_DRIER_BRACKET', location: 'Front passenger side, behind/inboard of passenger headlight beside radiator support',
-    geometryStatus: 'true_form_simplified', important: true, notes: 'Cylinder, top cap, two fittings, sight-glass feature and clamp are represented.', tags: ['ac', 'engine-bay', 'passenger-side']
+    source: '12/1989 Amayama EPC MEP439E; UCF10L-AEPGKV', partNumber: '88470-50020', mountTo: 'AC_RECEIVER_DRIER_BRACKET', location: 'Front passenger side, behind/inboard of passenger headlight beside radiator support',
+    geometryStatus: 'true_form_simplified', important: true, notes: 'Early-production receiver assembly with top liquid-pipe block, pressure switch, cylinder, cap and clamp.', tags: ['ac', 'engine-bay', 'passenger-side']
   },
   {
     ...commonAC, id: 'AC_RECEIVER_DRIER_BRACKET', displayName: 'Receiver-drier clamp and bracket', aliases: ['receiver clamp'], function: 'Secures the receiver-drier to the front support structure.',
@@ -232,9 +232,9 @@ export const COMPONENTS = [
   },
   {
     ...commonAC, id: 'AC_PRESSURE_SWITCH', legacyIds: ['AC-010'], displayName: 'A/C pressure switch', aliases: ['refrigerant pressure control'], function: 'Monitors high-side pressure for control/protection logic.',
-    connectsTo: ['AC_LIQUID_LINE_DRIER_FIREWALL', 'ELECTRICAL_AC_HARNESS'], fluidType: 'refrigerant pressure / electricity', pressureSide: 'HIGH', confidence: 'medium',
-    source: 'EPC piping 17822845; CHARM locator', mountTo: 'AC_LIQUID_LINE_DRIER_FIREWALL', location: 'High-side liquid route near front/passenger side; exact build-specific landing unresolved',
-    geometryStatus: 'close_inspection_approximate', important: true, notes: 'Do not infer pressure state from this visualization.', tags: ['ac', 'engine-bay', 'electrical', 'fitting']
+    connectsTo: ['AC_LIQUID_LINE_DRIER_FIREWALL', 'ELECTRICAL_AC_HARNESS'], fluidType: 'refrigerant pressure / electricity', pressureSide: 'HIGH', confidence: 'high-location / approximate-clock-angle',
+    source: '12/1989 Amayama EPC MEP439E; UCF10L-AEPGKV', partNumber: '88645-50010', mountTo: 'AC_LIQUID_LINE_DRIER_FIREWALL', location: 'Receiver top/liquid-pipe block behind the passenger headlight',
+    geometryStatus: 'close_inspection_approximate', important: true, notes: 'The EPC fixes this switch to the early receiver/top pipe assembly; connector clocking remains unmeasured.', tags: ['ac', 'engine-bay', 'electrical', 'fitting']
   },
   {
     ...commonAC, id: 'AC_SIGHT_GLASS', legacyIds: ['AC-018'], displayName: 'Receiver sight glass', aliases: ['sight glass'], function: 'Original-system visual inspection feature associated with the receiver/high-side liquid area.',
@@ -243,15 +243,15 @@ export const COMPONENTS = [
   },
   {
     ...commonAC, id: 'AC_HIGH_SERVICE_PORT', legacyIds: ['AC-015 high'], displayName: 'High-side service port', aliases: ['high-pressure service fitting'], function: 'Professional recovery/evacuation/charging access on the high-pressure liquid route.',
-    connectsTo: ['AC_LIQUID_LINE_DRIER_FIREWALL'], fluidType: 'refrigerant service access', pressureSide: 'HIGH', confidence: 'medium', source: 'factory service evidence correction; EPC piping requires physical trace',
-    mountTo: 'AC_LIQUID_LINE_DRIER_FIREWALL', location: 'Front-view left / vehicle-right (passenger side), high-pressure liquid tube; exact tube/build position unresolved', geometryStatus: 'close_inspection_approximate', important: true,
-    notes: 'Prior registry mapping to discharge tube AC-004 is not used. Cap color alone must never identify pressure side.', tags: ['ac', 'engine-bay', 'service-port', 'uncertain']
+    connectsTo: ['AC_LIQUID_LINE_DRIER_FIREWALL'], fluidType: 'refrigerant service access', pressureSide: 'HIGH', confidence: 'catalog-location / exact fitting uncertain', source: '12/1989 Amayama EPC MEP444E liquid pipe A; physical trace required',
+    mountTo: 'AC_LIQUID_LINE_DRIER_FIREWALL', location: 'Passenger-front receiver-side liquid pipe A, behind/inboard of passenger headlight', geometryStatus: 'close_inspection_approximate', important: true,
+    notes: 'Placed on the short receiver-side liquid pipe rather than the compressor discharge line. Exact Dec-1989 valve/cap configuration still requires vehicle verification.', tags: ['ac', 'engine-bay', 'service-port', 'uncertain']
   },
   {
     ...commonAC, id: 'AC_LOW_SERVICE_PORT', legacyIds: ['AC-015 low'], displayName: 'Low-side service port', aliases: ['suction service fitting'], function: 'Professional recovery/evacuation/charging access on the low-pressure suction route.',
-    connectsTo: ['AC_SUCTION_LINE'], fluidType: 'refrigerant service access', pressureSide: 'LOW', confidence: 'medium', source: 'EPC piping 17822845; physical trace required',
-    mountTo: 'AC_SUCTION_LINE', location: 'Front-view left / vehicle-right (passenger side), suction line; exact original/retrofit fitting position unresolved', geometryStatus: 'close_inspection_approximate', important: true,
-    notes: 'Original R-12 fitting or conversion adapter must be verified on the physical car.', tags: ['ac', 'engine-bay', 'service-port', 'uncertain']
+    connectsTo: ['AC_SUCTION_LINE'], fluidType: 'refrigerant service access', pressureSide: 'LOW', confidence: 'high-area / exact fitting uncertain', source: 'newdocs low-port lead; 12/1989 Amayama EPC MEP444E suction C/E assembly; physical trace required',
+    mountTo: 'AC_SUCTION_LINE', location: 'Passenger-side rear engine bay near the firewall, on the large suction assembly', geometryStatus: 'close_inspection_approximate', important: true,
+    notes: 'Moved rearward and passenger-side to match the target vehicle and documented near-firewall location. Original R-12 fitting or conversion adapter must still be verified.', tags: ['ac', 'engine-bay', 'service-port', 'uncertain']
   },
   {
     ...commonAC, id: 'AC_EXPANSION_VALVE', legacyIds: ['AC-011'], displayName: 'Expansion valve area', aliases: ['metering valve'], function: 'Meters high-pressure liquid into the evaporator and creates the low-pressure side.',
@@ -317,17 +317,17 @@ export const ROUTES = [
   {
     id: 'AC_LIQUID_LINE_CONDENSER_DRIER', legacyIds: ['AC-C004'], displayName: 'Condenser-to-receiver liquid line', aliases: ['condenser outlet tube'],
     system: 'AIR_CONDITIONING', pressureSide: 'HIGH', fluidType: 'high-pressure liquid refrigerant', from: 'AC_CONDENSER_OUTLET', to: 'AC_RECEIVER_DRIER',
-    direction: 'condenser to receiver-drier', source: 'EPC condenser/fans 17822844; EPC piping 17822845', confidence: 'catalog route / installed bends approximate',
+    direction: 'condenser to receiver-drier', source: '12/1989 Amayama EPC MEP439E/MEP444E', partNumbers: ['88716-50010'], confidence: 'catalog route / installed bends approximate',
     serviceRole: 'Do not flush through the receiver-drier.', geometryStatus: 'continuous_true_form_approximate', points: [[0.64,-0.62,0.48],[0.65,-0.69,0.50],[0.60,-0.72,0.58]],
     sections: [{from:0,to:2,type:'hard',radius:0.011}], crimps:[], clamps:[1], flow:[0.50], tags:['ac','line','engine-bay']
   },
   {
     id: 'AC_LIQUID_LINE_DRIER_FIREWALL', legacyIds: ['AC-007','AC-008','AC-009','AC-C005','AC-C006','AC-C007','AC-C008','AC-C009'], displayName: 'Receiver-to-firewall liquid-line group',
     aliases: ['liquid pipes A/B/C/D/E'], system: 'AIR_CONDITIONING', pressureSide: 'HIGH', fluidType: 'high-pressure liquid refrigerant', from: 'AC_RECEIVER_DRIER', to: 'AC_EXPANSION_VALVE',
-    direction: 'receiver-drier toward expansion valve', source: 'EPC piping 17822845; CHARM locator', confidence: 'catalog sequence / installed routing approximate',
-    serviceRole: 'Isolate receiver-drier and expansion valve before any approved line flushing. Exact A-to-D/B crosswalk remains unresolved.', geometryStatus: 'continuous_true_form_approximate',
-    points: [[0.58,-0.72,0.69],[0.48,-0.76,0.77],[0.05,-0.78,0.80],[-0.45,-0.72,0.79],[-0.98,-0.47,0.72]],
-    sections: [{from:0,to:4,type:'hard',radius:0.010}], crimps:[], clamps:[1,3], flow:[0.25,0.62,0.86], tags:['ac','line','engine-bay','uncertain']
+    direction: 'receiver-drier toward expansion valve', source: '12/1989 Amayama EPC MEP444E/MEQ413D', partNumbers: ['88716-50010','88716-50030','88716-50050','88716-50020','88716-50070'], confidence: 'catalog sequence / installed routing approximate',
+    serviceRole: 'Isolate receiver-drier and expansion valve before any approved line flushing.', geometryStatus: 'continuous_true_form_approximate',
+    points: [[0.60,-0.72,0.59],[0.58,-0.72,0.79],[0.48,-0.75,0.78],[0.28,-0.78,0.81],[-0.02,-0.79,0.82],[-0.34,-0.78,0.84],[-0.62,-0.69,0.85],[-0.82,-0.58,0.80],[-0.98,-0.47,0.72]],
+    sections: [{from:0,to:8,type:'hard',radius:0.010}], crimps:[], clamps:[2,4,6,7], flow:[0.16,0.42,0.70,0.90], tags:['ac','line','engine-bay','uncertain']
   },
   {
     id: 'AC_EVAPORATOR_FEED_INTERNAL', legacyIds: ['AC-C010'], displayName: 'Expansion-valve-to-evaporator feed', aliases: ['metered evaporator inlet'], system: 'AIR_CONDITIONING',
@@ -344,9 +344,9 @@ export const ROUTES = [
   {
     id: 'AC_SUCTION_LINE', legacyIds: ['AC-013','AC-014','AC-C012','AC-C013','AC-C017'], displayName: 'Firewall-to-compressor suction-line group', aliases: ['suction pipes and hoses A/B/C'],
     system: 'AIR_CONDITIONING', pressureSide: 'LOW', fluidType: 'low-pressure refrigerant vapor', from: 'AC_EPR', to: 'AC_SUCTION_PORT', direction: 'firewall/EPR to compressor',
-    source: 'EPC piping 17822845; CHARM locator', confidence: 'catalog route / installed bends approximate', serviceRole: 'Professional recovery boundary. Isolate compressor and EPR before approved line flushing.',
-    geometryStatus: 'continuous_true_form_approximate', points: [[-1.00,-0.42,0.67],[-0.80,-0.45,0.75],[-0.35,-0.22,0.78],[0.08,0.30,0.72],[0.27,0.42,0.59]],
-    sections: [{from:0,to:3,type:'hard',radius:0.018},{from:3,to:4,type:'flex',radius:0.026}], crimps:[3], clamps:[1,2], flow:[0.22,0.58,0.83], tags:['ac','line','engine-bay']
+    source: '12/1989 Amayama EPC MEP444E/MEQ413D; newdocs near-firewall port lead', partNumbers: ['88717-50090','88712-50040','88717-50010','88717-50020','88712-50010'], confidence: 'catalog route / installed bends approximate', serviceRole: 'Professional recovery boundary. Isolate compressor and EPR before approved line flushing.',
+    geometryStatus: 'continuous_true_form_approximate', points: [[-1.00,-0.42,0.67],[-0.88,-0.47,0.76],[-0.72,-0.48,0.82],[-0.48,-0.42,0.83],[-0.25,-0.25,0.80],[-0.04,0.02,0.78],[0.10,0.27,0.72],[0.27,0.42,0.59]],
+    sections: [{from:0,to:2,type:'hard',radius:0.018},{from:2,to:4,type:'flex',radius:0.026},{from:4,to:6,type:'hard',radius:0.018},{from:6,to:7,type:'flex',radius:0.026}], crimps:[2,4,6], clamps:[1,3,5], flow:[0.16,0.42,0.68,0.88], tags:['ac','line','engine-bay']
   },
   {
     id: 'AC_EQUALIZER_TUBE', legacyIds: ['AC-017','AC-C018','AC-C019'], displayName: 'EPR equalizer tube', aliases: ['pressure reference tube'], system: 'AIR_CONDITIONING', pressureSide: 'LOW',
@@ -425,15 +425,25 @@ export const CAMERA_PRESETS = {
 };
 
 export const REFERENCE_IMAGES = [
+  { id: 'USER_FRONT_HOOD_OPEN', label: 'Private listing reference — front hood open', src: 'references/user-1990-ls400-hood-open.webp', pose: 'FULL_VEHICLE_HOOD_OPEN_VIEW', landmarks: 'headlights, bumper, radiator support, twin fans, engine-bay opening, hood', rights: 'Private working reference only; Bring a Trailer/Google provenance detected. Do not publish without permission.' },
+  { id: 'USER_ENGINE_TOP_1990', label: 'Private unprovenanced reference — engine top', src: 'references/user-1990-ls400-inline1.jpg', pose: 'LEAN_PASSENGER_FENDER', landmarks: '1UZ intake, valve covers, airbox, brake booster, firewall', rights: 'Private working reference only; source, model year and reuse permission are not documented.' },
+  { id: 'USER_ENGINE_TOP_1991', label: 'Private unprovenanced reference — 1991/TRAC bay', src: 'references/user-1991-ls400-7-1.jpg', pose: 'FRONT_STANDING', landmarks: 'hood/cowl, battery, airbox, radiator cover, engine placement', rights: 'Private working reference only; source and reuse permission are not documented. TRAC-specific details must not define the neutral baseline.' },
+  { id: 'FACTORY_AC_LOCATOR', label: 'Private factory-derived — 1990 CHARM A/C locator', src: 'references/charm-ac-locations.png', pose: 'FRONT_PASSENGER_CORNER', landmarks: 'receiver, condenser/fans, compressor, EPR, expansion valve, HVAC case', rights: 'Private research reference; unofficial-mirror/factory-derived image is not cleared for redistribution.' },
+  { id: 'EPC_AC_PIPING', label: 'Private factory-derived — EPC cooler piping', src: 'references/epc-ac-piping.png', pose: 'PASSENGER_FIREWALL', landmarks: 'pipe groups, clamps, hose transitions, fittings', rights: 'Private research reference; OEM-derived catalog plate is not cleared for redistribution.' },
+  { id: 'EPC_CONDENSER', label: 'Private factory-derived — EPC condenser/receiver/fans', src: 'references/epc-ac-condenser-fans.png', pose: 'CONDENSER_STACK', landmarks: 'condenser frame, receiver, brackets, fan shrouds', rights: 'Private research reference; OEM-derived catalog plate is not cleared for redistribution.' },
+  { id: 'EPC_COMPRESSOR', label: 'Private factory-derived — EPC compressor/clutch', src: 'references/epc-ac-compressor.png', pose: 'AC_COMPRESSOR_CLOSE', landmarks: 'cast sections, pulley, clutch, manifold ports', rights: 'Private research reference; OEM-derived catalog plate is not cleared for redistribution.' },
+  { id: 'EPC_121989_RECEIVER_FANS', label: 'Private OEM-catalog reference — 12/1989 receiver/condenser/fans', src: 'references/newdocs/epc-cooler-piping-schema1.png', pose: 'CONDENSER_STACK', landmarks: 'receiver top block, pressure switch, condenser brackets, paired fan assemblies', rights: 'Private research reference; OEM catalogue plate is not cleared for redistribution.' },
+  { id: 'EPC_121989_ENGINE_PIPING', label: 'Private OEM-catalog reference — 12/1989 engine-bay piping', src: 'references/newdocs/epc-cooler-piping-schema2.png', pose: 'PASSENGER_FIREWALL', landmarks: 'liquid A/C/D/E, suction B/C/E, flex transitions, clamps and service fitting', rights: 'Private research reference; OEM catalogue plate is not cleared for redistribution.' },
+  { id: 'EPC_121989_HVAC_TUBES', label: 'Private OEM-catalog reference — 12/1989 HVAC tube assemblies', src: 'references/newdocs/epc-cooler-piping-schema3.png', pose: 'HVAC_CASE_CUTAWAY', landmarks: 'tube assemblies C/D/E, firewall connections, clamp sequence', rights: 'Private research reference; OEM catalogue plate is not cleared for redistribution.' },
   { id: 'LICENSED_EXTERIOR', label: 'Public-domain UCF10R rear three-quarter', src: 'references/licensed-ucf10-exterior.jpg', pose: 'FRONT_DRIVER_CORNER', landmarks: 'body proportion, greenhouse, wheelbase, bumper height', rights: 'Public-domain exterior reference; Australian RHD UCF10R, not an exact U.S. 1990 underhood source.' }
 ];
 
 export const UNCERTAINTIES = [
-  'VIN, production month, Federal/California emissions, TRAC and air-suspension configuration are not supplied.',
+  'The working target is December 1989 U.S. UCF10L with CA emissions and air suspension; VIN-level confirmation is still not supplied.',
   'Installed refrigerant, oil, retrofit adapters and conversion workmanship cannot be determined from photographs.',
   'Exact A/C tube bend coordinates, clamp holes, fitting clocking and under-cover access need physical measurements or scan data.',
-  'Factory evidence conflicts with the prior registry mapping for the high service port; the model places it on the high-pressure liquid route but does not claim an exact tube landing.',
-  'The receiver-to-firewall A/B/C/D/E liquid-pipe crosswalk remains provisional until the installed car or a clearer plate is traced.',
+  'The high service access is placed on receiver-side liquid pipe A from the early EPC, but the exact Dec-1989 valve/cap configuration needs physical confirmation.',
+  'The early EPC establishes the A/B/C/D/E and suction B/C/E sequence; installed centerlines and fitting clock angles remain provisional until measured.',
   'EPR and expansion-valve hidden dimensions are approximate because no measured HVAC-case scan is available.',
   'Full body, hood hinge, bumper reinforcement, dashboard and underbody shapes are recognizable service landmarks, not production CAD.'
 ];

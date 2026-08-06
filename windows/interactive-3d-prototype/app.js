@@ -1048,7 +1048,7 @@ function buildReceiverAndServiceDetails() {
   registerComponent(sight,'AC_SIGHT_GLASS',{minLod:3});
 
   const pressure = new THREE.Group();
-  placeVehicle(pressure,[.10,-.78,.83]);
+  placeVehicle(pressure,[.58,-.72,.79]);
   const base=makeFitting(.017,.045);
   pressure.add(base);
   const sensor=roundedBox(.030,.045,.028,.006,0x353c40,{roughness:.68,metalness:.18});
@@ -1059,8 +1059,8 @@ function buildReceiverAndServiceDetails() {
   pressure.add(plug);
   registerComponent(pressure,'AC_PRESSURE_SWITCH',{minLod:3});
 
-  buildServicePort('AC_HIGH_SERVICE_PORT',[.03,-.78,.865],COLORS.high);
-  buildServicePort('AC_LOW_SERVICE_PORT',[-.32,-.20,.82],COLORS.low);
+  buildServicePort('AC_HIGH_SERVICE_PORT',[.42,-.75,.82],COLORS.high);
+  buildServicePort('AC_LOW_SERVICE_PORT',[-.78,-.47,.84],COLORS.low);
 }
 
 function buildServicePort(id,point,color) {
@@ -1266,6 +1266,8 @@ function buildScene() {
 }
 
 buildScene();
+// Read-only build/export hook used to keep the native Android mesh in parity.
+window.__LS400_NATIVE_EXPORT__ = { modelRoot, objectById };
 
 const ESSENTIAL_LANDMARKS = new Set([
   'LANDMARK_BODY_SHELL','LANDMARK_FRONT_BUMPER','LANDMARK_GRILLE','LANDMARK_PASSENGER_HEADLIGHT','LANDMARK_DRIVER_HEADLIGHT',
@@ -2003,7 +2005,7 @@ function runValidation() {
   checks.push(check('Receiver-to-firewall pipe crosswalk is provisional','warning','Pipe A/B/C/D/E sequence needs installed-car or clearer-plate tracing before individual tube IDs are frozen.'));
   checks.push(check('Configuration and dimensional survey are missing','warning','VIN/build month, refrigerant/oil state, TRAC/options, measured line splines, clamps and fitting clocking remain capture inputs.'));
   const privateReferences=REFERENCE_IMAGES.filter(reference=>String(reference.rights).startsWith('Private'));
-  if(privateReferences.length) checks.push(check('Private reference images are not cleared for publication','warning',`${privateReferences.length} of ${REFERENCE_IMAGES.length} comparison images are private/no-ship research references; only the public-domain exterior image is cleared for redistribution.`));
+  checks.push(check('Private reference images are not cleared for publication','warning',`${privateReferences.length} of ${REFERENCE_IMAGES.length} comparison images are private/no-ship research references; only the public-domain exterior image is cleared for redistribution.`));
 
   const errors=checks.filter(item=>item.status==='error').length;
   const warnings=checks.filter(item=>item.status==='warning').length;

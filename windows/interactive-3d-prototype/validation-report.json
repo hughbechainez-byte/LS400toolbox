@@ -5,7 +5,7 @@
     "units": "metres (1 scene unit = 1000 mm)",
     "coordinateContract": "+X vehicle forward, +Y vehicle-left (driver side), +Z up",
     "origin": "front axle centre projected to the ground plane",
-    "configuration": "1990 U.S.-market baseline; VIN/build month, Federal/California, TRAC and refrigerant conversion state are unverified"
+    "configuration": "Target: December 1989 U.S. UCF10L-AEPGKA, CA emissions, air suspension, original R12 context; VIN and retrofit state remain unverified"
   },
   "summary": {
     "status": "PASS_WITH_WARNINGS",
@@ -108,9 +108,9 @@
       "detail": "High and low side identities are modeled correctly, but original/retrofit fitting position must be verified on the target vehicle."
     },
     {
-      "name": "Receiver-to-firewall pipe crosswalk is provisional",
+      "name": "Installed pipe centerlines remain provisional",
       "status": "warning",
-      "detail": "Pipe A/B/C/D/E sequence needs installed-car or clearer-plate tracing before individual tube IDs are frozen."
+      "detail": "The early EPC establishes liquid A/B/C/D/E and suction B/C/E families; installed centerlines and fitting clocking still require physical measurement."
     },
     {
       "name": "Configuration and dimensional survey are missing",
@@ -199,11 +199,11 @@
   ],
   "suspectedOrientationErrors": [],
   "uncertainties": [
-    "VIN, production month, Federal/California emissions, TRAC and air-suspension configuration are not supplied.",
+    "The working target is December 1989 U.S. UCF10L with CA emissions and air suspension; VIN-level confirmation is still not supplied.",
     "Installed refrigerant, oil, retrofit adapters and conversion workmanship cannot be determined from photographs.",
     "Exact A/C tube bend coordinates, clamp holes, fitting clocking and under-cover access need physical measurements or scan data.",
     "Factory evidence conflicts with the prior registry mapping for the high service port; the model places it on the high-pressure liquid route but does not claim an exact tube landing.",
-    "The receiver-to-firewall A/B/C/D/E liquid-pipe crosswalk remains provisional until the installed car or a clearer plate is traced.",
+    "The early EPC establishes the A/B/C/D/E and suction B/C/E sequence; installed centerlines and fitting clock angles remain provisional until measured.",
     "EPR and expansion-valve hidden dimensions are approximate because no measured HVAC-case scan is available.",
     "Full body, hood hinge, bumper reinforcement, dashboard and underbody shapes are recognizable service landmarks, not production CAD."
   ],
