@@ -1,0 +1,6 @@
+.gradle/
+**/build/
+*.log
+*.tmp
+local.properties
+release-assets/*.zip

@@ -1,0 +1,8 @@
+FrameLayout id=android:id/content bounds=[0,0][2400,1080]
+  TextView text="LS400 TOOLBOX • NATIVE OFFLINE" bounds=[37,26][2363,89]
+  TextView text="1990 UCF10 A/C service locator • drag to orbit • pinch to zoom • tap a part" bounds=[37,89][2363,132]
+  Button text="FULL CAR" flags=clickable,focusable bounds=[42,153][613,269]
+  Button text="A/C SYSTEM" flags=clickable,focusable bounds=[623,153][1194,269]
+  Button text="HIGH SIDE" flags=clickable,focusable bounds=[1204,153][1776,269]
+  Button text="LOW SIDE" flags=clickable,focusable bounds=[1786,153][2358,269]
+  TextView text="Tap a component to identify it. Passenger side is screen-left when facing the car." bounds=[26,955][2374,1054]

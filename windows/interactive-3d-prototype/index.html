@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#091018">
+  <title>LS400 Toolbox — 1990 A/C Service Model</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Model controls">
+      <button id="sidebarClose" class="sidebar-close" type="button" aria-label="Close model controls">×</button>
+      <header class="brand">
+        <div class="brand-mark" aria-hidden="true">L</div>
+        <div>
+          <div class="eyebrow">LS400 TOOLBOX / PROTOTYPE 02</div>
+          <h1>1990 UCF10 service model</h1>
+          <p>Recognition-first A/C and HVAC locator</p>
+        </div>
+      </header>
+
+      <div class="safety-note">
+        <strong>Educational visualization.</strong> Geometry is evidence-ranked, not measured CAD. Never open a charged system, vent refrigerant, or flush through the compressor, receiver-drier, expansion valve or EPR.
+      </div>
+
+      <nav class="tabs" role="tablist" aria-label="Tool panels">
+        <button id="tab-inspect" class="tab is-active" data-tab="inspect" type="button" role="tab" aria-selected="true" aria-controls="panel-inspect">Inspect</button>
+        <button id="tab-view" class="tab" data-tab="view" type="button" role="tab" aria-selected="false" aria-controls="panel-view">View</button>
+        <button id="tab-compare" class="tab" data-tab="compare" type="button" role="tab" aria-selected="false" aria-controls="panel-compare">Compare</button>
+        <button id="tab-validate" class="tab" data-tab="validate" type="button" role="tab" aria-selected="false" aria-controls="panel-validate">Validate</button>
+      </nav>
+
+      <section id="panel-inspect" class="tab-panel is-active" data-panel="inspect" role="tabpanel" aria-labelledby="tab-inspect">
+        <div class="control">
+          <label for="isolation">Isolation mode</label>
+          <select id="isolation" data-testid="isolation-select">
+            <option value="ALL">Complete vehicle</option>
+            <option value="AC_COMPLETE">Complete A/C system</option>
+            <option value="AC_HIGH">A/C high-pressure side</option>
+            <option value="AC_LOW">A/C low-pressure side</option>
+            <option value="AC_ENGINE_BAY">Engine-bay A/C components</option>
+            <option value="AC_CABIN">Cabin HVAC / A/C components</option>
+            <option value="AC_LINES">Refrigerant lines only</option>
+            <option value="HARDWARE">Mounting hardware and fittings</option>
+            <option value="LANDMARKS">Surrounding landmarks only</option>
+          </select>
+        </div>
+
+        <div class="control two-col">
+          <div>
+            <label for="detailLevel">Display level</label>
+            <select id="detailLevel" data-testid="detail-level-select">
+              <option value="1">1 · Orientation</option>
+              <option value="2" selected>2 · Service ID</option>
+              <option value="3">3 · Close inspection</option>
+            </select>
+          </div>
+          <div>
+            <label for="partSelect">Find component</label>
+            <select id="partSelect" data-testid="component-select">
+              <option value="">Select a part…</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control">
+          <label for="cameraPreset">Service viewpoint</label>
+          <select id="cameraPreset" data-testid="camera-select"></select>
+        </div>
+
+        <div class="button-grid">
+          <button id="fullVehicle" class="primary" type="button">Full hood-open view</button>
+          <button id="focusSelected" type="button" disabled>Focus selected</button>
+          <button id="traceSelected" type="button" disabled>Trace connection</button>
+          <button id="clearSelection" type="button">Clear highlight</button>
+        </div>
+
+        <div id="selectionCard" class="selection-card" aria-live="polite">
+          <div class="selection-empty">
+            <strong>Pick a visible part or line</strong>
+            <span>Click the model or choose a component above.</span>
+          </div>
+        </div>
+
+        <details class="job-map">
+          <summary>A/C retrofit / flush decision map</summary>
+          <ol>
+            <li><strong>Identify refrigerant and conversion state.</strong> Labels and fittings alone are not proof.</li>
+            <li><strong>Professional recovery and zero-pressure verification.</strong> The model cannot verify depressurization.</li>
+            <li><strong>Isolate non-flushable parts.</strong> Compressor, receiver-drier, expansion valve and EPR stay out of a solvent-flush path.</li>
+            <li><strong>Trace each removed line.</strong> Use high/low labels, endpoints, clamps and nearby landmarks.</li>
+            <li><strong>Replace the drier, account for compatible oil, evacuate and leak-test</strong> under the verified factory/job-specific procedure.</li>
+          </ol>
+          <div class="job-gates" aria-label="A/C service-planning safety gates">
+            <label for="refrigerantProfile">Verified system state</label>
+            <select id="refrigerantProfile" data-testid="refrigerant-profile">
+              <option value="UNKNOWN">Unknown / not verified</option>
+              <option value="R12">Factory R-12 confirmed</option>
+              <option value="R134A">R-134a retrofit confirmed</option>
+              <option value="CONTAMINATED">Mixed, unknown, or contaminated — stop</option>
+            </select>
+            <label class="gate-check"><input id="recoveryComplete" type="checkbox"> Refrigerant professionally recovered</label>
+            <label class="gate-check"><input id="zeroPressureVerified" type="checkbox"> Zero pressure independently verified</label>
+            <button id="showFlushMap" type="button" disabled>Show planning boundaries</button>
+            <p id="flushGateStatus" class="gate-status" role="status">Select a verified refrigerant state and confirm both safety gates. This never authorizes opening or flushing.</p>
+            <div class="job-legend" aria-label="Service planning overlay legend">
+              <span class="never">Never flush-through / isolate or replace</span>
+              <span class="boundary">Connection boundary to identify</span>
+              <span class="candidate">External line group for procedure-specific evaluation</span>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section id="panel-view" class="tab-panel" data-panel="view" role="tabpanel" aria-labelledby="tab-view">
+        <h2>Body and access</h2>
+        <div class="switch-list">
+          <label><input id="bodyTransparent" type="checkbox"> Transparent body</label>
+          <label><input id="hideHood" type="checkbox"> Hide hood</label>
+          <label><input id="hideBumper" type="checkbox"> Hide front bumper</label>
+          <label><input id="hideRadiator" type="checkbox"> Hide radiator</label>
+          <label><input id="hideEngine" type="checkbox"> Hide engine</label>
+          <label><input id="hideSplash" type="checkbox"> Hide splash shields</label>
+          <label><input id="cutawayFirewall" type="checkbox"> Cut away firewall and dashboard</label>
+          <label><input id="cutawayHvac" type="checkbox"> Show evaporator inside HVAC case</label>
+          <label><input id="showLabels" type="checkbox" checked> Show selected/route labels</label>
+        </div>
+
+        <div class="control range-control">
+          <div class="range-label"><label for="hoodAngle">Hood opening</label><output id="hoodAngleValue">70°</output></div>
+          <input id="hoodAngle" type="range" min="0" max="70" value="70" step="1">
+          <div class="range-stops"><span>closed</span><span>partial</span><span>open</span></div>
+        </div>
+
+        <div class="control range-control">
+          <div class="range-label"><label for="cameraFov">Camera field of view</label><output id="cameraFovValue">43°</output></div>
+          <input id="cameraFov" type="range" min="30" max="70" value="43" step="1">
+          <div class="range-stops"><span>telephoto</span><span>human-scale</span><span>wide</span></div>
+        </div>
+
+        <div class="button-grid">
+          <button id="hoodClosed" type="button">Hood closed</button>
+          <button id="hoodPartial" type="button">Hood partial</button>
+          <button id="hoodOpen" class="primary" type="button">Hood fully open</button>
+          <button id="resetHumanView" type="button">Reset perspective</button>
+        </div>
+
+        <h2>Orientation contract</h2>
+        <dl class="facts">
+          <div><dt>Front</dt><dd>+X vehicle / screen-depth toward bumper</dd></div>
+          <div><dt>Driver side</dt><dd>+Y vehicle / left side when seated</dd></div>
+          <div><dt>Passenger side</dt><dd>−Y vehicle / right side when seated</dd></div>
+          <div><dt>Up</dt><dd>+Z vehicle</dd></div>
+          <div><dt>Scale</dt><dd>1 scene unit = 1000 mm</dd></div>
+        </dl>
+      </section>
+
+      <section id="panel-compare" class="tab-panel" data-panel="compare" role="tabpanel" aria-labelledby="tab-compare">
+        <p class="panel-intro">Align a real photo to stable landmarks. The image never deforms the model.</p>
+        <div class="control">
+          <label for="referenceSelect">Reference image</label>
+          <select id="referenceSelect" data-testid="reference-select"></select>
+        </div>
+        <div class="control">
+          <label for="referenceUpload">Add a local reference photo</label>
+          <input id="referenceUpload" type="file" accept="image/*">
+        </div>
+        <div class="control two-col">
+          <div>
+            <label for="comparisonMode">Comparison mode</label>
+            <select id="comparisonMode">
+              <option value="OFF">Off</option>
+              <option value="SIDE">Side by side</option>
+              <option value="OVERLAY">Transparent overlay</option>
+            </select>
+          </div>
+          <div class="range-control compact">
+            <div class="range-label"><label for="referenceOpacity">Photo opacity</label><output id="referenceOpacityValue">55%</output></div>
+            <input id="referenceOpacity" type="range" min="10" max="100" value="55" step="1">
+          </div>
+        </div>
+        <div class="comparison-landmarks" id="comparisonLandmarks"></div>
+        <div class="button-grid">
+          <button id="matchReferencePose" class="primary" type="button">Load matched pose</button>
+          <button id="saveReferencePose" type="button">Save corrected pose</button>
+          <button id="restoreReferencePose" type="button">Restore saved pose</button>
+          <button id="clearReferencePose" type="button">Clear saved pose</button>
+        </div>
+        <div class="control">
+          <label for="discrepancyNotes">Discrepancy notes</label>
+          <textarea id="discrepancyNotes" rows="5" placeholder="Example: receiver appears 40 mm lower than the headlight landmark…"></textarea>
+        </div>
+      </section>
+
+      <section id="panel-validate" class="tab-panel" data-panel="validate" role="tabpanel" aria-labelledby="tab-validate">
+        <div class="validation-summary" id="validationSummary">
+          <div><span>Errors</span><strong id="validationErrors">—</strong></div>
+          <div><span>Warnings</span><strong id="validationWarnings">—</strong></div>
+          <div><span>Checks</span><strong id="validationChecks">—</strong></div>
+        </div>
+        <div class="button-grid">
+          <button id="runValidation" class="primary" type="button">Run validation</button>
+          <button id="downloadValidation" type="button">Download report</button>
+        </div>
+        <div id="validationResults" class="validation-results" aria-live="polite"></div>
+        <details open>
+          <summary>Acceptance walkthrough</summary>
+          <ol id="acceptanceList" class="acceptance-list"></ol>
+        </details>
+        <details>
+          <summary>Known uncertainties</summary>
+          <ul id="uncertaintyList" class="uncertainty-list"></ul>
+        </details>
+      </section>
+
+      <footer class="sidebar-footer">
+        <span id="modelStats">Loading model…</span>
+        <span id="coordinateReadout">X — · Y — · Z —</span>
+      </footer>
+    </aside>
+
+    <main class="stage" id="stage">
+      <div id="viewport" aria-label="Interactive three-dimensional 1990 Lexus LS400 service model"></div>
+      <div class="stage-topbar">
+        <button id="sidebarToggle" class="icon-button" type="button" aria-label="Show or hide model controls">☰</button>
+        <div class="view-title">
+          <span id="viewName">Full vehicle — hood open</span>
+          <small id="viewContext">Human-scale service viewpoint</small>
+        </div>
+        <div class="pressure-legend" aria-label="Pressure side legend">
+          <span><i class="high"></i>HIGH side</span>
+          <span><i class="low"></i>LOW side</span>
+          <span><i class="context"></i>landmark</span>
+        </div>
+      </div>
+
+      <div class="orientation-cube" aria-hidden="true">
+        <span class="front">FRONT</span>
+        <span class="driver">DRIVER</span>
+        <span class="passenger">PASS.</span>
+      </div>
+
+      <div id="referencePane" class="reference-pane" aria-hidden="true">
+        <img id="referenceImage" alt="Selected real-world reference">
+        <div id="referenceCaption"></div>
+      </div>
+
+      <div id="labelOverlay" class="label-overlay" hidden></div>
+      <div id="flowBanner" class="flow-banner" hidden></div>
+      <div id="loading" class="loading-screen">
+        <div class="loading-ring"></div>
+        <strong>Building UCF10 service geometry</strong>
+        <span>body · engine · A/C routes · HVAC cutaway</span>
+      </div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/addons/"
+    }
+  }
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

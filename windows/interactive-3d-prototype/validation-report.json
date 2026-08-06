@@ -1,0 +1,241 @@
+{
+  "generatedAt": "2026-08-06T15:29:47.3264542Z",
+  "vehicle": {
+    "name": "1990 Lexus LS 400 (UCF10)",
+    "units": "metres (1 scene unit = 1000 mm)",
+    "coordinateContract": "+X vehicle forward, +Y vehicle-left (driver side), +Z up",
+    "origin": "front axle centre projected to the ground plane",
+    "configuration": "1990 U.S.-market baseline; VIN/build month, Federal/California, TRAC and refrigerant conversion state are unverified"
+  },
+  "summary": {
+    "status": "PASS_WITH_WARNINGS",
+    "errors": 0,
+    "warnings": 4,
+    "checks": 20,
+    "unexplainedDisconnectedAcLines": 0,
+    "acceptanceStepsCompleted": 12,
+    "acceptanceStepsTotal": 12,
+    "importantComponentsBuilt": 40,
+    "stableIdsChecked": 65,
+    "modeledRoutes": 16,
+    "acRoutes": 7,
+    "serviceCameraScreenshots": 20
+  },
+  "checks": [
+    {
+      "name": "Component IDs are unique",
+      "status": "pass",
+      "detail": "65 stable IDs checked."
+    },
+    {
+      "name": "Important components have geometry",
+      "status": "pass",
+      "detail": "40 important components built."
+    },
+    {
+      "name": "Every modeled line has two valid endpoints",
+      "status": "pass",
+      "detail": "16 routes have named start and destination objects."
+    },
+    {
+      "name": "A/C fittings align with their route endpoints",
+      "status": "pass",
+      "detail": "7 A/C routes align to both named endpoints; the 200 mm staging tolerance reflects approximate geometry."
+    },
+    {
+      "name": "Important A/C components are mounted",
+      "status": "pass",
+      "detail": "Compressor, condenser, receiver, ports and cabin components have named mounts."
+    },
+    {
+      "name": "Important objects are not generic placeholders",
+      "status": "pass",
+      "detail": "No important object is marked generic_placeholder; approximate true-form geometry remains labeled."
+    },
+    {
+      "name": "Service ports are attached to the correct pressure-side groups",
+      "status": "pass",
+      "detail": "High port is bound to the liquid line; low port is bound to the suction line. Exact installed positions remain warnings."
+    },
+    {
+      "name": "Front view preserves passenger/driver and vertical orientation",
+      "status": "pass",
+      "detail": "Facing the open hood, passenger side projects to screen-left, driver side to screen-right, and +Z remains upward."
+    },
+    {
+      "name": "Pressure and service branches are anchored",
+      "status": "pass",
+      "detail": "Pressure switch, high port and low port are selectable features anchored to their parent line groups."
+    },
+    {
+      "name": "High/low flow sequence uses the correct ports",
+      "status": "pass",
+      "detail": "Compressor to condenser to receiver to expansion valve to evaporator to EPR to compressor is continuous."
+    },
+    {
+      "name": "No duplicate A/C components share the same pose",
+      "status": "pass",
+      "detail": "No important A/C component rendered bounding-box centres are duplicated."
+    },
+    {
+      "name": "Key A/C components avoid unrelated geometry",
+      "status": "pass",
+      "detail": "No broad-phase overlap across the key unrelated-component pairs."
+    },
+    {
+      "name": "Every route has continuous visible geometry",
+      "status": "pass",
+      "detail": "All route groups contain selectable line geometry, fittings, and applicable clamps/crimps."
+    },
+    {
+      "name": "Service-planning overlay is safety-gated",
+      "status": "pass",
+      "detail": "Refrigerant profile, recovery and zero-pressure gates control a boundary-only overlay; normal-flow arrows are labeled as non-authorization."
+    },
+    {
+      "name": "Reference images resolve to labeled camera poses and rights notes",
+      "status": "pass",
+      "detail": "8 references have a local path, saved pose and reuse-rights note."
+    },
+    {
+      "name": "EWD070U electrical source is acquired",
+      "status": "pass",
+      "detail": "The 250-page EWD is present locally; physical loom geometry and circuit extraction remain incomplete."
+    },
+    {
+      "name": "Exact service-port landing is unresolved",
+      "status": "warning",
+      "detail": "High and low side identities are modeled correctly, but original/retrofit fitting position must be verified on the target vehicle."
+    },
+    {
+      "name": "Receiver-to-firewall pipe crosswalk is provisional",
+      "status": "warning",
+      "detail": "Pipe A/B/C/D/E sequence needs installed-car or clearer-plate tracing before individual tube IDs are frozen."
+    },
+    {
+      "name": "Configuration and dimensional survey are missing",
+      "status": "warning",
+      "detail": "VIN/build month, refrigerant/oil state, TRAC/options, measured line splines, clamps and fitting clocking remain capture inputs."
+    },
+    {
+      "name": "Private reference images are not cleared for publication",
+      "status": "warning",
+      "detail": "7 of 8 comparison images are private/no-ship research references; only the public-domain exterior image is cleared for redistribution."
+    }
+  ],
+  "confirmedComponents": [
+    "LANDMARK_GRILLE",
+    "LANDMARK_PASSENGER_HEADLIGHT",
+    "LANDMARK_DRIVER_HEADLIGHT",
+    "LANDMARK_COWL",
+    "LANDMARK_FIREWALL",
+    "LANDMARK_RADIATOR_SUPPORT",
+    "LANDMARK_RADIATOR",
+    "LANDMARK_COOLING_FANS",
+    "LANDMARK_BATTERY",
+    "LANDMARK_AIRBOX",
+    "LANDMARK_INTAKE_TUBE",
+    "LANDMARK_BRAKE_BOOSTER",
+    "AC_COMPRESSOR",
+    "AC_COMPRESSOR_CLUTCH",
+    "AC_DISCHARGE_PORT",
+    "AC_SUCTION_PORT",
+    "AC_CONDENSER",
+    "AC_RECEIVER_DRIER",
+    "AC_RECEIVER_DRIER_BRACKET",
+    "AC_SIGHT_GLASS",
+    "AC_EXPANSION_VALVE",
+    "AC_EVAPORATOR",
+    "AC_EPR",
+    "HVAC_CASE",
+    "HVAC_BLOWER_HOUSING",
+    "HVAC_BLOWER_MOTOR",
+    "HVAC_HEATER_CORE"
+  ],
+  "approximateComponents": [
+    "LANDMARK_BODY_SHELL",
+    "LANDMARK_FRONT_BUMPER",
+    "LANDMARK_HOOD",
+    "LANDMARK_HOOD_HINGES",
+    "LANDMARK_FRONT_FENDERS",
+    "LANDMARK_WINDSHIELD",
+    "LANDMARK_DASHBOARD",
+    "LANDMARK_PASSENGER_FOOTWELL",
+    "LANDMARK_FRONT_FRAME_RAILS",
+    "LANDMARK_SPLASH_SHIELDS",
+    "ENGINE_1UZ_FE",
+    "ENGINE_ACCESSORY_DRIVE",
+    "ENGINE_ALTERNATOR",
+    "ENGINE_POWER_STEERING_PUMP",
+    "AC_COMPRESSOR_BRACKET",
+    "AC_CONDENSER_INLET",
+    "AC_CONDENSER_OUTLET",
+    "AC_PRESSURE_SWITCH",
+    "AC_HIGH_SERVICE_PORT",
+    "AC_LOW_SERVICE_PORT",
+    "HVAC_AIR_MIX_DOOR",
+    "HVAC_DRAIN_TUBE"
+  ],
+  "missingComponents": [],
+  "unresolvedRouting": [
+    "AC_HIGH_SERVICE_PORT exact tube/build position",
+    "AC_LOW_SERVICE_PORT exact original/retrofit fitting position",
+    "AC_LIQUID_LINE_DRIER_FIREWALL A/B/C/D/E individual crosswalk",
+    "target-vehicle electrical harness branches, clips and connector poses",
+    "target-vehicle measured line splines, clamps, bend radii and fitting clocking"
+  ],
+  "privateReferenceIds": [
+    "USER_FRONT_HOOD_OPEN",
+    "USER_ENGINE_TOP_1990",
+    "USER_ENGINE_TOP_1991",
+    "FACTORY_AC_LOCATOR",
+    "EPC_AC_PIPING",
+    "EPC_CONDENSER",
+    "EPC_COMPRESSOR"
+  ],
+  "remainingGenericPlaceholders": [],
+  "suspectedScaleErrors": [
+    "No measured target-vehicle survey is available; component dimensions are reference-estimated."
+  ],
+  "suspectedOrientationErrors": [],
+  "uncertainties": [
+    "VIN, production month, Federal/California emissions, TRAC and air-suspension configuration are not supplied.",
+    "Installed refrigerant, oil, retrofit adapters and conversion workmanship cannot be determined from photographs.",
+    "Exact A/C tube bend coordinates, clamp holes, fitting clocking and under-cover access need physical measurements or scan data.",
+    "Factory evidence conflicts with the prior registry mapping for the high service port; the model places it on the high-pressure liquid route but does not claim an exact tube landing.",
+    "The receiver-to-firewall A/B/C/D/E liquid-pipe crosswalk remains provisional until the installed car or a clearer plate is traced.",
+    "EPR and expansion-valve hidden dimensions are approximate because no measured HVAC-case scan is available.",
+    "Full body, hood hinge, bumper reinforcement, dashboard and underbody shapes are recognizable service landmarks, not production CAD."
+  ],
+  "acceptanceWalkthrough": [
+    { "step": 1, "status": "demonstrated", "description": "Isolate the complete A/C system." },
+    { "step": 2, "status": "demonstrated", "description": "Select the compressor and identify suction and discharge connections." },
+    { "step": 3, "status": "demonstrated", "description": "Trace compressor discharge to the condenser." },
+    { "step": 4, "status": "demonstrated", "description": "Trace condenser liquid flow through the receiver-drier toward the firewall." },
+    { "step": 5, "status": "demonstrated", "description": "Trace low-side suction flow from firewall/EPR to compressor." },
+    { "step": 6, "status": "demonstrated", "description": "Show condenser relative to radiator and front bumper." },
+    { "step": 7, "status": "demonstrated", "description": "Show receiver-drier relative to passenger headlight and radiator support." },
+    { "step": 8, "status": "demonstrated", "description": "Show evaporator and expansion-valve area with cabin/firewall cutaway." },
+    { "step": 9, "status": "demonstrated", "description": "Display high/low service ports and fitting locations with uncertainty labels." },
+    { "step": 10, "status": "demonstrated", "description": "Compare a saved model pose against a real reference image." },
+    { "step": 11, "status": "demonstrated", "description": "Run validation with zero unexplained disconnected A/C lines." },
+    { "step": 12, "status": "demonstrated", "description": "Display every remaining uncertainty honestly." }
+  ],
+  "evidence": {
+    "liveBuildUrl": "http://127.0.0.1:8123/",
+    "validationScreenshot": "previews/final-validation-12-of-12.png",
+    "acceptanceScreenshot": "previews/final-acceptance-12-of-12.png",
+    "cameraScreenshots": "previews/cameras/",
+    "referenceComparison": "previews/reference-comparison-user-front.png",
+    "servicePlanningOverlay": "previews/service-planning-gated-map.png",
+    "matchedBeforeAfter": [
+      "previews/before-identical-full-vehicle.png",
+      "previews/after-identical-full-vehicle.png"
+    ]
+  },
+  "referenceRights": {
+    "userSuppliedPhotos": "Private working references supplied by the user. Provenance/licensing is not cleared for public redistribution; do not publish or ship these images without rights confirmation.",
+    "charmAndEpcImages": "Private factory-derived research references. Reuse rights are not cleared; exclude them from any public or shipped bundle.",
+    "licensedUcf10Exterior": "Public-domain Australian RHD UCF10R rear three-quarter; retain provenance and do not treat it as exact U.S. 1990 underhood evidence."
+  }
+}
