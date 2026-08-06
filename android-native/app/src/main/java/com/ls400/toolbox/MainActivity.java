@@ -33,7 +33,7 @@ public final class MainActivity extends Activity {
         TextView title = text("LS400 TOOLBOX  •  NATIVE OFFLINE", 18, Color.WHITE);
         title.setTypeface(null,1);
         top.addView(title);
-        TextView subtitle = text("1990 UCF10 A/C service locator  •  drag to orbit  •  pinch to zoom  •  tap a part", 12, Color.rgb(177,198,211));
+        TextView subtitle = text("49 components • 16 routes • drag to orbit • pinch to zoom • tap a part", 12, Color.rgb(177,198,211));
         top.addView(subtitle);
 
         LinearLayout buttons = new LinearLayout(this);

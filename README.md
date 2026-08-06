@@ -6,13 +6,13 @@ Offline service-orientation prototypes for the 1990 Lexus LS400 (UCF10), with em
 
 Use the GitHub Releases page:
 
-- `LS400Toolbox-Android-v1.0.0.apk` — native Android/OpenGL ES app. No WebView, browser, private server, internet permission, or network dependency.
+- `LS400Toolbox-Android-v1.1.0.apk` — native Android/OpenGL ES app with the Windows prototype's 49-component inventory and 16 routed systems. No WebView, browser, private server, internet permission, or network dependency.
 - `LS400Toolbox-Windows-v1.0.0.zip` — complete Windows desktop package. Extract the ZIP and run `LS400Toolbox.exe`.
 - `LS400Toolbox.exe` — Windows launcher only; use the ZIP unless the adjacent runtime and model folders are already present.
 
 ## Android controls
 
-Drag to orbit, pinch to zoom, double-tap to reset, and tap a modeled component to identify it. Use Full Car, A/C System, High Side, and Low Side to isolate the service routes.
+Drag to orbit, pinch to zoom, double-tap to reset, and tap a modeled component to identify it. Use Full Car, A/C System, High Side, and Low Side to isolate the service routes. Recognition details include condenser fins and fittings, compressor clutch and ports, receiver-drier hardware, service ports, HVAC internals, and nearby engine-bay landmarks.
 
 ## Accuracy and safety
 
