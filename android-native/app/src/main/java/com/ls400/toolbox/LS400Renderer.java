@@ -13,16 +13,16 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public final class LS400Renderer implements GLSurfaceView.Renderer {
-    private static final int LANDMARK=0, AC=1, HIGH=2, LOW=3, SHAPE_BOX=0, SHAPE_CYLINDER=1;
+    private static final int LANDMARK=0, AC=1, HIGH=2, LOW=3, SHAPE_BOX=0, SHAPE_CYLINDER=1, SHAPE_TORUS=2;
     private final Consumer<String> info;
     private final List<Part> parts=new ArrayList<>();
     private final List<Part> decor=new ArrayList<>();
     private final List<Route> routes=new ArrayList<>();
     private final float[] projection=new float[16],view=new float[16],vp=new float[16],model=new float[16],mvp=new float[16];
-    private FloatBuffer cube, cylinder, lineBuffer;
-    private int cylinderVertices;
+    private FloatBuffer cube, cylinder, torus, lineBuffer;
+    private int cylinderVertices,torusVertices;
     private int program,posLoc,colorLoc,mvpLoc,width,height,filter=0;
-    private float yaw=0f,pitch=23f,distance=4.8f;
+    private float yaw=0f,pitch=23f,distance=4.8f,targetX=0,targetY=.65f,targetZ=0;
     private volatile float pickX=-1,pickY=-1;
     private Part selected;
 
@@ -39,18 +39,19 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
 
     @Override public void onSurfaceCreated(GL10 gl,EGLConfig config){
         GLES20.glClearColor(.025f,.055f,.075f,1); GLES20.glEnable(GLES20.GL_DEPTH_TEST); GLES20.glEnable(GLES20.GL_BLEND); GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        String vs="uniform mat4 uMVP; attribute vec3 aPos; void main(){gl_Position=uMVP*vec4(aPos,1.0);}";
-        String fs="precision mediump float; uniform vec4 uColor; void main(){gl_FragColor=uColor;}";
+        String vs="uniform mat4 uMVP; attribute vec3 aPos; varying float vShade; void main(){vec3 n=normalize(aPos+vec3(.001));vShade=.68+.32*max(0.,dot(n,normalize(vec3(-.45,.8,.55))));gl_Position=uMVP*vec4(aPos,1.0);}";
+        String fs="precision mediump float; uniform vec4 uColor; varying float vShade; void main(){gl_FragColor=vec4(uColor.rgb*vShade,uColor.a);}";
         program=link(vs,fs); posLoc=GLES20.glGetAttribLocation(program,"aPos"); colorLoc=GLES20.glGetUniformLocation(program,"uColor"); mvpLoc=GLES20.glGetUniformLocation(program,"uMVP");
         cube=buffer(CUBE);
         float[] cylinderData=makeCylinder(18); cylinder=buffer(cylinderData); cylinderVertices=cylinderData.length/3;
+        float[] torusData=makeTorus(28,10,.72f,.28f); torus=buffer(torusData); torusVertices=torusData.length/3;
     }
     @Override public void onSurfaceChanged(GL10 gl,int w,int h){ width=w;height=h;GLES20.glViewport(0,0,w,h);Matrix.perspectiveM(projection,0,45f,(float)w/h,.05f,40f); }
     @Override public void onDrawFrame(GL10 gl){
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);
         float yr=(float)Math.toRadians(yaw),pr=(float)Math.toRadians(pitch);
-        float ex=(float)(Math.sin(yr)*Math.cos(pr)*distance), ey=(float)(Math.sin(pr)*distance)+.7f, ez=(float)(-Math.cos(yr)*Math.cos(pr)*distance);
-        Matrix.setLookAtM(view,0,ex,ey,ez,0,.65f,0,0,1,0); Matrix.multiplyMM(vp,0,projection,0,view,0);
+        float ex=targetX+(float)(Math.sin(yr)*Math.cos(pr)*distance), ey=targetY+(float)(Math.sin(pr)*distance), ez=targetZ+(float)(-Math.cos(yr)*Math.cos(pr)*distance);
+        Matrix.setLookAtM(view,0,ex,ey,ez,targetX,targetY,targetZ,0,1,0); Matrix.multiplyMM(vp,0,projection,0,view,0);
         drawGround();
         for(Part p:parts) if(visible(p.category)) drawPart(p,p==selected);
         for(Part p:decor) if(visible(p.category)) drawPart(p,false);
@@ -60,11 +61,20 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
 
     private boolean visible(int category){ return filter==0 || (filter==1&&category>0) || category==filter; }
     private void drawPart(Part p,boolean highlight){
-        Matrix.setIdentityM(model,0); Matrix.translateM(model,0,p.x,p.y,p.z); if(p.rx!=0)Matrix.rotateM(model,0,p.rx,1,0,0); Matrix.scaleM(model,0,p.sx/2,p.sy/2,p.sz/2); Matrix.multiplyMM(mvp,0,vp,0,model,0);
-        GLES20.glUseProgram(program); GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0); float[] c=highlight?new float[]{1f,.87f,.25f,1}:p.color; GLES20.glUniform4fv(colorLoc,1,c,0); GLES20.glEnableVertexAttribArray(posLoc); FloatBuffer mesh=p.shape==SHAPE_CYLINDER?cylinder:cube; int count=p.shape==SHAPE_CYLINDER?cylinderVertices:36; mesh.position(0); GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,mesh); GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,count); GLES20.glDisableVertexAttribArray(posLoc);
+        Matrix.setIdentityM(model,0); Matrix.translateM(model,0,p.x,p.y,p.z); if(p.rx!=0)Matrix.rotateM(model,0,p.rx,1,0,0); if(p.ry!=0)Matrix.rotateM(model,0,p.ry,0,1,0); if(p.rz!=0)Matrix.rotateM(model,0,p.rz,0,0,1); Matrix.scaleM(model,0,p.sx/2,p.sy/2,p.sz/2); Matrix.multiplyMM(mvp,0,vp,0,model,0);
+        GLES20.glUseProgram(program); GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0); float[] c=highlight?new float[]{1f,.87f,.25f,1}:p.color; GLES20.glUniform4fv(colorLoc,1,c,0); GLES20.glEnableVertexAttribArray(posLoc); FloatBuffer mesh=p.shape==SHAPE_CYLINDER?cylinder:p.shape==SHAPE_TORUS?torus:cube; int count=p.shape==SHAPE_CYLINDER?cylinderVertices:p.shape==SHAPE_TORUS?torusVertices:36; mesh.position(0); GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,mesh); GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,count); GLES20.glDisableVertexAttribArray(posLoc);
     }
     private void drawRoute(Route r){
-        lineBuffer=buffer(r.xyz); Matrix.multiplyMM(mvp,0,vp,0,identity(),0); GLES20.glUseProgram(program); GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0); GLES20.glUniform4fv(colorLoc,1,r.color,0); GLES20.glLineWidth(r.category==LOW?8:6); GLES20.glEnableVertexAttribArray(posLoc); GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,lineBuffer); GLES20.glDrawArrays(GLES20.GL_LINE_STRIP,0,r.xyz.length/3); GLES20.glDisableVertexAttribArray(posLoc);
+        float radius=r.category==LOW?.026f:r.category==HIGH?.019f:.015f;
+        for(int i=0;i<r.xyz.length/3-1;i++) drawTubeSegment(r.xyz[i*3],r.xyz[i*3+1],r.xyz[i*3+2],r.xyz[i*3+3],r.xyz[i*3+4],r.xyz[i*3+5],radius,r.color);
+    }
+    private void drawTubeSegment(float ax,float ay,float az,float bx,float by,float bz,float radius,float[] color){
+        float dx=bx-ax,dy=by-ay,dz=bz-az,len=(float)Math.sqrt(dx*dx+dy*dy+dz*dz);if(len<.0001f)return;
+        Matrix.setIdentityM(model,0);Matrix.translateM(model,0,(ax+bx)/2,(ay+by)/2,(az+bz)/2);
+        float ny=dy/len,angle=(float)Math.toDegrees(Math.acos(Math.max(-1,Math.min(1,ny))));float rx=dz/len,rz=-dx/len;
+        if(Math.abs(angle)>.01f)Matrix.rotateM(model,0,angle,rx,0,rz);
+        Matrix.scaleM(model,0,radius,len/2,radius);Matrix.multiplyMM(mvp,0,vp,0,model,0);
+        GLES20.glUseProgram(program);GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0);GLES20.glUniform4fv(colorLoc,1,color,0);GLES20.glEnableVertexAttribArray(posLoc);cylinder.position(0);GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,cylinder);GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,cylinderVertices);GLES20.glDisableVertexAttribArray(posLoc);
     }
     private void drawGround(){
         float[] grid=new float[44*3];int n=0;for(int i=-5;i<=5;i++){grid[n++]=i;grid[n++]=0;grid[n++]=-5;grid[n++]=i;grid[n++]=0;grid[n++]=5;grid[n++]=-5;grid[n++]=0;grid[n++]=i;grid[n++]=5;grid[n++]=0;grid[n++]=i;}
@@ -76,7 +86,13 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     public void setFilter(int value){filter=value;selected=null;}
     public void orbit(float dx,float dy){yaw-=dx*.16f;pitch=Math.max(-5,Math.min(72,pitch-dy*.13f));}
     public void zoom(float factor){distance=Math.max(2.0f,Math.min(10f,distance/factor));}
-    public void resetCamera(){yaw=0;pitch=23;distance=4.8f;}
+    public void resetCamera(){setCameraPreset(0);}
+    public void setCameraPreset(int preset){
+        if(preset==1){yaw=-12;pitch=52;distance=3.45f;targetX=0;targetY=.62f;targetZ=.18f;}
+        else if(preset==2){yaw=-43;pitch=18;distance=1.25f;targetX=-.40f;targetY=.50f;targetZ=-.30f;}
+        else if(preset==3){yaw=32;pitch=15;distance=1.35f;targetX=.38f;targetY=.62f;targetZ=1.12f;}
+        else {yaw=0;pitch=23;distance=4.8f;targetX=0;targetY=.65f;targetZ=0;}
+    }
 
     private void buildModel(){
         float[] body={.38f,.055f,.07f,1},bodyEdge={.56f,.13f,.16f,1},metal={.67f,.71f,.72f,1},aluminum={.78f,.82f,.83f,1},dark={.08f,.11f,.13f,1},rubber={.04f,.055f,.065f,1},glass={.35f,.57f,.68f,.62f},fin={.38f,.46f,.49f,1},high={1f,.56f,.12f,1},low={.20f,.60f,1f,1},coolant={.18f,.45f,.78f,1},wire={.90f,.73f,.20f,1},hvac={.48f,.42f,.80f,1};
@@ -100,7 +116,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("LANDMARK_SPLASH_SHIELDS","Splash shields and undercovers",LANDMARK,.05f,0,.15f,1.65f,1.55f,.06f,dark,"May block lower compressor access.");
         box("LANDMARK_RADIATOR","Engine radiator",LANDMARK,.59f,0,.64f,.10f,1.34f,.62f,fin,"Behind the A/C condenser.");
         cylinder("LANDMARK_COOLING_FANS","Electric cooling fan pair",LANDMARK,.69f,0,.62f,.11f,.60f,.60f,dark,"Twin-fan plane ahead of the heat-exchanger stack.").rx=90;
-        box("ENGINE_1UZ_FE","1UZ-FE V8 engine",LANDMARK,-.23f,0,.64f,1.20f,.90f,.60f,aluminum,"Central engine and intake landmark.");
+        box("ENGINE_1UZ_FE","1UZ-FE V8 engine",LANDMARK,-.23f,0,.56f,.88f,.68f,.36f,new float[]{.24f,.28f,.30f,1},"Central engine and intake landmark.");
         box("ENGINE_ACCESSORY_DRIVE","Accessory belt and pulleys",LANDMARK,.35f,0,.47f,.20f,.75f,.35f,dark,"Front engine accessory drive.");
         cylinder("ENGINE_ALTERNATOR","Alternator",LANDMARK,.23f,-.25f,.38f,.20f,.22f,.22f,metal,"Passenger/front accessory landmark.").rx=90;
         cylinder("ENGINE_POWER_STEERING_PUMP","Power-steering pump",LANDMARK,.23f,.25f,.56f,.18f,.20f,.20f,metal,"Driver/front accessory landmark.").rx=90;
@@ -148,6 +164,35 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         detailBox(LANDMARK,.02f,.67f,.72f,.05f,.34f,.03f,metal);
         for(float side:new float[]{-.70f,.70f}) detailBox(LANDMARK,-.78f,side,1.25f,.85f,.025f,.025f,metal).rx=-58;
 
+        // Windows-parity recognition geometry: wheels, heat-exchanger fin fields,
+        // fan shrouds/blades, headlamp ribs, engine ribs/runners, pulleys and service hardware.
+        for(float f:new float[]{0f,-2.815f}) for(float l:new float[]{-.83f,.83f}){
+            Part tire=detailTorus(LANDMARK,f,l,.33f,.18f,.34f,.34f,new float[]{.035f,.04f,.045f,1}); tire.ry=90;
+            Part rim=detailCylinder(LANDMARK,f,l,.33f,.075f,.27f,.27f,metal); rim.rz=90;
+            Part hub=detailCylinder(LANDMARK,f,l,.33f,.086f,.09f,.09f,new float[]{.48f,.51f,.52f,1}); hub.rz=90;
+            for(int i=0;i<10;i++){double a=i*Math.PI*2/10;detailCylinder(LANDMARK,f,l+(float)Math.cos(a)*.105f,.33f+(float)Math.sin(a)*.105f,.088f,.025f,.025f,dark).rz=90;}
+        }
+        for(float left:new float[]{-.31f,.31f}){
+            Part shroud=detailTorus(LANDMARK,.72f,left,.59f,.055f,.50f,.50f,dark); shroud.rx=90;
+            detailCylinder(LANDMARK,.715f,left,.59f,.07f,.13f,.13f,new float[]{.18f,.22f,.24f,1}).rx=90;
+            for(int i=0;i<7;i++){double a=i*Math.PI*2/7;Part blade=detailBox(LANDMARK,.70f,left+(float)Math.cos(a)*.10f,.59f+(float)Math.sin(a)*.10f,.025f,.16f,.045f,new float[]{.15f,.18f,.20f,1});blade.rz=(float)Math.toDegrees(a)+28;}
+        }
+        for(int i=1;i<42;i++) detailBox(HIGH,.765f,-.65f+i*(1.30f/42f),.64f,.018f,.006f,.54f,new float[]{.58f,.62f,.63f,1});
+        for(int i=1;i<12;i++) detailBox(HIGH,.767f,0,.37f+i*(.54f/12f),.018f,1.28f,.005f,new float[]{.68f,.71f,.71f,1});
+        for(float left:new float[]{-.60f,.60f}) for(int i=-5;i<=5;i++) detailBox(LANDMARK,.955f,left+i*.036f,.66f,.125f,.005f,.19f,new float[]{.91f,.95f,.94f,.78f});
+        for(float left:new float[]{-.29f,.29f}) for(int i=-4;i<=4;i++) detailBox(LANDMARK,-.25f,left,.79f+i*.002f,.055f,.22f,.012f,new float[]{.62f,.66f,.67f,1}).rz=left<0?-13:13;
+        for(int i=-3;i<=3;i++){
+            float offset=i*.065f;
+            Part runner=detailCylinder(LANDMARK,-.32f+Math.abs(i)*.025f,offset,.88f,.38f,.038f,.038f,aluminum); runner.rx=72; runner.rz=i*4;
+        }
+        for(int i=0;i<5;i++){Part pulley=detailTorus(LANDMARK,.38f,-.28f+i*.14f,.48f-(i%2)*.10f,.045f,.14f-i*.008f,.14f-i*.008f,dark);pulley.rx=90;}
+        for(int i=0;i<6;i++){double a=i*Math.PI*2/6;detailCylinder(AC,.49f,.40f+(float)Math.cos(a)*.10f,.47f+(float)Math.sin(a)*.10f,.075f,.026f,.026f,metal).rx=90;}
+        detailBox(AC,.31f,.40f,.63f,.12f,.22f,.07f,metal);
+        detailCylinder(HIGH,.31f,.36f,.64f,.08f,.055f,.055f,high);
+        detailCylinder(LOW,.28f,.45f,.64f,.09f,.070f,.070f,low);
+        for(float z:new float[]{.49f,.58f,.67f,.76f}) detailTorus(AC,.60f,-.72f,z,.025f,.14f,.14f,metal).rx=90;
+        for(float left:new float[]{-.68f,.68f}) for(float f:new float[]{-.45f,-1.0f,-1.45f}) detailBox(LANDMARK,f,left,1.57f,.055f,1.35f,.025f,bodyEdge).rx=-76;
+
         // Seven refrigerant routes plus nine surrounding service routes = 16.
         route("AC_DISCHARGE_LINE",HIGH,high,new float[][]{{.30f,.40f,.58f},{.50f,.38f,.68f},{.72f,.55f,.70f},{.64f,.61f,.70f}});
         route("AC_LIQUID_LINE_CONDENSER_DRIER",HIGH,high,new float[][]{{.64f,-.62f,.48f},{.64f,-.69f,.52f},{.60f,-.72f,.59f}});
@@ -171,12 +216,15 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private Part cylinder(String id,String name,int cat,float f,float l,float u,float sf,float sl,float su,float[] color,String note){Part p=box(id,name,cat,f,l,u,sf,sl,su,color,note);p.shape=SHAPE_CYLINDER;return p;}
     private Part detailBox(int cat,float f,float l,float u,float sf,float sl,float su,float[] color){Part p=new Part("DETAIL","Component detail",cat,-l,u,-f,sl,su,sf,color,"");decor.add(p);return p;}
     private Part detailCylinder(int cat,float f,float l,float u,float sf,float sl,float su,float[] color){Part p=detailBox(cat,f,l,u,sf,sl,su,color);p.shape=SHAPE_CYLINDER;return p;}
+    private Part detailTorus(int cat,float f,float l,float u,float sf,float sl,float su,float[] color){Part p=detailBox(cat,f,l,u,sf,sl,su,color);p.shape=SHAPE_TORUS;return p;}
     private void route(String id,int cat,float[] color,float[][] pts){float[] xyz=new float[pts.length*3];for(int i=0;i<pts.length;i++){xyz[i*3]=-pts[i][1];xyz[i*3+1]=pts[i][2];xyz[i*3+2]=-pts[i][0];}routes.add(new Route(id,cat,color,xyz));}
     private static FloatBuffer buffer(float[] a){FloatBuffer b=ByteBuffer.allocateDirect(a.length*4).order(ByteOrder.nativeOrder()).asFloatBuffer();b.put(a).position(0);return b;}
     private static float[] makeCylinder(int segments){float[] out=new float[segments*12*3];int n=0;for(int i=0;i<segments;i++){double a=i*Math.PI*2/segments,b=(i+1)*Math.PI*2/segments;float ax=(float)Math.cos(a),az=(float)Math.sin(a),bx=(float)Math.cos(b),bz=(float)Math.sin(b);float[] v={ax,-1,az,bx,-1,bz,bx,1,bz, ax,-1,az,bx,1,bz,ax,1,az, 0,1,0,bx,1,bz,ax,1,az, 0,-1,0,ax,-1,az,bx,-1,bz};for(float value:v)out[n++]=value;}return out;}
+    private static float[] makeTorus(int major,int minor,float ring,float tube){float[] out=new float[major*minor*6*3];int n=0;for(int i=0;i<major;i++)for(int j=0;j<minor;j++){double a=i*Math.PI*2/major,b=(i+1)*Math.PI*2/major,c=j*Math.PI*2/minor,d=(j+1)*Math.PI*2/minor;float[] p0=torusPoint(a,c,ring,tube),p1=torusPoint(b,c,ring,tube),p2=torusPoint(b,d,ring,tube),p3=torusPoint(a,d,ring,tube);for(float[] p:new float[][]{p0,p1,p2,p0,p2,p3})for(float v:p)out[n++]=v;}return out;}
+    private static float[] torusPoint(double a,double b,float ring,float tube){float r=ring+tube*(float)Math.cos(b);return new float[]{r*(float)Math.cos(a),r*(float)Math.sin(a),tube*(float)Math.sin(b)};}
     private static float[] identity(){float[] i=new float[16];Matrix.setIdentityM(i,0);return i;}
     private static int shader(int type,String src){int s=GLES20.glCreateShader(type);GLES20.glShaderSource(s,src);GLES20.glCompileShader(s);return s;}
     private static int link(String vs,String fs){int p=GLES20.glCreateProgram();GLES20.glAttachShader(p,shader(GLES20.GL_VERTEX_SHADER,vs));GLES20.glAttachShader(p,shader(GLES20.GL_FRAGMENT_SHADER,fs));GLES20.glLinkProgram(p);return p;}
-    private static final class Part{final String id,name,note;final int category;final float x,y,z,sx,sy,sz;final float[] color;float rx;int shape=SHAPE_BOX;Part(String i,String n,int c,float x,float y,float z,float sx,float sy,float sz,float[] col,String note){id=i;name=n;category=c;this.x=x;this.y=y;this.z=z;this.sx=sx;this.sy=sy;this.sz=sz;color=col;this.note=note;}}
+    private static final class Part{final String id,name,note;final int category;final float x,y,z,sx,sy,sz;final float[] color;float rx,ry,rz;int shape=SHAPE_BOX;Part(String i,String n,int c,float x,float y,float z,float sx,float sy,float sz,float[] col,String note){id=i;name=n;category=c;this.x=x;this.y=y;this.z=z;this.sx=sx;this.sy=sy;this.sz=sz;color=col;this.note=note;}}
     private static final class Route{final String id;final int category;final float[] color,xyz;Route(String i,int c,float[] col,float[] x){id=i;category=c;color=col;xyz=x;}}
 }

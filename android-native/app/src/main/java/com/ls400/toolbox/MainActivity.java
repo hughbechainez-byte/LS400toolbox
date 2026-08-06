@@ -10,12 +10,14 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public final class MainActivity extends Activity {
     private LS400Surface surface;
     private TextView info;
+    private ImageView reference;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -25,6 +27,15 @@ public final class MainActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         surface = new LS400Surface(this, this::showInfo);
         root.addView(surface, new FrameLayout.LayoutParams(-1,-1));
+        reference = new ImageView(this);
+        reference.setImageResource(com.ls400.toolbox.R.drawable.ucf10_hood_open_reference);
+        reference.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        reference.setBackgroundColor(Color.rgb(8,17,26));
+        reference.setPadding(dp(5),dp(5),dp(5),dp(5));
+        reference.setVisibility(View.GONE);
+        FrameLayout.LayoutParams referenceParams = new FrameLayout.LayoutParams(dp(330),dp(330),Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+        referenceParams.setMargins(0,dp(55),dp(10),dp(55));
+        root.addView(reference,referenceParams);
 
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.VERTICAL);
@@ -44,6 +55,16 @@ public final class MainActivity extends Activity {
         buttons.addView(filterButton("HIGH SIDE",2));
         buttons.addView(filterButton("LOW SIDE",3));
         top.addView(buttons);
+        LinearLayout cameras = new LinearLayout(this);
+        cameras.setOrientation(LinearLayout.HORIZONTAL);
+        cameras.addView(cameraButton("FULL VIEW",0));
+        cameras.addView(cameraButton("ENGINE BAY",1));
+        cameras.addView(cameraButton("COMPRESSOR",2));
+        cameras.addView(cameraButton("HVAC CUTAWAY",3));
+        Button compare = cameraButton("REFERENCE",0);
+        compare.setOnClickListener(v -> { boolean show=reference.getVisibility()!=View.VISIBLE; reference.setVisibility(show?View.VISIBLE:View.GONE); showInfo(show?"Reference comparison shown beside the live native 3D view":"Reference comparison hidden"); });
+        cameras.addView(compare);
+        top.addView(cameras);
         FrameLayout.LayoutParams topParams = new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);
         root.addView(top,topParams);
 
@@ -71,6 +92,16 @@ public final class MainActivity extends Activity {
         p.setMargins(dp(2),0,dp(2),0);
         button.setLayoutParams(p);
         button.setOnClickListener(v -> { surface.setFilter(mode); showInfo(mode==0?"Complete vehicle orientation view":mode==1?"Complete A/C system isolated":mode==2?"HIGH side isolated — orange route":"LOW side isolated — blue route"); });
+        return button;
+    }
+
+    private Button cameraButton(String label, int preset) {
+        Button button = new Button(this);
+        button.setText(label); button.setTextSize(9); button.setTextColor(Color.rgb(210,229,237));
+        button.setBackgroundColor(Color.rgb(24,43,55));
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0,dp(35),1);
+        p.setMargins(dp(2),dp(3),dp(2),0); button.setLayoutParams(p);
+        button.setOnClickListener(v -> { surface.setCameraPreset(preset); showInfo(label+" service camera"); });
         return button;
     }
 
