@@ -21,16 +21,16 @@ public final class MainActivity extends Activity {
     private int guideStep;
     private TextView guideLabel;
     private static final String[][] GUIDE = {
-        {"Configuration", "Read labels, adapters, receiver and history. Unknown or mixed refrigerant: stop for professional identification."},
-        {"R-12 or retrofit", "Use one verified branch. AC001-98 R-134a retrofit uses its own receiver, adapters, PAG oil and mass charge."},
-        {"Recovery gate", "Recover verified refrigerant and independently verify zero pressure before any sealed joint is considered."},
-        {"Receiver/drier", "Passenger-front, behind the right headlamp. Replace/isolate it; never flush through it."},
-        {"Compressor", "Low front driver side. Identify the small discharge and larger suction ports; isolate, never generic-flush."},
-        {"Condenser", "Behind grille/bumper, ahead of radiator and fan pair. Installed core design decides replacement versus flush evaluation."},
-        {"External lines", "Trace one labeled bare line section at a time: discharge, condenser-to-receiver, receiver-to-firewall, suction."},
-        {"HVAC controls", "Passenger firewall/case: expansion valve and EPR are isolate-or-replace controls, not flush-through parts."},
-        {"Reassemble", "Use configuration-matched oil, O-rings and factory joint data; verify every highlighted joint against the manual."},
-        {"Evacuate & charge", "Qualified procedure only: leak-test and charge by verified mass, not R-134a sight-glass clarity."}
+        {"Decision gate", "Clean system: no flush. Wrong oil/additives: conditional flush. Metal, leak-stop or unknown refrigerant: replace-plan, not generic flushing."},
+        {"Recovery gate", "Use certified recovery equipment, identify refrigerant and verify zero pressure. Service ports are not whole-loop flush ports."},
+        {"Never flush", "Compressor, receiver/drier, expansion valve, EPR/equalizer, restricted hoses and ineligible condensers stay out of solvent paths."},
+        {"Condenser", "Flush only an identified eligible tube-and-fin core. Parallel-flow/multiflow, desiccant-trap or contaminated cores are replace-not-flush."},
+        {"Evaporator", "Only after the expansion valve and EPR/control passages are isolated; replace if it cannot be cleaned and dried."},
+        {"Bare lines", "Evaluate each isolated section separately: discharge, condenser-to-receiver, receiver-to-firewall, suction. Replace filtered/muffled/restricted hoses."},
+        {"Kit flush", "For the selected kit only: flush one eligible isolated component to capture, then purge/dry exactly per its solvent/equipment instructions."},
+        {"Reassemble", "New receiver/drier and all approved replacements first; reconnect capped joints with configuration-correct oil and O-rings."},
+        {"Vacuum hold", "Engine off: factory RM144U evacuation reaches 750 mmHg / 29.53 inHg, then holds at least five minutes with no gauge change."},
+        {"Leak test & charge", "Leak-test the closed system and charge only by the verified R-12 or Lexus R-134a retrofit mass specification."}
     };
 
     @Override public void onCreate(Bundle state) {

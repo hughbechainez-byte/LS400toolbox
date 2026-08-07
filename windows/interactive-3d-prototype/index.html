@@ -117,6 +117,12 @@
             <div>
               <span class="eyebrow">RM144U / EPC / AC001-98</span>
               <h3 id="serviceWalkthroughTitle">Guided A/C flush &amp; retrofit locator</h3>
+              <label class="walkthrough-mode-label" for="serviceGuideMode">Guide</label>
+              <select id="serviceGuideMode" class="walkthrough-mode">
+                <option value="FULL">Complete A/C locator</option>
+                <option value="RECEIVER">Receiver/drier only</option>
+                <option value="FLUSH">Conditional flush + evacuation</option>
+              </select>
             </div>
             <output id="serviceStepCount" aria-live="polite">1 / 10</output>
           </div>

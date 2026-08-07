@@ -6,6 +6,10 @@ Offline service-orientation prototypes for the 1990 Lexus LS400 (UCF10), with em
 
 Windows now presents a 10-step RM144U/EPC/AC001-98 guided flush-and-retrofit locator: configuration, recovery gate, receiver/drier, compressor, condenser, each external line group, HVAC controls, reassembly and charge verification. Android has matching step navigation that moves to the relevant part/camera. It distinguishes original R-12 from the Lexus R-134a retrofit branch, corrects the factory receiver assembly to `88470-50010`, and keeps any flush-boundary overlay locked until refrigerant state, recovery and independent zero-pressure checks are confirmed.
 
+## v1.6.0 component-specific flush and evacuation guide
+
+Windows adds selectable complete, receiver-only, and conditional flush/evacuation guides. The flush branch identifies every modeled part as eligible only under stated conditions or as isolate/replace, gives the selected Four Seasons kit’s flush/purge values as kit-specific guidance, and then walks the RM144U post-reassembly vacuum threshold and five-minute hold test. Android now follows the same component-specific decision sequence.
+
 ## Downloads
 
 Use the GitHub Releases page:

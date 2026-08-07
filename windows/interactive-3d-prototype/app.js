@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {
   VEHICLE, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS,
-  REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH
+  REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE
 } from './model-data.js';
 
 const stage = document.getElementById('stage');
@@ -35,6 +35,7 @@ const state = {
   serviceJobMode: false,
   serviceProfile: 'UNKNOWN',
   serviceStep: 0,
+  serviceGuideMode: 'FULL',
   allowInside: false,
   cameraTween: null,
   validationReport: null,
@@ -2072,9 +2073,16 @@ function planningGateReady() {
     && document.getElementById('zeroPressureVerified').checked;
 }
 
+function activeServiceGuide() {
+  if (state.serviceGuideMode==='RECEIVER') return AC_RECEIVER_DRIER_REPLACEMENT_GUIDE;
+  if (state.serviceGuideMode==='FLUSH') return AC_FLUSH_AND_EVACUATION_GUIDE;
+  return AC_SERVICE_WALKTHROUGH;
+}
+
 function renderServiceWalkthrough() {
-  const step=AC_SERVICE_WALKTHROUGH[state.serviceStep];
-  const total=AC_SERVICE_WALKTHROUGH.length;
+  const guide=activeServiceGuide();
+  const step=guide[state.serviceStep];
+  const total=guide.length;
   const card=document.getElementById('serviceWalkthroughCard');
   if (!step || !card) return;
   const guarded=Boolean(step.requiresPlanningGate);
@@ -2097,8 +2105,9 @@ function renderServiceWalkthrough() {
 }
 
 function setServiceWalkthroughStep(index, focus = true) {
-  state.serviceStep=THREE.MathUtils.clamp(index,0,AC_SERVICE_WALKTHROUGH.length-1);
-  const step=AC_SERVICE_WALKTHROUGH[state.serviceStep];
+  const guide=activeServiceGuide();
+  state.serviceStep=THREE.MathUtils.clamp(index,0,guide.length-1);
+  const step=guide[state.serviceStep];
   state.isolation=step.isolation ?? 'AC_COMPLETE';
   state.detailLevel=3;
   state.bodyTransparent=true;
@@ -2257,6 +2266,7 @@ function bindControls() {
   document.getElementById('serviceStepPrevious').addEventListener('click',()=>setServiceWalkthroughStep(state.serviceStep-1));
   document.getElementById('serviceStepNext').addEventListener('click',()=>setServiceWalkthroughStep(state.serviceStep+1));
   document.getElementById('serviceStepView').addEventListener('click',()=>setServiceWalkthroughStep(state.serviceStep));
+  document.getElementById('serviceGuideMode').addEventListener('change',event=>{state.serviceGuideMode=event.target.value;state.serviceStep=0;renderServiceWalkthrough();setServiceWalkthroughStep(0);});
 }
 
 function setHoodUi(angle) {

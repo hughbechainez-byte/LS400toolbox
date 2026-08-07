@@ -99,13 +99,13 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         switch(step){
             case 0: id="AC_RECEIVER_DRIER"; filter=AC; setCameraPreset(1); break;
             case 1: id="AC_HIGH_SERVICE_PORT"; filter=HIGH; setCameraPreset(1); break;
-            case 2: id="AC_LOW_SERVICE_PORT"; filter=AC; setCameraPreset(1); break;
-            case 3: id="AC_RECEIVER_DRIER"; filter=HIGH; setCameraPreset(1); break;
-            case 4: id="AC_COMPRESSOR"; filter=AC; setCameraPreset(2); break;
-            case 5: id="AC_CONDENSER"; filter=HIGH; setCameraPreset(1); break;
-            case 6: id="AC_RECEIVER_DRIER"; filter=AC; setCameraPreset(1); break;
-            case 7: id="AC_EXPANSION_VALVE"; filter=AC; setCameraPreset(3); break;
-            case 8: id="AC_EPR"; filter=AC; setCameraPreset(3); break;
+            case 2: id="AC_COMPRESSOR"; filter=AC; setCameraPreset(2); break;
+            case 3: id="AC_CONDENSER"; filter=HIGH; setCameraPreset(1); break;
+            case 4: id="AC_EVAPORATOR"; filter=AC; setCameraPreset(3); break;
+            case 5: id="AC_RECEIVER_DRIER"; filter=AC; setCameraPreset(1); break;
+            case 6: id="AC_DISCHARGE_PORT"; filter=HIGH; setCameraPreset(2); break;
+            case 7: id="AC_RECEIVER_DRIER"; filter=HIGH; setCameraPreset(1); break;
+            case 8: id="AC_LOW_SERVICE_PORT"; filter=AC; setCameraPreset(1); break;
             default: id="AC_HIGH_SERVICE_PORT"; filter=AC; setCameraPreset(1); break;
         }
         selected=findPart(id);
