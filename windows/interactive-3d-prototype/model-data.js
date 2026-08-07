@@ -143,6 +143,14 @@ export const COMPONENTS = [
     mountTo: 'ENGINE_1UZ_FE', location: 'Front face of engine', geometryStatus: 'service_identification', important: true, serviceRelevance: 'Engine off and battery isolation required before belt-area inspection.', notes: 'Belt path is representative, not a replacement routing diagram.', tags: ['engine', 'engine-bay', 'accessory-drive']
   },
   {
+    id: 'ENGINE_SPARK_PLUG_WIRING', displayName: 'Spark plugs and ignition wiring', aliases: ['plug wires', 'ignition leads'], system: 'ENGINE', function: 'Shows the eight V8 plug wells, boots and routed ignition leads on both cylinder banks.',
+    connectsTo: ['ENGINE_1UZ_FE'], fluidType: 'ignition voltage', pressureSide: 'NONE', confidence: 'high-form / approximate-routing', source: '1UZ-FE service illustrations and user engine-bay photos', mountTo: 'ENGINE_1UZ_FE', location: 'Both valve-cover banks', geometryStatus: 'service_detail_simplified', important: true, tags: ['engine', 'electrical', 'ignition']
+  },
+  {
+    id: 'ENGINE_THROTTLE_POSITION_SENSOR_WIRING', displayName: 'Throttle position sensor and wiring', aliases: ['TPS', 'throttle sensor'], system: 'ENGINE', function: 'Identifies the throttle shaft sensor and its short three-wire connector loom.',
+    connectsTo: ['ENGINE_1UZ_FE'], fluidType: 'sensor signal', pressureSide: 'NONE', confidence: 'high-location / simplified-form', source: '1UZ-FE throttle-body service layout', mountTo: 'ENGINE_1UZ_FE', location: 'Throttle-body shaft at front of intake plenum', geometryStatus: 'service_detail_simplified', important: true, tags: ['engine', 'electrical', 'intake']
+  },
+  {
     id: 'ENGINE_ALTERNATOR', displayName: 'Alternator', aliases: ['generator'], system: 'ELECTRICAL', function: 'Charges the electrical system and provides an accessory-drive landmark.',
     connectsTo: ['ENGINE_ACCESSORY_DRIVE'], fluidType: 'electricity / mechanical power', pressureSide: 'NONE', confidence: 'approximate', source: 'licensed 1UZ cutaway photos',
     mountTo: 'ENGINE_1UZ_FE', location: 'Lower front accessory drive', geometryStatus: 'recognizable_simplified', important: false, serviceRelevance: 'Nearby access landmark.', notes: 'Mounting side is photo-estimated.', tags: ['landmark', 'electrical', 'engine-bay']
@@ -184,6 +192,10 @@ export const COMPONENTS = [
     function: 'Couples the belt-driven pulley to the compressor shaft when commanded.', connectsTo: ['ENGINE_ACCESSORY_DRIVE', 'AC_COMPRESSOR', 'ELECTRICAL_AC_HARNESS'],
     fluidType: 'mechanical power / electricity', pressureSide: 'NONE', confidence: 'high', source: 'EPC compressor 17822848', mountTo: 'AC_COMPRESSOR',
     location: 'Forward face of compressor', geometryStatus: 'close_inspection', important: true, notes: 'Grooved pulley, clutch face, hub bolt and electrical lead are represented.', tags: ['ac', 'engine-bay', 'hardware']
+  },
+  {
+    ...commonAC, id: 'AC_COMPRESSOR_CLUTCH_WIRING', displayName: 'Compressor clutch wiring', aliases: ['compressor electrical lead'], function: 'Supplies the electromagnetic clutch at the compressor pulley.',
+    connectsTo: ['AC_COMPRESSOR_CLUTCH'], fluidType: '12 V clutch power', pressureSide: 'NONE', confidence: 'high-location / simplified-routing', source: 'A/C compressor service illustrations', mountTo: 'AC_COMPRESSOR_CLUTCH', location: 'Forward compressor clutch and nearby harness', geometryStatus: 'service_detail_simplified', important: false, tags: ['ac', 'engine-bay', 'electrical']
   },
   {
     ...commonAC, id: 'AC_COMPRESSOR_BRACKET', displayName: 'Compressor mounting bracket', aliases: ['A/C bracket'], function: 'Mounts the compressor to the lower front engine.',

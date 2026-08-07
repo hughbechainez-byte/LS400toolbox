@@ -826,6 +826,44 @@ function buildEngine() {
   const throttle=cylinder(.105,.17,0xb8c0c1,'x',{metalness:.72,roughness:.33,segments:34});
   throttle.position.set(-.22,.39,-.30);
   engine.add(throttle);
+  // 1UZ-FE service details: eight ceramic plug wells, boots and the separate
+  // ignition harness.  These are intentionally low-poly but remain readable
+  // in the close engine camera.
+  const ignition = new THREE.Group();
+  for (const side of [-1, 1]) {
+    const distributor = cylinder(.035,.07,0x1b2022,'y',{roughness:.72,segments:16});
+    distributor.position.set(-.29, .34, side*.10);
+    ignition.add(distributor);
+    for (let i=0;i<4;i++) {
+      const z = -.30 + i*.19;
+      const well = cylinder(.026,.10,0xe6e7df,'y',{metalness:.18,roughness:.48,segments:16});
+      well.position.set(-.08, .33, side*(.15 + i*.025));
+      ignition.add(well);
+      const boot = cylinder(.035,.045,0x171b1d,'y',{roughness:.82,segments:16});
+      boot.position.set(-.08, .405, side*(.15 + i*.025));
+      ignition.add(boot);
+      const lead = tube([[-.29,.39,side*.10],[-.19,.44,side*(.115+i*.018)],[-.08,.43,side*(.15+i*.025)]],.009,0x17191a,{roughness:.9,segments:12,radialSegments:6});
+      ignition.add(lead);
+    }
+  }
+  registerComponent(ignition,'ENGINE_SPARK_PLUG_WIRING',{minLod:1});
+  engine.add(ignition);
+
+  // Throttle-position sensor and its short three-wire loom at the throttle
+  // shaft, rather than an unlabeled cylinder floating beside the plenum.
+  const tps = new THREE.Group();
+  const sensorBody = roundedBox(.07,.055,.10,.014,0x252b2d,{roughness:.7,metalness:.18});
+  sensorBody.position.set(-.22,.39,-.385);
+  tps.add(sensorBody);
+  const connector = roundedBox(.045,.045,.065,.01,0x171b1d,{roughness:.82});
+  connector.position.set(-.22,.345,-.435);
+  tps.add(connector);
+  for (let i=0;i<3;i++) {
+    const wire=tube([[-.22-i*.012,.34,-.46],[-.20-i*.012,.25,-.55],[-.12-i*.012,.20,-.60]],.0045,[0x17191a,0xb9a52e,0x384b57][i],{roughness:.88,segments:10,radialSegments:5});
+    tps.add(wire);
+  }
+  registerComponent(tps,'ENGINE_THROTTLE_POSITION_SENSOR_WIRING',{minLod:1});
+  engine.add(tps);
   for (const z of [-.41,-.28,-.16,.02,.18,.34]) {
     const seam=box(.70,.018,.012,0x8e9698,{metalness:.6,roughness:.4});
     seam.position.set(0,.06,z);
@@ -976,6 +1014,13 @@ function buildCompressor() {
     rib.userData.minLod=2;
     compressor.add(rib);
   }
+  const bodySeam=torus(.126,.006,0x697174,'z',{metalness:.55,roughness:.46,tubularSegments:32});
+  bodySeam.position.z=-.02;
+  compressor.add(bodySeam);
+  const oilPlug=makeBolt(.012,.025);
+  oilPlug.position.set(.11,.03,.08);
+  oilPlug.rotation.x=Math.PI/2;
+  compressor.add(oilPlug);
   registerComponent(compressor,'AC_COMPRESSOR',{minLod:1});
 
   const clutch = new THREE.Group();
@@ -1006,6 +1051,9 @@ function buildCompressor() {
     placeVehicle(port,point);
     registerComponent(port,id,{minLod:3});
   }
+  const clutchLead = tube([[.47,.40,.53],[.50,.40,.59],[.54,.38,.62]],.006,0x171b1d,{roughness:.9,segments:16,radialSegments:6});
+  clutchLead.userData.minLod=2;
+  registerComponent(clutchLead,'AC_COMPRESSOR_CLUTCH_WIRING',{minLod:2});
 }
 
 function buildReceiverAndServiceDetails() {
