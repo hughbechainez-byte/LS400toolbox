@@ -22,6 +22,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private FloatBuffer cube, cylinder, torus, lineBuffer;
     private int cylinderVertices,torusVertices;
     private int program,posLoc,colorLoc,mvpLoc,width,height,filter=0;
+    private boolean windowsDetailParity=false;
     private float yaw=0f,pitch=23f,distance=4.8f,targetX=0,targetY=.65f,targetZ=0;
     private volatile float pickX=-1,pickY=-1;
     private Part selected;
@@ -54,7 +55,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         Matrix.setLookAtM(view,0,ex,ey,ez,targetX,targetY,targetZ,0,1,0); Matrix.multiplyMM(vp,0,projection,0,view,0);
         drawGround();
         for(Part p:parts) if(visible(p.category)) drawPart(p,p==selected);
-        for(Part p:decor) if(visible(p.category)) drawPart(p,false);
+        if(windowsDetailParity) for(Part p:decor) if(visible(p.category)) drawPart(p,false);
         for(Route r:routes) if(visible(r.category)) drawRoute(r);
         if(pickX>=0){performPick(pickX,pickY);pickX=-1;}
     }
@@ -84,6 +85,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private void performPick(float sx,float sy){ Part best=null;float bestD=90f;for(Part p:parts){if(!visible(p.category))continue;float[] v={p.x,p.y,p.z,1},clip=new float[4];Matrix.multiplyMV(clip,0,vp,0,v,0);if(clip[3]<=0)continue;float px=(clip[0]/clip[3]*.5f+.5f)*width,py=(.5f-clip[1]/clip[3]*.5f)*height;float d=(float)Math.hypot(px-sx,py-sy);if(d<bestD){bestD=d;best=p;}}selected=best;if(best!=null)info.accept(best.id+"  •  "+best.name+"\n"+best.note); }
     public void pick(float x,float y){pickX=x;pickY=y;}
     public void setFilter(int value){filter=value;selected=null;}
+    public void setWindowsDetailParity(boolean enabled){windowsDetailParity=enabled;info.accept(enabled?"WINDOWS DETAIL PARITY ON — full recognition geometry, fin fields, fan blades, engine runners and service hardware":"Android detail mode — lightweight recognition geometry");}
     public void orbit(float dx,float dy){yaw-=dx*.16f;pitch=Math.max(-5,Math.min(72,pitch-dy*.13f));}
     public void zoom(float factor){distance=Math.max(2.0f,Math.min(10f,distance/factor));}
     public void resetCamera(){setCameraPreset(0);}
@@ -214,6 +216,19 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         detailCylinder(LOW,.28f,.45f,.64f,.09f,.070f,.070f,low);
         for(float z:new float[]{.49f,.58f,.67f,.76f}) detailTorus(AC,.60f,-.72f,z,.025f,.14f,.14f,metal).rx=90;
         for(float left:new float[]{-.68f,.68f}) for(float f:new float[]{-.45f,-1.0f,-1.45f}) detailBox(LANDMARK,f,left,1.57f,.055f,1.35f,.025f,bodyEdge).rx=-76;
+        // Extra engine-bay recognition detail exposed by Windows parity mode:
+        // eight plug wells/boots, routed ignition leads and the TPS connector.
+        for(float side:new float[]{-.29f,.29f}) for(int i=0;i<4;i++){
+            float z=.78f+i*.035f;
+            detailCylinder(LANDMARK,-.08f,side,z,.050f,.028f,.028f,new float[]{.90f,.91f,.86f,1}).rx=90;
+            detailCylinder(LANDMARK,-.08f,side,z+.035f,.025f,.038f,.038f,dark).rx=90;
+            float start=side<0?-.32f:.32f;
+            detailCylinder(LANDMARK,-.20f,side*.12f+i*.006f,.92f,.012f,.012f,.012f,dark).rz=side<0?-18:18;
+            detailBox(LANDMARK,-.14f,side*.22f+i*.008f,.92f,.10f,.010f,.010f,dark);
+        }
+        detailBox(LANDMARK,-.22f,-.38f,.38f,.07f,.06f,.09f,dark);
+        detailBox(LANDMARK,-.22f,-.43f,.35f,.045f,.05f,.065f,new float[]{.10f,.13f,.14f,1});
+        for(int i=0;i<3;i++) detailCylinder(LANDMARK,-.22f-.025f*i,-.47f-.012f*i,.31f,.008f,.008f,.008f,new float[]{.85f-.15f*i,.65f,.18f+.18f*i,1}).rz=90;
 
         // Seven refrigerant routes plus nine surrounding service routes = 16.
         route("AC_DISCHARGE_LINE",HIGH,high,new float[][]{{.30f,.40f,.58f},{.50f,.38f,.68f},{.72f,.55f,.70f},{.64f,.61f,.70f}});

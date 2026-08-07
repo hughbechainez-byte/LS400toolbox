@@ -31,5 +31,6 @@ public final class LS400Surface extends GLSurfaceView {
     @Override public boolean onTouchEvent(MotionEvent event){ scale.onTouchEvent(event); gestures.onTouchEvent(event); return true; }
     public void setFilter(int mode){ renderer.setFilter(mode); }
     public void setCameraPreset(int preset){ renderer.setCameraPreset(preset); }
+    public void setWindowsDetailParity(boolean enabled){ renderer.setWindowsDetailParity(enabled); }
     public void showWalkthroughStep(int step){ renderer.showWalkthroughStep(step); }
 }

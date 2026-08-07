@@ -32,6 +32,7 @@ public final class MainActivity extends Activity {
     private TextView photoStatus;
     private Uri pendingCapture;
     private int photoSpot;
+    private boolean windowsDetailParity;
     private final List<Uri> photoUris = new ArrayList<>();
     private static final String[] PHOTO_SPOTS = {
         "Front passenger headlight / receiver-drier",
@@ -119,6 +120,13 @@ public final class MainActivity extends Activity {
         Button photoMatch = cameraButton("PHOTO MATCH",0);
         photoMatch.setOnClickListener(v -> togglePhotoPanel());
         top.addView(photoMatch);
+        Button parity = cameraButton("WINDOWS DETAIL: OFF",0);
+        parity.setOnClickListener(v -> {
+            windowsDetailParity = !windowsDetailParity;
+            parity.setText(windowsDetailParity ? "WINDOWS DETAIL: ON" : "WINDOWS DETAIL: OFF");
+            surface.setWindowsDetailParity(windowsDetailParity);
+        });
+        top.addView(parity);
         FrameLayout.LayoutParams topParams = new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);
         root.addView(top,topParams);
 
