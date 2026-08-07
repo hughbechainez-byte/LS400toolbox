@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {
   VEHICLE, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS,
-  REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS
+  REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH
 } from './model-data.js';
 
 const stage = document.getElementById('stage');
@@ -34,6 +34,7 @@ const state = {
   referenceOpacity: .55,
   serviceJobMode: false,
   serviceProfile: 'UNKNOWN',
+  serviceStep: 0,
   allowInside: false,
   cameraTween: null,
   validationReport: null,
@@ -2064,6 +2065,64 @@ function downloadValidation() {
   setTimeout(()=>URL.revokeObjectURL(link.href),1000);
 }
 
+function planningGateReady() {
+  const profile=document.getElementById('refrigerantProfile').value;
+  return ['R12','R134A'].includes(profile)
+    && document.getElementById('recoveryComplete').checked
+    && document.getElementById('zeroPressureVerified').checked;
+}
+
+function renderServiceWalkthrough() {
+  const step=AC_SERVICE_WALKTHROUGH[state.serviceStep];
+  const total=AC_SERVICE_WALKTHROUGH.length;
+  const card=document.getElementById('serviceWalkthroughCard');
+  if (!step || !card) return;
+  const guarded=Boolean(step.requiresPlanningGate);
+  const gateNote=guarded && !planningGateReady()
+    ? '<p class="walkthrough-lock">Locate-only view: recovery, verified refrigerant and independently verified zero pressure must be confirmed before any boundary-planning overlay is enabled.</p>'
+    : guarded ? '<p class="walkthrough-ready">Boundary-planning overlay is enabled. It is still not authorization to open or flush the circuit.</p>' : '';
+  card.innerHTML=`
+    <div class="walkthrough-kicker">STEP ${state.serviceStep+1} OF ${total}${guarded?' · SAFETY-GATED':''}</div>
+    <h3>${escapeHtml(step.title)}</h3>
+    <p>${escapeHtml(step.target)}</p>
+    <div class="walkthrough-detail">${escapeHtml(step.detail)}</div>
+    <dl>
+      <div><dt>Find it from</dt><dd>${escapeHtml(step.landmarks)}</dd></div>
+      <div><dt>Boundary</dt><dd>${escapeHtml(step.boundaries)}</dd></div>
+      <div><dt>Evidence</dt><dd>${escapeHtml(step.source)}</dd></div>
+    </dl>${gateNote}`;
+  document.getElementById('serviceStepCount').textContent=`${state.serviceStep+1} / ${total}`;
+  document.getElementById('serviceStepPrevious').disabled=state.serviceStep===0;
+  document.getElementById('serviceStepNext').disabled=state.serviceStep===total-1;
+}
+
+function setServiceWalkthroughStep(index, focus = true) {
+  state.serviceStep=THREE.MathUtils.clamp(index,0,AC_SERVICE_WALKTHROUGH.length-1);
+  const step=AC_SERVICE_WALKTHROUGH[state.serviceStep];
+  state.isolation=step.isolation ?? 'AC_COMPLETE';
+  state.detailLevel=3;
+  state.bodyTransparent=true;
+  document.getElementById('isolation').value=state.isolation;
+  document.getElementById('detailLevel').value='3';
+  document.getElementById('bodyTransparent').checked=true;
+  if (state.isolation==='AC_CABIN') {
+    state.cutawayFirewall=true;
+    state.cutawayHvac=true;
+    document.getElementById('cutawayFirewall').checked=true;
+    document.getElementById('cutawayHvac').checked=true;
+  }
+  updateVisibility();
+  state.selectedId=step.primaryId;
+  state.tracedRouteIds=new Set(step.routes ?? []);
+  state.serviceJobMode=Boolean(step.requiresPlanningGate && planningGateReady());
+  const picker=document.getElementById('partSelect');
+  if ([...picker.options].some(option=>option.value===step.primaryId)) picker.value=step.primaryId;
+  renderSelectionCard();
+  refreshHighlight();
+  renderServiceWalkthrough();
+  if (focus) setCameraPreset(step.camera);
+}
+
 function updateServiceGate() {
   const profile=document.getElementById('refrigerantProfile').value;
   const recovered=document.getElementById('recoveryComplete').checked;
@@ -2072,7 +2131,7 @@ function updateServiceGate() {
   const status=document.getElementById('flushGateStatus');
   state.serviceProfile=profile;
   const contaminated=profile==='CONTAMINATED';
-  const ready=['R12','R134A'].includes(profile)&&recovered&&zeroPressure;
+  const ready=planningGateReady();
   button.disabled=!ready;
   status.className=`gate-status${ready?' ready':contaminated?' stop':''}`;
   if(contaminated) status.textContent='STOP: mixed, unknown, or contaminated refrigerant needs diagnosis and recovery planning. No flush-boundary overlay is enabled.';
@@ -2085,6 +2144,7 @@ function updateServiceGate() {
     state.tracedRouteIds.clear();
     refreshHighlight();
   }
+  renderServiceWalkthrough();
 }
 
 function showServicePlanningMap() {
@@ -2194,6 +2254,9 @@ function bindControls() {
   document.getElementById('downloadValidation').addEventListener('click',downloadValidation);
   for(const id of ['refrigerantProfile','recoveryComplete','zeroPressureVerified']) document.getElementById(id).addEventListener('change',updateServiceGate);
   document.getElementById('showFlushMap').addEventListener('click',showServicePlanningMap);
+  document.getElementById('serviceStepPrevious').addEventListener('click',()=>setServiceWalkthroughStep(state.serviceStep-1));
+  document.getElementById('serviceStepNext').addEventListener('click',()=>setServiceWalkthroughStep(state.serviceStep+1));
+  document.getElementById('serviceStepView').addEventListener('click',()=>setServiceWalkthroughStep(state.serviceStep));
 }
 
 function setHoodUi(angle) {
@@ -2246,6 +2309,7 @@ populateControls();
 bindControls();
 configureComparison();
 updateServiceGate();
+renderServiceWalkthrough();
 setCameraPreset('FULL_VEHICLE_HOOD_OPEN_VIEW',true);
 updateVisibility();
 resizeRenderer();

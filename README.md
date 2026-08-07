@@ -2,6 +2,10 @@
 
 Offline service-orientation prototypes for the 1990 Lexus LS400 (UCF10), with emphasis on A/C component identification and high/low-side routing.
 
+## v1.5.0 guided A/C locator
+
+Windows now presents a 10-step RM144U/EPC/AC001-98 guided flush-and-retrofit locator: configuration, recovery gate, receiver/drier, compressor, condenser, each external line group, HVAC controls, reassembly and charge verification. Android has matching step navigation that moves to the relevant part/camera. It distinguishes original R-12 from the Lexus R-134a retrofit branch, corrects the factory receiver assembly to `88470-50010`, and keeps any flush-boundary overlay locked until refrigerant state, recovery and independent zero-pressure checks are confirmed.
+
 ## Downloads
 
 Use the GitHub Releases page:

@@ -94,6 +94,28 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         else {yaw=0;pitch=23;distance=4.8f;targetX=0;targetY=.65f;targetZ=0;}
     }
 
+    public void showWalkthroughStep(int step){
+        String id;
+        switch(step){
+            case 0: id="AC_RECEIVER_DRIER"; filter=AC; setCameraPreset(1); break;
+            case 1: id="AC_HIGH_SERVICE_PORT"; filter=HIGH; setCameraPreset(1); break;
+            case 2: id="AC_LOW_SERVICE_PORT"; filter=AC; setCameraPreset(1); break;
+            case 3: id="AC_RECEIVER_DRIER"; filter=HIGH; setCameraPreset(1); break;
+            case 4: id="AC_COMPRESSOR"; filter=AC; setCameraPreset(2); break;
+            case 5: id="AC_CONDENSER"; filter=HIGH; setCameraPreset(1); break;
+            case 6: id="AC_RECEIVER_DRIER"; filter=AC; setCameraPreset(1); break;
+            case 7: id="AC_EXPANSION_VALVE"; filter=AC; setCameraPreset(3); break;
+            case 8: id="AC_EPR"; filter=AC; setCameraPreset(3); break;
+            default: id="AC_HIGH_SERVICE_PORT"; filter=AC; setCameraPreset(1); break;
+        }
+        selected=findPart(id);
+    }
+
+    private Part findPart(String id){
+        for(Part p:parts) if(p.id.equals(id)) return p;
+        return null;
+    }
+
     private void buildModel(){
         float[] body={.38f,.055f,.07f,1},bodyEdge={.56f,.13f,.16f,1},metal={.67f,.71f,.72f,1},aluminum={.78f,.82f,.83f,1},dark={.08f,.11f,.13f,1},rubber={.04f,.055f,.065f,1},glass={.35f,.57f,.68f,.62f},fin={.38f,.46f,.49f,1},high={1f,.56f,.12f,1},low={.20f,.60f,1f,1},coolant={.18f,.45f,.78f,1},wire={.90f,.73f,.20f,1},hvac={.48f,.42f,.80f,1};
 
@@ -134,7 +156,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("AC_CONDENSER","A/C condenser",HIGH,.75f,0,.64f,.07f,1.30f,.58f,fin,"Thin high-side heat exchanger ahead of the radiator.");
         cylinder("AC_CONDENSER_INLET","Condenser inlet fitting",HIGH,.64f,.61f,.70f,.08f,.06f,.06f,high,"Receives compressor discharge vapor.");
         cylinder("AC_CONDENSER_OUTLET","Condenser outlet fitting",HIGH,.64f,-.62f,.48f,.08f,.06f,.06f,high,"Sends high-pressure liquid toward receiver-drier.");
-        cylinder("AC_RECEIVER_DRIER","Receiver-drier 88470-50020",HIGH,.60f,-.72f,.59f,.34f,.12f,.12f,aluminum,"Early-production passenger-side support canister with top pipe block. Replace as required; never flush through it.");
+        cylinder("AC_RECEIVER_DRIER","Receiver-drier 88470-50010",HIGH,.60f,-.72f,.59f,.34f,.12f,.12f,aluminum,"Passenger-side support canister with top pipe block. Installed retrofit history controls replacement; never flush through it.");
         box("AC_RECEIVER_DRIER_BRACKET","Receiver-drier clamp and bracket",AC,.60f,-.78f,.59f,.30f,.05f,.10f,metal,"Clamp and radiator-support mounting point.");
         cylinder("AC_PRESSURE_SWITCH","Pressure switch 88645-50010",HIGH,.58f,-.72f,.79f,.08f,.07f,.07f,wire,"Early-production switch on the receiver top/liquid-pipe block.");
         cylinder("AC_SIGHT_GLASS","Receiver sight glass",HIGH,.60f,-.72f,.76f,.04f,.05f,.05f,new float[]{.40f,.85f,.90f,.9f},"Original-system inspection feature near receiver top.");

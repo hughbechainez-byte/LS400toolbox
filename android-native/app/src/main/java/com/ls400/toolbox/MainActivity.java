@@ -18,6 +18,20 @@ public final class MainActivity extends Activity {
     private LS400Surface surface;
     private TextView info;
     private ImageView reference;
+    private int guideStep;
+    private TextView guideLabel;
+    private static final String[][] GUIDE = {
+        {"Configuration", "Read labels, adapters, receiver and history. Unknown or mixed refrigerant: stop for professional identification."},
+        {"R-12 or retrofit", "Use one verified branch. AC001-98 R-134a retrofit uses its own receiver, adapters, PAG oil and mass charge."},
+        {"Recovery gate", "Recover verified refrigerant and independently verify zero pressure before any sealed joint is considered."},
+        {"Receiver/drier", "Passenger-front, behind the right headlamp. Replace/isolate it; never flush through it."},
+        {"Compressor", "Low front driver side. Identify the small discharge and larger suction ports; isolate, never generic-flush."},
+        {"Condenser", "Behind grille/bumper, ahead of radiator and fan pair. Installed core design decides replacement versus flush evaluation."},
+        {"External lines", "Trace one labeled bare line section at a time: discharge, condenser-to-receiver, receiver-to-firewall, suction."},
+        {"HVAC controls", "Passenger firewall/case: expansion valve and EPR are isolate-or-replace controls, not flush-through parts."},
+        {"Reassemble", "Use configuration-matched oil, O-rings and factory joint data; verify every highlighted joint against the manual."},
+        {"Evacuate & charge", "Qualified procedure only: leak-test and charge by verified mass, not R-134a sight-glass clarity."}
+    };
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -44,7 +58,7 @@ public final class MainActivity extends Activity {
         TextView title = text("LS400 TOOLBOX  •  NATIVE OFFLINE", 18, Color.WHITE);
         title.setTypeface(null,1);
         top.addView(title);
-        TextView subtitle = text("Dec 1989 UCF10L EPC map • 49 components • 16 routes • tap a part", 12, Color.rgb(177,198,211));
+        TextView subtitle = text("RM144U / EPC map • 49 components • 16 routes • guided A/C locator", 12, Color.rgb(177,198,211));
         top.addView(subtitle);
 
         LinearLayout buttons = new LinearLayout(this);
@@ -65,6 +79,23 @@ public final class MainActivity extends Activity {
         compare.setOnClickListener(v -> { boolean show=reference.getVisibility()!=View.VISIBLE; reference.setVisibility(show?View.VISIBLE:View.GONE); showInfo(show?"Reference comparison shown beside the live native 3D view":"Reference comparison hidden"); });
         cameras.addView(compare);
         top.addView(cameras);
+        LinearLayout guide = new LinearLayout(this);
+        guide.setOrientation(LinearLayout.HORIZONTAL);
+        guide.setPadding(0,dp(3),0,0);
+        Button previous = cameraButton("◀ STEP",0);
+        previous.setOnClickListener(v -> showGuideStep(guideStep-1));
+        guide.addView(previous);
+        guideLabel = text("1/10  CONFIGURATION", 10, Color.rgb(112,224,203));
+        guideLabel.setGravity(Gravity.CENTER);
+        guideLabel.setBackgroundColor(Color.rgb(17,61,72));
+        LinearLayout.LayoutParams guideTextParams = new LinearLayout.LayoutParams(0,dp(35),2);
+        guideTextParams.setMargins(dp(2),dp(3),dp(2),0);
+        guideLabel.setLayoutParams(guideTextParams);
+        guide.addView(guideLabel);
+        Button next = cameraButton("STEP ▶",0);
+        next.setOnClickListener(v -> showGuideStep(guideStep+1));
+        guide.addView(next);
+        top.addView(guide);
         FrameLayout.LayoutParams topParams = new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);
         root.addView(top,topParams);
 
@@ -112,6 +143,13 @@ public final class MainActivity extends Activity {
     }
 
     private void showInfo(String value) { runOnUiThread(() -> info.setText(value)); }
+    private void showGuideStep(int requested) {
+        guideStep = Math.max(0, Math.min(GUIDE.length-1, requested));
+        String[] step = GUIDE[guideStep];
+        guideLabel.setText((guideStep+1)+"/"+GUIDE.length+"  "+step[0].toUpperCase());
+        surface.showWalkthroughStep(guideStep);
+        showInfo("STEP "+(guideStep+1)+" — "+step[0]+"\n"+step[1]+"\nLocator only; recovery, zero-pressure verification and the factory procedure govern any opening or flush decision.");
+    }
     private int dp(int value) { return Math.round(value*getResources().getDisplayMetrics().density); }
     @Override protected void onPause(){ super.onPause(); surface.onPause(); }
     @Override protected void onResume(){ super.onResume(); surface.onResume(); }
