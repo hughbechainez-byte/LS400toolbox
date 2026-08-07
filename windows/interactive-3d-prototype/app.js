@@ -1118,6 +1118,16 @@ function buildServicePort(id,point,color) {
   placeVehicle(group,point);
   const tee=cylinder(.015,.058,COLORS.aluminum,'y',{metalness:.76,roughness:.32,segments:16});
   group.add(tee);
+  // Retrofit service-adapter collar: visually distinguishes the R-134a
+  // equipment interface from the original R-12 valve core location.
+  const adapter=roundedBox(.045,.026,.045,.008,0x969fa1,{metalness:.72,roughness:.34});
+  adapter.position.y=.022;
+  adapter.userData.minLod=2;
+  group.add(adapter);
+  const adapterRing=torus(.027,.004,0xb6bec0,'y',{metalness:.78,roughness:.30,tubularSegments:20});
+  adapterRing.position.y=.038;
+  adapterRing.userData.minLod=2;
+  group.add(adapterRing);
   const cap=cylinder(.021,.033,color,'y',{metalness:.18,roughness:.62,segments:18});
   cap.position.y=.044;
   group.add(cap);
