@@ -1,6 +1,11 @@
 package com.ls400.toolbox;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.content.ContentValues;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -13,6 +18,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class MainActivity extends Activity {
     private LS400Surface surface;
@@ -20,6 +27,19 @@ public final class MainActivity extends Activity {
     private ImageView reference;
     private int guideStep;
     private TextView guideLabel;
+    private FrameLayout root;
+    private LinearLayout photoPanel;
+    private TextView photoStatus;
+    private Uri pendingCapture;
+    private int photoSpot;
+    private final List<Uri> photoUris = new ArrayList<>();
+    private static final String[] PHOTO_SPOTS = {
+        "Front passenger headlight / receiver-drier",
+        "Passenger-side engine bay / compressor",
+        "Top-down engine / throttle body and TPS",
+        "Driver-side engine / spark-plug wiring",
+        "Low front / compressor clutch and hoses"
+    };
     private static final String[][] GUIDE = {
         {"Decision gate", "Clean system: no flush. Wrong oil/additives: conditional flush. Metal, leak-stop or unknown refrigerant: replace-plan, not generic flushing."},
         {"Recovery gate", "Use certified recovery equipment, identify refrigerant and verify zero pressure. Service ports are not whole-loop flush ports."},
@@ -38,7 +58,7 @@ public final class MainActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setStatusBarColor(Color.rgb(8,17,26));
         getWindow().setNavigationBarColor(Color.rgb(8,17,26));
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         surface = new LS400Surface(this, this::showInfo);
         root.addView(surface, new FrameLayout.LayoutParams(-1,-1));
         reference = new ImageView(this);
@@ -96,6 +116,9 @@ public final class MainActivity extends Activity {
         next.setOnClickListener(v -> showGuideStep(guideStep+1));
         guide.addView(next);
         top.addView(guide);
+        Button photoMatch = cameraButton("PHOTO MATCH",0);
+        photoMatch.setOnClickListener(v -> togglePhotoPanel());
+        top.addView(photoMatch);
         FrameLayout.LayoutParams topParams = new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);
         root.addView(top,topParams);
 
@@ -111,6 +134,79 @@ public final class MainActivity extends Activity {
             getWindow().getInsetsController().hide(WindowInsets.Type.statusBars());
             getWindow().getInsetsController().setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
         }
+    }
+
+    private void togglePhotoPanel() {
+        if (photoPanel != null) {
+            root.removeView(photoPanel);
+            photoPanel = null;
+            return;
+        }
+        photoPanel = new LinearLayout(this);
+        photoPanel.setOrientation(LinearLayout.VERTICAL);
+        photoPanel.setPadding(dp(14),dp(12),dp(14),dp(12));
+        photoPanel.setBackgroundColor(Color.argb(245,8,17,26));
+        TextView heading = text("PHOTO MATCH  •  MODEL REFERENCE INTAKE",16,Color.WHITE);
+        heading.setTypeface(null,1); photoPanel.addView(heading);
+        TextView equivalent = text("Capture the real area from the shown angle. The matching in-model camera is selected automatically.",12,Color.rgb(177,198,211));
+        equivalent.setPadding(0,dp(4),0,dp(8)); photoPanel.addView(equivalent);
+        photoStatus = text("TARGET 1/"+PHOTO_SPOTS.length+"  "+PHOTO_SPOTS[photoSpot]+"\nIn-model equivalent: passenger-front service camera",13,Color.rgb(112,224,203));
+        photoStatus.setBackgroundColor(Color.rgb(17,61,72)); photoStatus.setPadding(dp(10),dp(8),dp(10),dp(8)); photoPanel.addView(photoStatus);
+        LinearLayout actions = new LinearLayout(this); actions.setOrientation(LinearLayout.HORIZONTAL);
+        Button previous = cameraButton("PREV",0); previous.setOnClickListener(v -> setPhotoSpot(photoSpot-1)); actions.addView(previous);
+        Button next = cameraButton("NEXT",0); next.setOnClickListener(v -> setPhotoSpot(photoSpot+1)); actions.addView(next);
+        Button capture = cameraButton("TAKE PHOTO",0); capture.setOnClickListener(v -> takePhoto()); actions.addView(capture);
+        Button importButton = cameraButton("IMPORT",0); importButton.setOnClickListener(v -> importPhoto()); actions.addView(importButton);
+        photoPanel.addView(actions);
+        Button send = cameraButton("SEND PHOTO SET ("+photoUris.size()+")",0); send.setOnClickListener(v -> sharePhotos()); photoPanel.addView(send);
+        TextView note = text("Photos stay on-device until you choose SEND. Include a tape measure or known fastener when possible; photos are review evidence, not automatic CAD edits.",11,Color.rgb(210,229,237));
+        note.setPadding(0,dp(8),0,0); photoPanel.addView(note);
+        FrameLayout.LayoutParams panelParams = new FrameLayout.LayoutParams(dp(520),-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+        panelParams.setMargins(0,dp(55),dp(10),dp(55)); root.addView(photoPanel,panelParams);
+    }
+
+    private void setPhotoSpot(int requested) {
+        photoSpot = (requested + PHOTO_SPOTS.length) % PHOTO_SPOTS.length;
+        int preset = photoSpot == 1 || photoSpot == 2 || photoSpot == 3 ? 1 : photoSpot == 4 ? 2 : 0;
+        surface.setCameraPreset(preset);
+        if (photoStatus != null) photoStatus.setText("TARGET "+(photoSpot+1)+"/"+PHOTO_SPOTS.length+"  "+PHOTO_SPOTS[photoSpot]+"\nIn-model equivalent: "+(preset==2?"low compressor service camera":preset==1?"engine-bay service camera":"passenger-front service camera"));
+    }
+
+    private void takePhoto() {
+        String name = "LS400_"+(photoSpot+1)+"_"+System.currentTimeMillis();
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME,name+".jpg");
+        values.put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH,"Pictures/LS400Toolbox");
+        pendingCapture = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
+        if (pendingCapture == null) { showInfo("Could not create a camera photo destination"); return; }
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,pendingCapture);
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivityForResult(intent,41);
+    }
+
+    private void importPhoto() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*"); intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,false); intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent,42);
+    }
+
+    private void sharePhotos() {
+        if (photoUris.isEmpty()) { showInfo("Add at least one photo before sending the photo set"); return; }
+        Intent send = new Intent(Intent.ACTION_SEND_MULTIPLE); send.setType("image/*");
+        send.putParcelableArrayListExtra(Intent.EXTRA_STREAM,new ArrayList<>(photoUris));
+        send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        send.setClipData(ClipData.newRawUri("LS400 photo set",photoUris.get(0)));
+        startActivity(Intent.createChooser(send,"Send LS400 photo set"));
+    }
+
+    @Override protected void onActivityResult(int requestCode,int resultCode,Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        if (resultCode != RESULT_OK) { if (requestCode==41 && pendingCapture!=null) getContentResolver().delete(pendingCapture,null,null); return; }
+        Uri uri = requestCode==41 ? pendingCapture : data == null ? null : data.getData();
+        if (uri != null) { photoUris.add(uri); if (photoPanel != null) showInfo("Added photo for "+PHOTO_SPOTS[photoSpot]+". Total queued: "+photoUris.size()); }
+        pendingCapture = null;
     }
 
     private Button filterButton(String label, int mode) {
