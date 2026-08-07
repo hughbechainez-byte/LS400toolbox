@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {
   VEHICLE, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS,
-  REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE
+  REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE, AC_R134A_RETROFIT_GUIDE
 } from './model-data.js';
 
 const stage = document.getElementById('stage');
@@ -2124,6 +2124,7 @@ function planningGateReady() {
 function activeServiceGuide() {
   if (state.serviceGuideMode==='RECEIVER') return AC_RECEIVER_DRIER_REPLACEMENT_GUIDE;
   if (state.serviceGuideMode==='FLUSH') return AC_FLUSH_AND_EVACUATION_GUIDE;
+  if (state.serviceGuideMode==='RETROFIT') return AC_R134A_RETROFIT_GUIDE;
   return AC_SERVICE_WALKTHROUGH;
 }
 
@@ -2134,6 +2135,8 @@ function renderServiceWalkthrough() {
   const card=document.getElementById('serviceWalkthroughCard');
   if (!step || !card) return;
   const guarded=Boolean(step.requiresPlanningGate);
+  const reference=step.referenceId ? REFERENCE_IMAGES.find(item=>item.id===step.referenceId) : null;
+  const referenceMarkup=reference ? `<figure class="walkthrough-reference"><img src="${escapeHtml(reference.src)}" alt="${escapeHtml(reference.label)}"><figcaption>${escapeHtml(reference.label)} · ${escapeHtml(reference.landmarks)}</figcaption></figure>` : '';
   const gateNote=guarded && !planningGateReady()
     ? '<p class="walkthrough-lock">Locate-only view: recovery, verified refrigerant and independently verified zero pressure must be confirmed before any boundary-planning overlay is enabled.</p>'
     : guarded ? '<p class="walkthrough-ready">Boundary-planning overlay is enabled. It is still not authorization to open or flush the circuit.</p>' : '';
@@ -2141,6 +2144,7 @@ function renderServiceWalkthrough() {
     <div class="walkthrough-kicker">STEP ${state.serviceStep+1} OF ${total}${guarded?' · SAFETY-GATED':''}</div>
     <h3>${escapeHtml(step.title)}</h3>
     <p>${escapeHtml(step.target)}</p>
+    ${referenceMarkup}
     <div class="walkthrough-detail">${escapeHtml(step.detail)}</div>
     <dl>
       <div><dt>Find it from</dt><dd>${escapeHtml(step.landmarks)}</dd></div>
