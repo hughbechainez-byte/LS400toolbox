@@ -807,10 +807,10 @@ function buildEngine() {
   // The 1UZ is the scale anchor for the bay. Keep its full longitudinal and
   // bank width under the intake; hoses must route around this mass, never
   // through a compressed engine placeholder.
-  const block = roundedBox(.78,.58,1.02,.08,0x4c5356,{metalness:.58,roughness:.52});
+  const block = roundedBox(.82,.58,1.12,.08,0x4c5356,{metalness:.58,roughness:.52});
   block.position.y = -.03;
   engine.add(block);
-  const valley = roundedBox(.48,.24,.84,.05,0xaab1b2,{metalness:.72,roughness:.35});
+  const valley = roundedBox(.50,.24,.91,.05,0xaab1b2,{metalness:.72,roughness:.35});
   valley.position.y=.22;
   engine.add(valley);
   addValveCoverDetails(engine,-.29,-.23,'4 CAM 32');
@@ -832,7 +832,7 @@ function buildEngine() {
     }
   }
   const throttle=cylinder(.105,.17,0xb8c0c1,'x',{metalness:.72,roughness:.33,segments:34});
-  throttle.position.set(-.22,.39,-.30);
+  throttle.position.set(.22,.39,-.30);
   engine.add(throttle);
   // 1UZ-FE service details: eight ceramic plug wells, boots and the separate
   // ignition harness.  These are intentionally low-poly but remain readable
@@ -861,13 +861,13 @@ function buildEngine() {
   // shaft, rather than an unlabeled cylinder floating beside the plenum.
   const tps = new THREE.Group();
   const sensorBody = roundedBox(.07,.055,.10,.014,0x252b2d,{roughness:.7,metalness:.18});
-  sensorBody.position.set(-.22,.39,-.385);
+  sensorBody.position.set(.22,.39,-.385);
   tps.add(sensorBody);
   const connector = roundedBox(.045,.045,.065,.01,0x171b1d,{roughness:.82});
-  connector.position.set(-.22,.345,-.435);
+  connector.position.set(.22,.345,-.435);
   tps.add(connector);
   for (let i=0;i<3;i++) {
-    const wire=tube([[-.22-i*.012,.34,-.46],[-.20-i*.012,.25,-.55],[-.12-i*.012,.20,-.60]],.0045,[0x17191a,0xb9a52e,0x384b57][i],{roughness:.88,segments:10,radialSegments:5});
+    const wire=tube([[.22+i*.012,.34,-.46],[.20+i*.012,.25,-.55],[.12+i*.012,.20,-.60]],.0045,[0x17191a,0xb9a52e,0x384b57][i],{roughness:.88,segments:10,radialSegments:5});
     tps.add(wire);
   }
   registerComponent(tps,'ENGINE_THROTTLE_POSITION_SENSOR_WIRING',{minLod:1});
@@ -964,7 +964,7 @@ function buildEngineLandmarks() {
   // side, then a short high bend across the front of the plenum to the
   // throttle body. The bend stays ahead of the engine's front face instead
   // of diagonally crossing the engine volume.
-  const intakeCenterline = [[.02,-.32,.74],[-.04,-.37,.77],[.08,-.40,.82],[.25,-.33,.91],[.32,-.20,.96],[.30,.20,.96]];
+  const intakeCenterline = [[.02,-.32,.74],[-.04,-.40,.77],[.08,-.43,.82],[.22,-.39,.90],[.30,-.30,.96],[.30,-.20,.96]];
   const postMeter = tube(intakeCenterline,.073,0x1b2023,{roughness:.88,metalness:.01,segments:46,radialSegments:16});
   intake.add(postMeter);
   for(let i=0;i<8;i++){
@@ -981,7 +981,7 @@ function buildEngineLandmarks() {
     intake.add(ring);
   }
   // Worm-drive clamps make the two coupler joints legible at a service-camera distance.
-  for (const point of [[.02,-.32,.74],[.30,.20,.96]]) {
+  for (const point of [[.02,-.32,.74],[.30,-.20,.96]]) {
     const clamp=torus(.078,.009,0xa4abad,'z',{roughness:.42,metalness:.72,tubularSegments:28});
     clamp.position.copy(vehicleToWorld(point));
     clamp.rotation.y=.42;
@@ -989,10 +989,69 @@ function buildEngineLandmarks() {
     intake.add(clamp);
   }
   const throttleCoupler=torus(.105,.012,0x242a2d,'x',{roughness:.82,metalness:.08,tubularSegments:30});
-  throttleCoupler.position.copy(vehicleToWorld([.30,.20,.96]));
+  throttleCoupler.position.copy(vehicleToWorld([.30,-.20,.96]));
   throttleCoupler.rotation.z=.34;
   intake.add(throttleCoupler);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
+
+  // The new hood-open references consistently preserve open service corridors
+  // around both towers.  Model the towers and the air-suspension access boxes
+  // as separate landmarks so nearby hoses do not visually occupy that space.
+  const towers = new THREE.Group();
+  for (const left of [-.72,.72]) {
+    const dome=cylinder(.16,.10,0x6b292f,'y',{metalness:.30,roughness:.52,segments:40});
+    dome.position.copy(vehicleToWorld([-.45,left,.70]));
+    towers.add(dome);
+    const cap=cylinder(.075,.035,0x20262a,'y',{metalness:.24,roughness:.70,segments:28});
+    cap.position.copy(vehicleToWorld([-.45,left,.77]));
+    towers.add(cap);
+    for(let i=0;i<3;i++){
+      const angle=i*Math.PI*2/3;
+      const bolt=makeBolt(.009,.020);
+      bolt.position.copy(vehicleToWorld([-.45+Math.cos(angle)*.105,left+Math.sin(angle)*.105,.765]));
+      towers.add(bolt);
+    }
+  }
+  registerComponent(towers,'LANDMARK_FRONT_STRUT_TOWERS',{minLod:1});
+
+  const suspensionHousings = new THREE.Group();
+  for (const left of [-.72,.72]) {
+    const housing=roundedBox(.29,.16,.30,.035,0x252b2e,{roughness:.78,metalness:.06});
+    housing.position.copy(vehicleToWorld([-.83,left,.86]));
+    suspensionHousings.add(housing);
+    const lid=roundedBox(.27,.026,.28,.022,0x181d20,{roughness:.72,metalness:.05});
+    lid.position.copy(vehicleToWorld([-.83,left,.955]));
+    suspensionHousings.add(lid);
+  }
+  registerComponent(suspensionHousings,'LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS',{minLod:1});
+
+  const coolantReservoir = new THREE.Group();
+  const coolantTank=roundedBox(.24,.24,.30,.045,0xd5d0ad,{opacity:.72,roughness:.54,metalness:.01});
+  coolantTank.position.copy(vehicleToWorld([-.08,.52,.75]));
+  coolantReservoir.add(coolantTank);
+  const coolantCap=cylinder(.045,.035,0x24292b,'y',{roughness:.72,segments:24});
+  coolantCap.position.copy(vehicleToWorld([-.12,.50,.895]));
+  coolantReservoir.add(coolantCap);
+  registerComponent(coolantReservoir,'LANDMARK_COOLANT_OVERFLOW_RESERVOIR',{minLod:1});
+
+  const fuseBox = new THREE.Group();
+  const fuseBase=roundedBox(.28,.15,.35,.035,0x20262a,{roughness:.78,metalness:.04});
+  fuseBase.position.copy(vehicleToWorld([-.28,.74,.68]));
+  fuseBox.add(fuseBase);
+  const fuseLid=roundedBox(.27,.030,.34,.022,0x151a1d,{roughness:.72,metalness:.04});
+  fuseLid.position.copy(vehicleToWorld([-.28,.74,.775]));
+  fuseBox.add(fuseLid);
+  registerComponent(fuseBox,'LANDMARK_ENGINE_BAY_FUSE_BOX',{minLod:1});
+
+  const throttleCable = new THREE.Group();
+  const cable=tube([[-.88,.36,.95],[-.66,.25,.97],[-.40,.08,.98],[-.12,-.08,1.00],[.18,-.18,.99],[.30,-.20,.97]],.008,0x252a2c,{roughness:.88,segments:46,radialSegments:7});
+  throttleCable.add(cable);
+  for(const point of [[-.66,.25,.97],[-.40,.08,.98],[-.12,-.08,1.00]]){
+    const clip=roundedBox(.025,.025,.045,.006,0x8c9495,{metalness:.62,roughness:.4});
+    clip.position.copy(vehicleToWorld(point));
+    throttleCable.add(clip);
+  }
+  registerComponent(throttleCable,'ENGINE_THROTTLE_CABLE',{minLod:2});
 
   const booster = new THREE.Group();
   const drum=cylinder(.20,.13,0x181d20,'z',{metalness:.52,roughness:.48,segments:40});
@@ -1147,7 +1206,7 @@ function buildReceiverAndServiceDetails() {
   registerComponent(pressure,'AC_PRESSURE_SWITCH',{minLod:3});
 
   buildServicePort('AC_HIGH_SERVICE_PORT',[.42,-.75,.82],COLORS.high);
-  buildServicePort('AC_LOW_SERVICE_PORT',[-.78,-.47,.84],COLORS.low);
+  buildServicePort('AC_LOW_SERVICE_PORT',[-.43,-.34,.88],COLORS.low);
 }
 
 function buildServicePort(id,point,color) {
@@ -2400,7 +2459,7 @@ function bindControls() {
 
   for(const id of ['hideHood','hideBumper','hideRadiator','hideEngine','hideSplash']) document.getElementById(id).addEventListener('change',updateVisibility);
   document.getElementById('bodyTransparent').addEventListener('change',event=>{state.bodyTransparent=event.target.checked;updateVisibility();});
-  document.getElementById('showGeometryValidation').addEventListener('change',event=>{
+  document.getElementById('showGeometryValidation')?.addEventListener('change',event=>{
     state.geometryValidation=event.target.checked;
     if(event.target.checked){
       state.detailLevel=Math.max(state.detailLevel,3);
@@ -2505,25 +2564,51 @@ function animate(now) {
   renderer.render(scene,camera);
 }
 
-populateControls();
-bindControls();
-configureComparison();
-updateServiceGate();
-renderServiceWalkthrough();
-setCameraPreset('FULL_VEHICLE_HOOD_OPEN_VIEW',true);
-updateVisibility();
-resizeRenderer();
+function hideLoadingScreen(reason) {
+  if (!loading || !loading.classList) return;
+  loading.classList.add('is-hidden');
+  loading.dataset.state = reason;
+}
+
+function reportStartupError(error, detail) {
+  const message = error instanceof Error ? error.message : String(error ?? 'Unknown issue');
+  console.error(`LS400 startup failed (${detail}):`, error);
+  const modelStats = document.getElementById('modelStats');
+  if (modelStats) modelStats.textContent = `${message}. ${COMPONENTS.length} components · ${ROUTES.length} routes`;
+  if (loading) loading.title = message;
+  showToast(`Startup issue detected: ${detail}. Continue in degraded mode.`);
+}
+
+window.addEventListener('error', event => {
+  reportStartupError(event.error ?? event.message, 'unhandled runtime error');
+  hideLoadingScreen('runtime-error');
+});
+
+window.addEventListener('unhandledrejection', event => {
+  reportStartupError(event.reason, 'unhandled promise rejection');
+  hideLoadingScreen('promise-error');
+});
+
 let startupValidation;
 try {
-  startupValidation=runValidation();
+  populateControls();
+  bindControls();
+  configureComparison();
+  updateServiceGate();
+  renderServiceWalkthrough();
+  setCameraPreset('ENGINE_BAY_PHOTO_LAYOUT',true);
+  updateVisibility();
+  resizeRenderer();
+  startupValidation = runValidation();
 } catch(error) {
-  console.error('LS400 startup validation failed',error);
+  reportStartupError(error, 'boot sequence');
   startupValidation={summary:{status:'VALIDATION_ERROR',errors:1,warnings:0,checks:0,unexplainedDisconnectedAcLines:0},checks:[],error:String(error?.message ?? error)};
   const modelStats=document.getElementById('modelStats');
   if(modelStats) modelStats.textContent=`${COMPONENTS.length} components · ${ROUTES.length} routes · validation retry available`;
 }
 requestAnimationFrame(animate);
-setTimeout(()=>loading.classList.add('is-hidden'),320);
+setTimeout(()=>hideLoadingScreen('ready'),320);
+setTimeout(()=>hideLoadingScreen('timeout-fallback'),1800);
 
 window.LS400Toolbox={
   vehicle:VEHICLE,

@@ -106,7 +106,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     public void zoom(float factor){distance=Math.max(2.0f,Math.min(10f,distance/factor));}
     public void resetCamera(){setCameraPreset(0);}
     public void setCameraPreset(int preset){
-        if(preset==1){yaw=-12;pitch=52;distance=3.45f;targetX=0;targetY=.62f;targetZ=.18f;}
+        if(preset==1){yaw=0;pitch=68;distance=3.05f;targetX=0;targetY=.62f;targetZ=.12f;}
         else if(preset==2){yaw=-43;pitch=18;distance=1.25f;targetX=-.40f;targetY=.50f;targetZ=-.30f;}
         else if(preset==3){yaw=32;pitch=15;distance=1.35f;targetX=.38f;targetY=.62f;targetZ=1.12f;}
         else {yaw=0;pitch=23;distance=4.8f;targetX=0;targetY=.65f;targetZ=0;}
@@ -156,13 +156,20 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("LANDMARK_SPLASH_SHIELDS","Splash shields and undercovers",LANDMARK,.05f,0,.15f,1.65f,1.55f,.06f,dark,"May block lower compressor access.");
         box("LANDMARK_RADIATOR","Engine radiator",LANDMARK,.59f,0,.64f,.10f,1.34f,.62f,fin,"Behind the A/C condenser.");
         cylinder("LANDMARK_COOLING_FANS","Electric cooling fan pair",LANDMARK,.69f,0,.62f,.11f,.60f,.60f,dark,"Twin-fan plane ahead of the heat-exchanger stack.").rx=90;
-        box("ENGINE_1UZ_FE","1UZ-FE V8 engine",LANDMARK,-.23f,0,.56f,.98f,.78f,.42f,new float[]{.24f,.28f,.30f,1},"Full-width 1UZ engine mass; intake remains above and ahead of the plenum.");
+        box("ENGINE_1UZ_FE","1UZ-FE V8 engine",LANDMARK,-.23f,0,.56f,1.12f,.82f,.44f,new float[]{.24f,.28f,.30f,1},"Photo-proportioned longitudinal 1UZ engine mass with clear service corridors on both sides.");
         box("ENGINE_ACCESSORY_DRIVE","Accessory belt and pulleys",LANDMARK,.35f,0,.47f,.20f,.75f,.35f,dark,"Front engine accessory drive.");
         cylinder("ENGINE_ALTERNATOR","Alternator",LANDMARK,.23f,-.25f,.38f,.20f,.22f,.22f,metal,"Passenger/front accessory landmark.").rx=90;
         cylinder("ENGINE_POWER_STEERING_PUMP","Power-steering pump",LANDMARK,.23f,.25f,.56f,.18f,.20f,.20f,metal,"Driver/front accessory landmark.").rx=90;
         box("LANDMARK_BATTERY","Battery",LANDMARK,.02f,.67f,.66f,.42f,.29f,.30f,dark,"Driver-side engine-bay landmark.");
         box("LANDMARK_AIRBOX","Air cleaner box",LANDMARK,.05f,-.65f,.65f,.47f,.36f,.29f,dark,"Passenger-side front landmark.");
         box("LANDMARK_INTAKE_TUBE","Intake duct and airflow meter",LANDMARK,-.03f,-.38f,.74f,.45f,.17f,.17f,rubber,"Strong landmark above the passenger-side accessory area.");
+        box("LANDMARK_COOLANT_OVERFLOW_RESERVOIR","Coolant overflow reservoir",LANDMARK,-.08f,.52f,.75f,.30f,.24f,.24f,new float[]{.82f,.80f,.66f,.78f},"Inboard and rearward of the driver-side battery area.");
+        box("LANDMARK_ENGINE_BAY_FUSE_BOX","Engine-bay fuse and relay box",LANDMARK,-.28f,.74f,.68f,.35f,.28f,.18f,dark,"Driver-side service box behind the battery.");
+        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger front strut tower",LANDMARK,-.45f,-.72f,.70f,.10f,.32f,.32f,body,"Passenger-side suspension mounting dome and open service corridor.");
+        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Driver front strut tower",LANDMARK,-.45f,.72f,.70f,.10f,.32f,.32f,body,"Driver-side suspension mounting dome and open service corridor.");
+        box("LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS","Passenger air-suspension service housing",LANDMARK,-.83f,-.72f,.86f,.30f,.29f,.16f,dark,"Rear passenger-side boxed service zone.");
+        box("LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS","Driver air-suspension service housing",LANDMARK,-.83f,.72f,.86f,.30f,.29f,.16f,dark,"Rear driver-side boxed service zone.");
+        box("ENGINE_THROTTLE_CABLE","Throttle cable",LANDMARK,-.12f,-.08f,1.00f,.05f,.05f,.05f,metal,"Cable route above the passenger-side low service fitting into the throttle body.");
         cylinder("LANDMARK_BRAKE_BOOSTER","Brake booster and master cylinder",LANDMARK,-1.00f,.56f,.76f,.18f,.31f,.31f,dark,"Driver-side firewall landmark.").rx=90;
 
         // 23 selectable A/C and HVAC components, for 49 total components.
@@ -179,7 +186,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         cylinder("AC_PRESSURE_SWITCH","Pressure switch 88645-50010",HIGH,.58f,-.72f,.79f,.08f,.07f,.07f,wire,"Early-production switch on the receiver top/liquid-pipe block.");
         cylinder("AC_SIGHT_GLASS","Receiver sight glass",HIGH,.60f,-.72f,.76f,.04f,.05f,.05f,new float[]{.40f,.85f,.90f,.9f},"Original-system inspection feature near receiver top.");
         cylinder("AC_HIGH_SERVICE_PORT","High-side service port",HIGH,.42f,-.75f,.82f,.13f,.09f,.09f,high,"Passenger-front receiver-side liquid pipe A; exact Dec-1989 fitting remains approximate.");
-        cylinder("AC_LOW_SERVICE_PORT","Low-side service port",LOW,-.78f,-.47f,.84f,.15f,.11f,.11f,low,"Passenger-side rear engine bay on the large near-firewall suction assembly; verify physical adapter.");
+        cylinder("AC_LOW_SERVICE_PORT","Low-side service port",LOW,-.43f,-.34f,.88f,.15f,.11f,.11f,low,"Passenger-side suction assembly below the throttle-cable path; verify physical adapter.");
         box("AC_EXPANSION_VALVE","Expansion valve area",HIGH,-1.00f,-.47f,.72f,.16f,.12f,.16f,high,"Passenger firewall/HVAC case. Never flush through it.");
         box("AC_EVAPORATOR","Evaporator core",LOW,-1.20f,-.41f,.66f,.32f,.52f,.25f,new float[]{.45f,.72f,.78f,1},"Inside passenger-side HVAC case.");
         cylinder("AC_EPR","Evaporator pressure regulator",LOW,-1.00f,-.42f,.67f,.20f,.15f,.15f,low,"December-1989 pre-8/90 EPR at evaporator outlet. Never flush through it.").rx=90;
@@ -252,7 +259,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         route("AC_LIQUID_LINE_DRIER_FIREWALL",HIGH,high,new float[][]{{.60f,-.72f,.59f},{.58f,-.72f,.79f},{.48f,-.75f,.78f},{.28f,-.78f,.81f},{-.02f,-.79f,.82f},{-.34f,-.78f,.84f},{-.62f,-.69f,.85f},{-.82f,-.58f,.80f},{-1.00f,-.47f,.72f}});
         route("AC_EVAPORATOR_FEED_INTERNAL",LOW,low,new float[][]{{-1.00f,-.47f,.72f},{-1.10f,-.45f,.70f},{-1.19f,-.42f,.70f}});
         route("AC_EVAPORATOR_RETURN_INTERNAL",LOW,low,new float[][]{{-1.19f,-.42f,.66f},{-1.09f,-.42f,.67f},{-1.00f,-.42f,.67f}});
-        route("AC_SUCTION_LINE",LOW,low,new float[][]{{-1.00f,-.42f,.67f},{-.88f,-.47f,.76f},{-.78f,-.47f,.84f},{-.52f,-.60f,.76f},{-.18f,-.66f,.61f},{.22f,-.67f,.47f},{.54f,-.55f,.37f},{.55f,-.10f,.34f},{.48f,.24f,.42f},{.27f,.42f,.59f}});
+        route("AC_SUCTION_LINE",LOW,low,new float[][]{{-1.00f,-.42f,.67f},{-.76f,-.43f,.79f},{-.43f,-.34f,.88f},{-.30f,-.54f,.76f},{-.10f,-.65f,.61f},{.22f,-.67f,.47f},{.54f,-.55f,.37f},{.55f,-.10f,.34f},{.48f,.24f,.42f},{.27f,.42f,.59f}});
         route("AC_EQUALIZER_TUBE",LOW,low,new float[][]{{-1.18f,-.35f,.75f},{-1.10f,-.35f,.77f},{-1.02f,-.40f,.72f}});
         route("HVAC_DRAIN_ROUTE",AC,rubber,new float[][]{{-1.16f,-.42f,.46f},{-1.12f,-.43f,.31f},{-1.06f,-.43f,.20f}});
         route("COOLING_UPPER_HOSE",LANDMARK,coolant,new float[][]{{.48f,-.42f,.78f},{.20f,-.26f,.82f},{-.04f,-.12f,.78f}});
@@ -263,7 +270,8 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         route("BRAKE_VACUUM_HOSE",LANDMARK,rubber,new float[][]{{-.98f,.50f,.80f},{-.65f,.34f,.80f},{-.30f,.20f,.75f}});
         route("POWER_STEERING_HIGH_PRESSURE",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.23f,.25f,.56f},{.05f,.34f,.48f},{-.20f,.40f,.42f}});
         route("POWER_STEERING_RETURN",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.62f,.58f,.28f},{.48f,.48f,.30f},{.35f,.41f,.36f},{.20f,.32f,.52f}});
-        route("INTAKE_AIR_PATH",LANDMARK,rubber,new float[][]{{.02f,-.32f,.74f},{-.04f,-.37f,.77f},{.08f,-.40f,.82f},{.25f,-.33f,.91f},{.32f,-.20f,.96f},{.30f,.20f,.96f}});
+        route("INTAKE_AIR_PATH",LANDMARK,rubber,new float[][]{{.02f,-.32f,.74f},{-.04f,-.40f,.77f},{.08f,-.43f,.82f},{.22f,-.39f,.90f},{.30f,-.30f,.96f},{.30f,-.20f,.96f}});
+        route("ENGINE_THROTTLE_CABLE",LANDMARK,metal,new float[][]{{-.88f,.36f,.95f},{-.66f,.25f,.97f},{-.40f,.08f,.98f},{-.12f,-.08f,1.00f},{.18f,-.18f,.99f},{.30f,-.20f,.97f}});
     }
 
     private Part box(String id,String name,int cat,float f,float l,float u,float sf,float sl,float su,float[] color,String note){Part p=new Part(id,name,cat,-l,u,-f,sl,su,sf,color,note);parts.add(p);return p;}

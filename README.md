@@ -14,12 +14,17 @@ Windows adds selectable complete, receiver-only, and conditional flush/evacuatio
 
 Windows and Android now expose a named air-cleaner-to-throttle intake route that stays on the passenger-side/front-of-plenum service corridor around the full-width 1UZ engine mass. Windows Geometry Validation reports datums, anchors, source/page evidence, and deviations; Android adds the same marker mode and saves a camera-coordinate manifest with each photo capture/import.
 
+## v2.0.0 photo-proportioned engine-bay update
+
+Windows and Android use the new hood-open photo set to preserve the passenger-side airbox-to-throttle route, place the low-side service fitting below the throttle cable, separate the coolant reservoir and fuse box from the battery, and reserve clear service space around both strut towers and air-suspension housings. Both platforms open with a larger photo-style engine-bay view.
+
 ## Downloads
 
 Use the GitHub Releases page:
 
 - `LS400Toolbox-Android-v1.4.0.apk` — adds factory-bulletin-based pre-May-1991 suction routing, pre-August-1990 EPR identification, and pre-April-1990 power-steering return-tube context. No WebView, browser, private server, internet permission, or network dependency.
-- `LS400Toolbox-Android-v1.9.0.apk` — current native build with geometry validation, corrected intake route, and photo-coordinate manifests.
+- `LS400Toolbox-Android-v2.0.0.apk` — current native build with photo-proportioned engine-bay spacing, geometry validation, corrected intake route, and photo-coordinate manifests.
+- `LS400Toolbox-Windows-v2.0.0.zip` — current complete Windows desktop package with matching photo-proportioned engine-bay geometry.
 - `LS400Toolbox-Windows-v1.0.0.zip` — complete Windows desktop package. Extract the ZIP and run `LS400Toolbox.exe`.
 - `LS400Toolbox.exe` — Windows launcher only; use the ZIP unless the adjacent runtime and model folders are already present.
 

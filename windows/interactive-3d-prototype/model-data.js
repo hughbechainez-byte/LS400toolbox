@@ -64,6 +64,8 @@ export const GEOMETRY_DATASET = {
     { componentId: 'LANDMARK_BATTERY', anchor: [0.02, 0.67, 0.58], source: 'private hood-open photos; EWD component-location context', page: 'EWD070U_RP0008', confidence: 'high-area', toleranceMm: 100 },
     { componentId: 'LANDMARK_AIRBOX', anchor: [0.05, -0.65, 0.58], source: 'private hood-open photos; intake relationship', page: 'USER_ENGINE_TOP_1990', confidence: 'high-area', toleranceMm: 100 },
     { componentId: 'LANDMARK_BRAKE_BOOSTER', anchor: [-1.00, 0.56, 0.76], source: 'private hood-open photos; firewall landmark relationship', page: 'USER_ENGINE_TOP_1990/1991', confidence: 'high-area', toleranceMm: 100 },
+    { componentId: 'LANDMARK_COOLANT_OVERFLOW_RESERVOIR', anchor: [-0.08, 0.52, 0.75], source: 'user supplied 1990-1992 hood-open photo set', page: 'LOCAL_PICS_2026_08_08', confidence: 'high-area', toleranceMm: 90 },
+    { componentId: 'LANDMARK_FRONT_STRUT_TOWERS', anchor: [-0.45, 0, 0.70], source: 'user supplied 1990-1992 hood-open photo set', page: 'LOCAL_PICS_2026_08_08', confidence: 'high-area', toleranceMm: 90 },
     { componentId: 'AC_EXPANSION_VALVE', anchor: [-1.00, -0.47, 0.72], source: 'CHARM A/C locator; EPC HVAC tube assemblies', page: 'FACTORY_AC_LOCATOR; EPC_121989_HVAC_TUBES', confidence: 'high-area / hidden-detail-approximate', toleranceMm: 120 },
     { componentId: 'AC_EPR', anchor: [-1.00, -0.42, 0.67], source: 'RM144U/EPC crosswalk; CHARM locator', page: 'FACTORY_AC_LOCATOR', confidence: 'high-area / hidden-detail-approximate', toleranceMm: 120 },
     { componentId: 'HVAC_CASE', anchor: [-1.27, -0.28, 0.65], source: 'CHARM A/C locator', page: 'FACTORY_AC_LOCATOR', confidence: 'high-location / approximate-dimensions', toleranceMm: 140 }
@@ -234,6 +236,26 @@ export const COMPONENTS = [
     geometryStatus: 'service_identification', important: true, serviceRelevance: 'May obstruct access to passenger-side lines from above.', notes: 'Clips and internal filter are simplified.', tags: ['landmark', 'intake', 'engine-bay', 'passenger-side']
   },
   {
+    id: 'LANDMARK_COOLANT_OVERFLOW_RESERVOIR', displayName: 'Coolant overflow reservoir', aliases: ['coolant expansion tank'], system: 'COOLING', function: 'Provides the high-visibility coolant-level landmark immediately inboard and behind the driver-side battery area.',
+    connectsTo: ['LANDMARK_RADIATOR'], fluidType: 'engine coolant', pressureSide: 'NONE', confidence: 'high-area', source: 'user supplied 1990-1992 hood-open photo set', mountTo: 'LANDMARK_BODY_SHELL', location: 'Driver side, inboard/rearward of battery', geometryStatus: 'service_identification', important: true, notes: 'Tank outline is photo-proportioned; cap and molded seams are simplified.', tags: ['landmark','cooling','engine-bay','driver-side']
+  },
+  {
+    id: 'LANDMARK_ENGINE_BAY_FUSE_BOX', displayName: 'Engine-bay fuse and relay box', aliases: ['underhood fuse box'], system: 'ELECTRICAL', function: 'Defines the driver-side service volume behind the battery.',
+    connectsTo: ['LANDMARK_BATTERY'], fluidType: 'electricity', pressureSide: 'NONE', confidence: 'high-area', source: 'user supplied hood-open photos', mountTo: 'LANDMARK_BODY_SHELL', location: 'Driver-side rear of battery', geometryStatus: 'service_identification', important: true, tags: ['landmark','electrical','engine-bay','driver-side']
+  },
+  {
+    id: 'LANDMARK_FRONT_STRUT_TOWERS', displayName: 'Front strut towers', aliases: ['shock towers'], system: 'BODY', function: 'Defines the paired suspension mounting domes and the open service corridors beside the engine.',
+    connectsTo: ['LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS'], fluidType: 'none', pressureSide: 'NONE', confidence: 'high-area', source: 'user supplied 1990-1992 hood-open photo set', mountTo: 'LANDMARK_FRONT_FENDERS', location: 'Paired inner-fender domes', geometryStatus: 'service_identification', important: true, tags: ['landmark','suspension','engine-bay']
+  },
+  {
+    id: 'LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS', displayName: 'Air-suspension service housings', aliases: ['suspension adjustment housings','rear engine-bay service boxes'], system: 'BODY', function: 'Preserves the paired boxed service zones at the rear of the strut towers on the air-suspension vehicle.',
+    connectsTo: ['LANDMARK_FRONT_STRUT_TOWERS'], fluidType: 'air / electricity', pressureSide: 'NONE', confidence: 'medium-identification', source: 'user supplied hood-open photos; target air-suspension configuration', mountTo: 'LANDMARK_BODY_SHELL', location: 'Rear outer corners of engine bay', geometryStatus: 'recognizable_simplified', important: true, notes: 'Internal adjustment hardware remains configuration-dependent.', tags: ['landmark','suspension','engine-bay','air-suspension']
+  },
+  {
+    id: 'ENGINE_THROTTLE_CABLE', displayName: 'Throttle cable and support clips', aliases: ['accelerator cable'], system: 'ENGINE', function: 'Provides the overhead routing landmark above the passenger-side low service fitting and into the throttle body.',
+    connectsTo: ['ENGINE_1UZ_FE','LANDMARK_INTAKE_TUBE'], fluidType: 'mechanical control', pressureSide: 'NONE', confidence: 'high-area / route approximate', source: 'user supplied hood-open photos', mountTo: 'ENGINE_1UZ_FE', location: 'Across rear/top of engine to passenger-side throttle body', geometryStatus: 'continuous_context', important: true, tags: ['engine','intake','engine-bay','cable']
+  },
+  {
     id: 'LANDMARK_INTAKE_TUBE', displayName: 'Intake duct and airflow meter', aliases: ['intake hose', 'AFM duct'], system: 'INTAKE', function: 'Carries intake air from the airbox toward the throttle body.',
     connectsTo: ['LANDMARK_AIRBOX', 'ENGINE_1UZ_FE'], fluidType: 'intake air / electricity', pressureSide: 'NONE', confidence: 'high', source: 'user engine-bay photos', mountTo: 'LANDMARK_AIRBOX',
     location: 'Across passenger-side front of engine', geometryStatus: 'recognizable_simplified', important: true, serviceRelevance: 'Strong visual landmark above the compressor region.', notes: 'Corrugations and clamps are represented.', tags: ['landmark', 'intake', 'engine-bay']
@@ -386,7 +408,7 @@ export const ROUTES = [
     system: 'INTAKE', pressureSide: 'NONE', fluidType: 'filtered intake air', from: 'LANDMARK_AIRBOX', to: 'ENGINE_1UZ_FE',
     direction: 'air cleaner toward throttle body', source: '1990 UCF10 EPC air-cleaner/EFI plates; CHARM intake/AFM service context; private hood-open references',
     confidence: 'factory topology / installed bend approximate', serviceRole: 'Engine-off inspection path; do not treat as a refrigerant or vacuum service route.',
-    geometryStatus: 'continuous_true_form_approximate', points: [[.02,-.32,.74],[-.04,-.37,.77],[.08,-.40,.82],[.25,-.33,.91],[.32,-.20,.96],[.30,.20,.96]],
+    geometryStatus: 'continuous_true_form_approximate', points: [[.02,-.32,.74],[-.04,-.40,.77],[.08,-.43,.82],[.22,-.39,.90],[.30,-.30,.96],[.30,-.20,.96]],
     sections: [{from:0,to:1,type:'rubber',radius:0.031},{from:1,to:5,type:'rubber',radius:0.037}], crimps:[1,5], clamps:[0,1,5], flow:[0.14,0.42,0.76], tags:['intake','line','engine-bay','passenger-side','front-of-plenum']
   },
   {
@@ -428,7 +450,7 @@ export const ROUTES = [
     id: 'AC_SUCTION_LINE', legacyIds: ['AC-013','AC-014','AC-C012','AC-C013','AC-C017'], displayName: 'Firewall-to-compressor suction-line group', aliases: ['suction pipes and hoses A/B/C'],
     system: 'AIR_CONDITIONING', pressureSide: 'LOW', fluidType: 'low-pressure refrigerant vapor', from: 'AC_EPR', to: 'AC_SUCTION_PORT', direction: 'firewall/EPR to compressor',
     source: '12/1989 Amayama EPC MEP444E/MEQ413D; Lexus L-AC003-91 and TSB0054L pre-5/91 suction-pipe illustration', partNumbers: ['88717-50090','88712-50040','88717-50010','88717-50020','88712-50010'], confidence: 'factory silhouette and sequence / installed bends approximate', serviceRole: 'Professional recovery boundary. Isolate compressor and EPR before approved line flushing.',
-    geometryStatus: 'continuous_true_form_approximate', points: [[-1.00,-0.42,0.67],[-0.88,-0.47,0.76],[-0.78,-0.47,0.84],[-0.52,-0.60,0.76],[-0.18,-0.66,0.61],[0.22,-0.67,0.47],[0.54,-0.55,0.37],[0.55,-0.10,0.34],[0.48,0.24,0.42],[0.27,0.42,0.59]],
+    geometryStatus: 'continuous_true_form_approximate', points: [[-1.00,-0.42,0.67],[-0.76,-0.43,0.79],[-0.43,-0.34,0.88],[-0.30,-0.54,0.76],[-0.10,-0.65,0.61],[0.22,-0.67,0.47],[0.54,-0.55,0.37],[0.55,-0.10,0.34],[0.48,0.24,0.42],[0.27,0.42,0.59]],
     sections: [{from:0,to:3,type:'hard',radius:0.018},{from:3,to:5,type:'flex',radius:0.026},{from:5,to:8,type:'hard',radius:0.018},{from:8,to:9,type:'flex',radius:0.026}], crimps:[3,5,8], clamps:[1,4,6,7], flow:[0.14,0.38,0.65,0.86], notes:'Target predates the May-1991 oil-tank suction pipe 88717-50100; no oil reservoir is modeled.', tags:['ac','line','engine-bay','pre-5-91']
   },
   {
@@ -485,6 +507,7 @@ export const ROUTES = [
 ];
 
 export const CAMERA_PRESETS = {
+  ENGINE_BAY_PHOTO_LAYOUT: { label: 'Engine bay — photo layout', position: [0.04,0,2.72], target: [-0.12,0,0.61], fov: 39, hood: 1 },
   FULL_VEHICLE_HOOD_OPEN_VIEW: { label: 'Full vehicle — hood open', position: [3.25,0,1.68], target: [-0.05,0,1.15], fov: 55, hood: 1 },
   FRONT_STANDING: { label: 'Standing centered in front', position: [3.10,0,1.62], target: [0.00,0,0.70], fov: 46, hood: 1 },
   FRONT_PASSENGER_CORNER: { label: 'Front passenger-side corner', position: [2.55,-1.85,1.48], target: [0.00,-0.15,0.67], fov: 46, hood: 1 },
