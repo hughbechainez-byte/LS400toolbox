@@ -13,7 +13,7 @@ export const VEHICLE = {
 export const ENGINE_BAY_RECONSTRUCTION = {
   version: 'ucf10-bay-reconstruction-2026-08-08',
   referenceFrame: {
-    image: 'references/user-1990-ls400-inline1.jpg', pixels: [800, 532],
+    image: 'references/user-1990-ls400-inline1.jpg', pixels: [800, 489],
     crop: 'native engine-top crop',
     use: 'ENGINE_BAY_PHOTO_LAYOUT camera plus normal 50 percent alpha overlay'
   },
@@ -57,25 +57,37 @@ export const ENGINE_BAY_RECONSTRUCTION = {
     // B0-186 pairs drive the vehicle coordinates below; there is no display scale transform.
     cowlOuterHalfWidth: 0.776, cowlInnerHalfWidth: 0.747,
     radiatorSupportHardpointHalfWidth: 0.7545, springSupportInnerHoleHalfWidth: 0.525,
-    strutTowerPhotoCenterHalfWidth: 0.900,
+    // Photo-fit coordinates are authored shell geometry, not a root scale.
+    // The factory B-b inner holes remain at ±0.525 m; the visible dome centres
+    // sit on the outer stamped aprons.
+    strutTowerPhotoCenterHalfWidth: 1.150,
     // Cowl/support hardpoints above remain factory spans.  The wider stamped
     // apron/outer-fender envelope is photo-calibrated, not a display scale.
-    apronOuterHalfWidth: 1.070, apronInnerHalfWidth: 0.900, apronRailHalfWidth: 0.985,
-    firewallX: -1.045, cowlX: -1.110, radiatorSupportX: 0.955,
-    condenserX: 0.855, fanPlaneX: 0.765, radiatorX: 0.680, frontBumperX: 1.270
+    apronOuterHalfWidth: 1.310, apronInnerHalfWidth: 1.020, apronRailHalfWidth: 1.200,
+    firewallX: -1.045, cowlX: -1.110, radiatorSupportX: 1.060,
+    condenserX: 0.960, fanPlaneX: 0.870, radiatorX: 0.785, frontBumperX: 1.375
   },
   anchors: {
-    engine: [-0.235, 0, 0.565], engineFrontX: 0.315, engineRearX: -0.790,
+    engine: [-0.220, 0, 0.540], engineFrontX: 0.310, engineRearX: -0.770,
     compressor: [0.180, 0.270, 0.460],
-    throttle: [-0.265, -0.205, 0.940], airbox: [0.300, -0.720, 0.610], maf: [0.155, -0.610, 0.715],
-    battery: [0.500, 0.720, 0.610], fuseBox: [0.220, 0.720, 0.705], coolantReservoir: [0.000, 0.720, 0.790],
-    brakeBooster: [-0.915, 0.690, 0.845], strutTowerPassenger: [-0.480, -0.900, 0.735],
-    strutTowerDriver: [-0.480, 0.900, 0.735], radiatorSupport: [0.955, 0, 0.610],
-    condenser: [0.855, 0, 0.555], coolingFans: [0.765, 0, 0.575], radiator: [0.680, 0, 0.570],
-    receiverDrier: [0.845, -0.690, 0.590]
+    // Native-photo anchors are authored vehicle coordinates.  The wider
+    // apron/tower corridors are physical bay geometry, never a root scale.
+    throttle: [-0.182, -0.321, 0.800], airbox: [0.411, -0.508, 0.570], maf: [0.204, -0.810, 0.600],
+    battery: [0.542, 0.851, 0.590], fuseBox: [0.297, 0.902, 0.640], coolantReservoir: [0.025, 0.995, 0.770],
+    brakeBooster: [-0.946, 1.131, 0.790], strutTowerPassenger: [-0.353, -1.161, 0.700],
+    strutTowerDriver: [-0.353, 1.144, 0.700], radiatorSupport: [1.060, 0, 0.610],
+    condenser: [0.960, 0, 0.555], coolingFans: [0.870, 0, 0.575], radiator: [0.785, 0, 0.570],
+    receiverDrier: [0.950, -0.690, 0.590]
   },
   photoLandmarks: {
-    image: 'user-1990-ls400-inline1.jpg',
+    image: 'user-1990-ls400-inline1.jpg', nativePixels: [800, 489],
+    primaryPixels: {
+      cowlCentre: [400, 50], towerPassenger: [62, 207], towerDriver: [733, 207],
+      frontSupportCentre: [400, 478], engineBounds: [205, 94, 646, 471],
+      plenumBounds: [348, 94, 510, 322], throttle: [298, 214], airboxCentre: [211, 416],
+      maf: [120, 350], ductElbow: [260, 220], battery: [738, 455], fuseBox: [728, 366],
+      coolantReservoir: [739, 265], brakeBooster: [681, 101]
+    },
     targetChecks: ['bay corners and curved aprons', 'strut-tower centres', 'firewall/cowl edge', 'radiator-support edge', 'engine bounds and intake manifold', 'airbox/MAF and continuous duct', 'driver battery/fuse', 'brake booster'],
     tolerance: 'major projected landmarks within about 5 percent of native image width or height'
   },
@@ -133,28 +145,28 @@ export const GEOMETRY_DATASET = {
     { id: 'DATUM_ENGINE_BAY_REAR_COWL', label: 'Cowl rear engine-bay datum', point: [-1.11, 0, 0.92], source: 'RM144U B0-186 J-j/C-c pairs; cowl-top panel sections', confidence: 'factory-span / photo-depth' }
   ],
   componentAnchors: [
-    { componentId: 'LANDMARK_RADIATOR_SUPPORT', anchor: [0.955, 0, 0.61], source: 'RM144U B0-186 A-a pair; CR radiator support sections; native photo depth calibration', page: 'B0-186 / PDF 1; CR19X_CR0014/CR0015', confidence: 'factory-span / photo-depth', toleranceMm: 120 },
-    { componentId: 'AC_CONDENSER', anchor: [0.855, 0, 0.555], source: 'RM144U CO-15 paired-fan context; EPC condenser/fans', page: 'CO-15 / PDF 3', confidence: 'high-order / photo-depth', toleranceMm: 120 },
-    { componentId: 'LANDMARK_RADIATOR', anchor: [0.680, 0, 0.570], source: 'RM144U CO-12; user hood-open photos', page: 'CO-12 / PDF 1', confidence: 'high-order / photo-depth', toleranceMm: 120 },
-    { componentId: 'LANDMARK_COOLING_FANS', anchor: [0.765, 0, 0.575], source: 'RM144U CO-15 paired shrouds', page: 'CO-15 / PDF 3', confidence: 'high-location / simplified form', toleranceMm: 120 },
-    { componentId: 'AC_RECEIVER_DRIER', anchor: [0.845, -0.690, 0.590], source: 'RM144U/EPC UCF10L crosswalk; 12/1989 receiver/condenser plate', page: 'EPC_121989_RECEIVER_FANS', confidence: 'high-location / photo-depth', toleranceMm: 115 },
+    { componentId: 'LANDMARK_RADIATOR_SUPPORT', anchor: [1.060, 0, 0.61], source: 'RM144U B0-186 A-a pair; CR radiator support sections; native photo edge calibration', page: 'B0-186 / PDF 1; CR19X_CR0014/CR0015', confidence: 'factory-span / photo-depth', toleranceMm: 120 },
+    { componentId: 'AC_CONDENSER', anchor: [0.960, 0, 0.555], source: 'RM144U CO-15 paired-fan context; EPC condenser/fans', page: 'CO-15 / PDF 3', confidence: 'high-order / photo-depth', toleranceMm: 120 },
+    { componentId: 'LANDMARK_RADIATOR', anchor: [0.785, 0, 0.570], source: 'RM144U CO-12; user hood-open photos', page: 'CO-12 / PDF 1', confidence: 'high-order / photo-depth', toleranceMm: 120 },
+    { componentId: 'LANDMARK_COOLING_FANS', anchor: [0.870, 0, 0.575], source: 'RM144U CO-15 paired shrouds', page: 'CO-15 / PDF 3', confidence: 'high-location / simplified form', toleranceMm: 120 },
+    { componentId: 'AC_RECEIVER_DRIER', anchor: [0.950, -0.690, 0.590], source: 'RM144U/EPC UCF10L crosswalk; 12/1989 receiver/condenser plate', page: 'EPC_121989_RECEIVER_FANS', confidence: 'high-location / photo-depth', toleranceMm: 115 },
     { componentId: 'AC_COMPRESSOR', anchor: [0.180, 0.270, 0.460], source: 'EPC compressor 17822848; CHARM locator; engine accessory-drive relationship', page: 'EPC_COMPRESSOR', confidence: 'high-location / photo-clearance-calibrated', toleranceMm: 120 },
-    { componentId: 'ENGINE_1UZ_FE', anchor: [-0.235, 0, 0.565], source: 'B0-186 spring-support corridor; private 1990 engine-top photo', page: 'B0-186 / PDF 1; USER_ENGINE_TOP_1990', confidence: 'factory-corridor / reduced photo envelope', toleranceMm: 170 },
-    { componentId: 'LANDMARK_BATTERY', anchor: [0.500, 0.720, 0.610], source: 'EWD070U component location; private 1990 engine-top photo', page: 'EWD070U 24-25; USER_ENGINE_TOP_1990', confidence: 'high-area / photo-front-calibrated', toleranceMm: 120 },
-    { componentId: 'LANDMARK_AIRBOX', anchor: [0.300, -0.720, 0.610], source: 'RM144U FI-5/FI-47; EPC air-cleaner plate; private 1990 engine-top photo', page: 'FI-5 / PDF 3; FI-47', confidence: 'high-area / topology-locked', toleranceMm: 120 },
-    { componentId: 'LANDMARK_BRAKE_BOOSTER', anchor: [-0.915, 0.690, 0.845], source: 'RM144U BR-14; EWD brake-fluid switch; private 1990 engine-top photo', page: 'BR-14 / PDF 1; EWD070U 24-25', confidence: 'high-area', toleranceMm: 120 },
-    { componentId: 'LANDMARK_COOLANT_OVERFLOW_RESERVOIR', anchor: [0.000, 0.720, 0.790], source: 'private 1990 hood-open photo set; battery/fuse adjacency', page: 'USER_ENGINE_TOP_1990', confidence: 'high-area / rectangular reserve tank / photo-front-calibrated', toleranceMm: 110 },
-    { componentId: 'LANDMARK_FRONT_STRUT_TOWERS', anchor: [-0.480, 0, 0.735], source: 'RM144U B0-186 B-b inner-front holes; private 1990 engine-top photo', page: 'B0-186 / PDF 1; USER_ENGINE_TOP_1990', confidence: 'factory-inner-hole / photo-centre; tower centres offset to outer aprons', toleranceMm: 125 },
+    { componentId: 'ENGINE_1UZ_FE', anchor: [-0.220, 0, 0.540], source: 'B0-186 spring-support corridor; private 1990 engine-top photo', page: 'B0-186 / PDF 1; USER_ENGINE_TOP_1990', confidence: 'factory-corridor / reduced photo envelope', toleranceMm: 170 },
+    { componentId: 'LANDMARK_BATTERY', anchor: [0.542, 0.851, 0.590], source: 'EWD070U component location; private 1990 engine-top photo', page: 'EWD070U 24-25; USER_ENGINE_TOP_1990', confidence: 'high-area / photo-front-calibrated', toleranceMm: 120 },
+    { componentId: 'LANDMARK_AIRBOX', anchor: [0.411, -0.508, 0.570], source: 'RM144U FI-5/FI-47; EPC air-cleaner plate; private 1990 engine-top photo', page: 'FI-5 / PDF 3; FI-47', confidence: 'high-area / topology-locked', toleranceMm: 120 },
+    { componentId: 'LANDMARK_BRAKE_BOOSTER', anchor: [-0.946, 1.131, 0.790], source: 'RM144U BR-14; EWD brake-fluid switch; private 1990 engine-top photo', page: 'BR-14 / PDF 1; EWD070U 24-25', confidence: 'high-area / photo-calibrated', toleranceMm: 120 },
+    { componentId: 'LANDMARK_COOLANT_OVERFLOW_RESERVOIR', anchor: [0.025, 0.995, 0.770], source: 'private 1990 hood-open photo set; battery/fuse adjacency', page: 'USER_ENGINE_TOP_1990', confidence: 'high-area / rectangular reserve tank / photo-front-calibrated', toleranceMm: 110 },
+    { componentId: 'LANDMARK_FRONT_STRUT_TOWERS', anchor: [-0.353, -0.009, 0.700], source: 'RM144U B0-186 B-b inner-front holes; private 1990 engine-top photo', page: 'B0-186 / PDF 1; USER_ENGINE_TOP_1990', confidence: 'factory-inner-hole / photo-centre; tower centres offset to outer aprons', toleranceMm: 125 },
     { componentId: 'AC_EXPANSION_VALVE', anchor: [-1.00, -0.47, 0.72], source: 'CHARM A/C locator; EPC HVAC tube assemblies', page: 'FACTORY_AC_LOCATOR; EPC_121989_HVAC_TUBES', confidence: 'high-area / hidden-detail-approximate', toleranceMm: 120 },
     { componentId: 'AC_EPR', anchor: [-1.00, -0.42, 0.67], source: 'RM144U/EPC crosswalk; CHARM locator', page: 'FACTORY_AC_LOCATOR', confidence: 'high-area / hidden-detail-approximate', toleranceMm: 120 },
     { componentId: 'HVAC_CASE', anchor: [-1.27, -0.28, 0.65], source: 'CHARM A/C locator', page: 'FACTORY_AC_LOCATOR', confidence: 'high-location / approximate-dimensions', toleranceMm: 140 }
   ],
   measurementReferences: [
     { id: 'CENTERLINE', label: 'Vehicle centerline', from: [1.05, 0, 0.04], to: [-1.55, 0, 0.04], source: 'Collision Repair standard body marks and coordinate contract', confidence: 'high-concept' },
-    { id: 'FRONT_STACK_ORDER', label: 'Front stack: support to condenser to fans to radiator', from: [0.955, 0, 0.61], to: [0.680, 0, 0.570], source: 'RM144U CO-12/CO-15; B0-186 A-a support pair; native photo depth calibration', confidence: 'factory-order / photo-depth' },
+    { id: 'FRONT_STACK_ORDER', label: 'Front stack: support to condenser to fans to radiator', from: [1.060, 0, 0.61], to: [0.785, 0, 0.570], source: 'RM144U CO-12/CO-15; B0-186 A-a support pair; native photo depth calibration', confidence: 'factory-order / photo-depth' },
     { id: 'PASSENGER_AC_ROUTE_BAND', label: 'Passenger-side A/C pipe band', from: [0.62, -0.72, 0.59], to: [-1.00, -0.47, 0.72], source: 'EPC cooler-piping schemas and CHARM locator', confidence: 'catalog-sequence / installed-bends-approximate' },
     { id: 'LOW_SIDE_RETURN_BAND', label: 'Low-side suction return band', from: [-1.00, -0.42, 0.67], to: [0.27, 0.42, 0.59], source: 'EPC suction B/C/E family; L-AC003-91; TSB0054L', confidence: 'factory silhouette / installed-bends-approximate' },
-    { id: 'FIREWALL_TO_RADIATOR_SUPPORT', label: 'Firewall to radiator-support service depth', from: [-1.045, 0, 0.65], to: [0.955, 0, 0.61], source: 'RM144U B0-186 cowl/support network; CR front structure sections; native photo calibration', confidence: 'factory-span / photo-depth' }
+    { id: 'FIREWALL_TO_RADIATOR_SUPPORT', label: 'Firewall to radiator-support service depth', from: [-1.045, 0, 0.65], to: [1.060, 0, 0.61], source: 'RM144U B0-186 cowl/support network; CR front structure sections; native photo calibration', confidence: 'factory-span / photo-depth' }
   ],
   assumptions: [
     'The blank cached CR0049 render was not used; B0-186 factory hardpoint values are explicitly recorded above.',
@@ -487,8 +499,8 @@ export const ROUTES = [
     system: 'INTAKE', pressureSide: 'NONE', fluidType: 'filtered intake air', from: 'LANDMARK_AIRBOX', to: 'ENGINE_1UZ_FE',
     direction: 'air cleaner toward throttle body', source: '1990 UCF10 EPC air-cleaner/EFI plates; CHARM intake/AFM service context; private hood-open references',
     confidence: 'factory topology / installed bend approximate', serviceRole: 'Engine-off inspection path; do not treat as a refrigerant or vacuum service route.',
-    geometryStatus: 'continuous_true_form_approximate', points: [[.30,-.515,.695],[.225,-.535,.715],[.078,-.610,.730],[-.010,-.600,.765],[-.135,-.535,.845],[-.235,-.405,.910],[-.265,-.205,.940]],
-    sections: [{from:0,to:1,type:'rubber',radius:0.071},{from:1,to:2,type:'hard',radius:0.083},{from:2,to:6,type:'rubber',radius:0.079}], crimps:[1,2], clamps:[0,1,2,6], flow:[0.14,0.42,0.76], tags:['intake','line','engine-bay','passenger-side','front-of-plenum']
+    geometryStatus: 'continuous_true_form_approximate', points: [[.396,-.608,.642],[.335,-.625,.625],[.265,-.735,.608],[.204,-.810,.600],[.264,-.795,.600],[.130,-.765,.625],[.040,-.650,.665],[-.035,-.500,.745],[-.164,-.439,.790],[-.182,-.321,.800]],
+    sections: [{from:0,to:2,type:'rubber',radius:0.069},{from:2,to:3,type:'hard',radius:0.090},{from:3,to:9,type:'rubber',radius:0.075}], crimps:[2,3], clamps:[0,2,3,9], flow:[0.14,0.42,0.76], tags:['intake','line','engine-bay','passenger-side','front-of-plenum']
   },
   {
     id: 'AC_DISCHARGE_LINE', legacyIds: ['AC-003', 'AC-004', 'AC-C001', 'AC-C002', 'AC-C003'], displayName: 'Compressor-to-condenser discharge line',
@@ -586,7 +598,9 @@ export const ROUTES = [
 ];
 
 export const CAMERA_PRESETS = {
-  ENGINE_BAY_PHOTO_LAYOUT: { label: 'Engine bay — photo layout', position: [1.50,0,2.08], target: [-0.20,0,0.66], fov: 40, hood: 1 },
+  // High-angle native-photo viewpoint verified against visible bay corners,
+  // cowl and the component landmark set.  The frame is 800 × 489.
+  ENGINE_BAY_PHOTO_LAYOUT: { label: 'Engine bay — photo layout', position: [1.50,0,2.08], target: [-0.20,0,0.66], fov: 40, hood: 1, hideHood: true, hideBumper: true, hideSplash: true },
   FULL_VEHICLE_HOOD_OPEN_VIEW: { label: 'Full vehicle — hood open', position: [3.25,0,1.68], target: [-0.05,0,1.15], fov: 55, hood: 1 },
   FRONT_STANDING: { label: 'Standing centered in front', position: [3.10,0,1.62], target: [0.00,0,0.70], fov: 46, hood: 1 },
   FRONT_PASSENGER_CORNER: { label: 'Front passenger-side corner', position: [2.55,-1.85,1.48], target: [0.00,-0.15,0.67], fov: 46, hood: 1 },

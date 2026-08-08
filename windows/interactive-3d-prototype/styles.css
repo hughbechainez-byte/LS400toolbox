@@ -239,3 +239,60 @@ details li + li { margin-top: 6px; }
   .stage.compare-side #viewport { inset: 0 0 50% 0; }
   .stage.compare-side .reference-pane { top: 50%; left: 0; width: 100%; border-left: 0; border-top: 1px solid var(--accent); }
 }
+
+/* The saved engine-bay reference is natively 800 × 489.  Both the renderer
+   and the reference pane occupy this exact fitted frame; the surrounding
+   stage is only letterbox space and never participates in landmark fitting. */
+.stage.photo-layout #viewport {
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  width: min(100%, 163.6vh);
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 800 / 489;
+  transform: translate(-50%, -50%);
+}
+.stage.photo-layout.compare-overlay .reference-pane {
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  width: min(100%, 163.6vh);
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 800 / 489;
+  transform: translate(-50%, -50%);
+}
+.stage.photo-layout.compare-overlay .reference-pane img { object-fit: fill; }
+.stage.photo-layout.compare-side #viewport {
+  inset: auto;
+  left: 25%;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  width: min(50%, 81.8vh);
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 800 / 489;
+  transform: translate(-50%, -50%);
+}
+.stage.photo-layout.compare-side .reference-pane {
+  inset: auto;
+  left: 75%;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  width: min(50%, 81.8vh);
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 800 / 489;
+  transform: translate(-50%, -50%);
+  border: 0;
+}
+.stage.photo-layout.compare-side .reference-pane img { object-fit: fill; }
+.stage.photo-layout.compare-overlay .stage-topbar,
+.stage.photo-layout.compare-side .stage-topbar,
+.stage.photo-layout.compare-overlay .orientation-cube,
+.stage.photo-layout.compare-side .orientation-cube,
+.stage.photo-layout.compare-overlay .reference-pane > div,
+.stage.photo-layout.compare-side .reference-pane > div { display: none; }
