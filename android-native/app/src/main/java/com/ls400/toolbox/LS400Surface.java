@@ -32,5 +32,7 @@ public final class LS400Surface extends GLSurfaceView {
     public void setFilter(int mode){ renderer.setFilter(mode); }
     public void setCameraPreset(int preset){ renderer.setCameraPreset(preset); }
     public void setWindowsDetailParity(boolean enabled){ renderer.setWindowsDetailParity(enabled); }
+    public void setValidationMode(boolean enabled){ renderer.setValidationMode(enabled); }
+    public String describeView(){ return renderer.describeView(); }
     public void showWalkthroughStep(int step){ renderer.showWalkthroughStep(step); }
 }

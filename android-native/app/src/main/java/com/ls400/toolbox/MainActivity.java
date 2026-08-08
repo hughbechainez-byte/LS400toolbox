@@ -18,6 +18,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +81,7 @@ public final class MainActivity extends Activity {
         TextView title = text("LS400 TOOLBOX  •  NATIVE OFFLINE", 18, Color.WHITE);
         title.setTypeface(null,1);
         top.addView(title);
-        TextView subtitle = text("RM144U / EPC map • 49 components • 16 routes • guided A/C locator", 12, Color.rgb(177,198,211));
+        TextView subtitle = text("RM144U / EPC map • 49 components • 17 routes • guided service locator", 12, Color.rgb(177,198,211));
         top.addView(subtitle);
 
         LinearLayout buttons = new LinearLayout(this);
@@ -127,6 +129,13 @@ public final class MainActivity extends Activity {
             surface.setWindowsDetailParity(windowsDetailParity);
         });
         top.addView(parity);
+        Button validation = cameraButton("GEOMETRY VALIDATION: OFF",0);
+        validation.setOnClickListener(v -> {
+            boolean enabled = validation.getText().toString().endsWith("OFF");
+            validation.setText(enabled ? "GEOMETRY VALIDATION: ON" : "GEOMETRY VALIDATION: OFF");
+            surface.setValidationMode(enabled);
+        });
+        top.addView(validation);
         FrameLayout.LayoutParams topParams = new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);
         root.addView(top,topParams);
 
@@ -213,8 +222,28 @@ public final class MainActivity extends Activity {
         super.onActivityResult(requestCode,resultCode,data);
         if (resultCode != RESULT_OK) { if (requestCode==41 && pendingCapture!=null) getContentResolver().delete(pendingCapture,null,null); return; }
         Uri uri = requestCode==41 ? pendingCapture : data == null ? null : data.getData();
-        if (uri != null) { photoUris.add(uri); if (photoPanel != null) showInfo("Added photo for "+PHOTO_SPOTS[photoSpot]+". Total queued: "+photoUris.size()); }
+        if (uri != null) { photoUris.add(uri); writePhotoManifest(uri); if (photoPanel != null) showInfo("Added photo for "+PHOTO_SPOTS[photoSpot]+". Coordinates saved with the capture. Total queued: "+photoUris.size()); }
         pendingCapture = null;
+    }
+
+    private void writePhotoManifest(Uri photoUri) {
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME,"LS400_photo_coordinates.txt");
+            values.put(MediaStore.Downloads.MIME_TYPE,"text/plain");
+            values.put(MediaStore.Downloads.RELATIVE_PATH,"Download/LS400Toolbox");
+            Uri out = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
+            if(out==null) return;
+            try(OutputStream stream=getContentResolver().openOutputStream(out)){
+                String text="LS400 Toolbox photo evidence\n"+
+                    "target="+PHOTO_SPOTS[photoSpot]+"\n"+
+                    "photo_uri="+photoUri+"\n"+
+                    "view="+surface.describeView()+"\n"+
+                    "truth_status=photo_observed; coordinates are camera-view metadata, not an automatic geometry edit\n";
+                stream.write(text.getBytes(StandardCharsets.UTF_8));
+            }
+            photoUris.add(out);
+        } catch(Exception ignored) { showInfo("Photo saved, but the coordinate manifest could not be written."); }
     }
 
     private Button filterButton(String label, int mode) {

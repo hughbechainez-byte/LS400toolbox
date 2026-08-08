@@ -23,6 +23,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private int cylinderVertices,torusVertices;
     private int program,posLoc,colorLoc,mvpLoc,width,height,filter=0;
     private boolean windowsDetailParity=false;
+    private boolean validationMode=false;
     private float yaw=0f,pitch=23f,distance=4.8f,targetX=0,targetY=.65f,targetZ=0;
     private volatile float pickX=-1,pickY=-1;
     private Part selected;
@@ -57,6 +58,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         for(Part p:parts) if(visible(p.category)) drawPart(p,p==selected);
         if(windowsDetailParity) for(Part p:decor) if(visible(p.category)) drawPart(p,false);
         for(Route r:routes) if(visible(r.category)) drawRoute(r);
+        if(validationMode) drawValidation();
         if(pickX>=0){performPick(pickX,pickY);pickX=-1;}
     }
 
@@ -82,10 +84,24 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         lineBuffer=buffer(grid);Matrix.multiplyMM(mvp,0,vp,0,identity(),0);GLES20.glUseProgram(program);GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0);GLES20.glUniform4f(colorLoc,.12f,.22f,.26f,1);GLES20.glLineWidth(1);GLES20.glEnableVertexAttribArray(posLoc);GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,lineBuffer);GLES20.glDrawArrays(GLES20.GL_LINES,0,grid.length/3);GLES20.glDisableVertexAttribArray(posLoc);
     }
 
+    private void drawValidation(){
+        float[] datum={0f,.04f,0f, 0f,.04f,-1.05f, 0f,.04f,1.05f, -.47f,.72f,1.00f, 0f,.59f,.62f};
+        lineBuffer=buffer(datum); Matrix.multiplyMM(mvp,0,vp,0,identity(),0); GLES20.glUseProgram(program);
+        GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0); GLES20.glUniform4f(colorLoc,.95f,.78f,.22f,1); GLES20.glLineWidth(3);
+        GLES20.glEnableVertexAttribArray(posLoc); GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,lineBuffer); GLES20.glDrawArrays(GLES20.GL_LINES,0,datum.length/3); GLES20.glDisableVertexAttribArray(posLoc);
+        for(Part p:parts){ if(!p.id.startsWith("LANDMARK_") && !p.id.startsWith("AC_")) continue; drawMarker(p.x,p.y,p.z,.035f,.25f,.85f,.78f); }
+    }
+    private void drawMarker(float x,float y,float z,float size,float r,float g,float b){
+        Matrix.setIdentityM(model,0); Matrix.translateM(model,0,x,y,z); Matrix.scaleM(model,0,size,size,size); Matrix.multiplyMM(mvp,0,vp,0,model,0);
+        GLES20.glUseProgram(program); GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0); GLES20.glUniform4f(colorLoc,r,g,b,1); GLES20.glEnableVertexAttribArray(posLoc); GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,cube); GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,36); GLES20.glDisableVertexAttribArray(posLoc);
+    }
+
     private void performPick(float sx,float sy){ Part best=null;float bestD=90f;for(Part p:parts){if(!visible(p.category))continue;float[] v={p.x,p.y,p.z,1},clip=new float[4];Matrix.multiplyMV(clip,0,vp,0,v,0);if(clip[3]<=0)continue;float px=(clip[0]/clip[3]*.5f+.5f)*width,py=(.5f-clip[1]/clip[3]*.5f)*height;float d=(float)Math.hypot(px-sx,py-sy);if(d<bestD){bestD=d;best=p;}}selected=best;if(best!=null)info.accept(best.id+"  •  "+best.name+"\n"+best.note); }
     public void pick(float x,float y){pickX=x;pickY=y;}
     public void setFilter(int value){filter=value;selected=null;}
     public void setWindowsDetailParity(boolean enabled){windowsDetailParity=enabled;info.accept(enabled?"WINDOWS DETAIL PARITY ON — full recognition geometry, fin fields, fan blades, engine runners and service hardware":"Android detail mode — lightweight recognition geometry");}
+    public void setValidationMode(boolean enabled){validationMode=enabled;info.accept(enabled?"GEOMETRY VALIDATION ON — datum/centerline/anchor markers shown; selected source is reported below":"Geometry validation hidden");}
+    public String describeView(){return "cameraPresetYaw="+yaw+" pitch="+pitch+" distance="+distance+" targetVehicleApprox=[forward="+(-targetZ)+", left="+(-targetX)+", up="+targetY+"]";}
     public void orbit(float dx,float dy){yaw-=dx*.16f;pitch=Math.max(-5,Math.min(72,pitch-dy*.13f));}
     public void zoom(float factor){distance=Math.max(2.0f,Math.min(10f,distance/factor));}
     public void resetCamera(){setCameraPreset(0);}
@@ -140,7 +156,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("LANDMARK_SPLASH_SHIELDS","Splash shields and undercovers",LANDMARK,.05f,0,.15f,1.65f,1.55f,.06f,dark,"May block lower compressor access.");
         box("LANDMARK_RADIATOR","Engine radiator",LANDMARK,.59f,0,.64f,.10f,1.34f,.62f,fin,"Behind the A/C condenser.");
         cylinder("LANDMARK_COOLING_FANS","Electric cooling fan pair",LANDMARK,.69f,0,.62f,.11f,.60f,.60f,dark,"Twin-fan plane ahead of the heat-exchanger stack.").rx=90;
-        box("ENGINE_1UZ_FE","1UZ-FE V8 engine",LANDMARK,-.23f,0,.56f,.88f,.68f,.36f,new float[]{.24f,.28f,.30f,1},"Central engine and intake landmark.");
+        box("ENGINE_1UZ_FE","1UZ-FE V8 engine",LANDMARK,-.23f,0,.56f,.98f,.78f,.42f,new float[]{.24f,.28f,.30f,1},"Full-width 1UZ engine mass; intake remains above and ahead of the plenum.");
         box("ENGINE_ACCESSORY_DRIVE","Accessory belt and pulleys",LANDMARK,.35f,0,.47f,.20f,.75f,.35f,dark,"Front engine accessory drive.");
         cylinder("ENGINE_ALTERNATOR","Alternator",LANDMARK,.23f,-.25f,.38f,.20f,.22f,.22f,metal,"Passenger/front accessory landmark.").rx=90;
         cylinder("ENGINE_POWER_STEERING_PUMP","Power-steering pump",LANDMARK,.23f,.25f,.56f,.18f,.20f,.20f,metal,"Driver/front accessory landmark.").rx=90;
@@ -247,6 +263,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         route("BRAKE_VACUUM_HOSE",LANDMARK,rubber,new float[][]{{-.98f,.50f,.80f},{-.65f,.34f,.80f},{-.30f,.20f,.75f}});
         route("POWER_STEERING_HIGH_PRESSURE",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.23f,.25f,.56f},{.05f,.34f,.48f},{-.20f,.40f,.42f}});
         route("POWER_STEERING_RETURN",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.62f,.58f,.28f},{.48f,.48f,.30f},{.35f,.41f,.36f},{.20f,.32f,.52f}});
+        route("INTAKE_AIR_PATH",LANDMARK,rubber,new float[][]{{.02f,-.32f,.74f},{-.04f,-.37f,.77f},{.08f,-.40f,.82f},{.25f,-.33f,.91f},{.32f,-.20f,.96f},{.30f,.20f,.96f}});
     }
 
     private Part box(String id,String name,int cat,float f,float l,float u,float sf,float sl,float su,float[] color,String note){Part p=new Part(id,name,cat,-l,u,-f,sl,su,sf,color,note);parts.add(p);return p;}

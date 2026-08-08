@@ -10,11 +10,16 @@ Windows now presents a 10-step RM144U/EPC/AC001-98 guided flush-and-retrofit loc
 
 Windows adds selectable complete, receiver-only, and conditional flush/evacuation guides. The flush branch identifies every modeled part as eligible only under stated conditions or as isolate/replace, gives the selected Four Seasons kit’s flush/purge values as kit-specific guidance, and then walks the RM144U post-reassembly vacuum threshold and five-minute hold test. Android now follows the same component-specific decision sequence.
 
+## v1.9.0 geometry and photo-evidence update
+
+Windows and Android now expose a named air-cleaner-to-throttle intake route that stays on the passenger-side/front-of-plenum service corridor around the full-width 1UZ engine mass. Windows Geometry Validation reports datums, anchors, source/page evidence, and deviations; Android adds the same marker mode and saves a camera-coordinate manifest with each photo capture/import.
+
 ## Downloads
 
 Use the GitHub Releases page:
 
 - `LS400Toolbox-Android-v1.4.0.apk` — adds factory-bulletin-based pre-May-1991 suction routing, pre-August-1990 EPR identification, and pre-April-1990 power-steering return-tube context. No WebView, browser, private server, internet permission, or network dependency.
+- `LS400Toolbox-Android-v1.9.0.apk` — current native build with geometry validation, corrected intake route, and photo-coordinate manifests.
 - `LS400Toolbox-Windows-v1.0.0.zip` — complete Windows desktop package. Extract the ZIP and run `LS400Toolbox.exe`.
 - `LS400Toolbox.exe` — Windows launcher only; use the ZIP unless the adjacent runtime and model folders are already present.
 

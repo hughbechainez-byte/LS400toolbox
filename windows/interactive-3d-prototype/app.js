@@ -804,10 +804,13 @@ function makePulley(position,radius,depth=.055) {
 function buildEngine() {
   const engine = new THREE.Group();
   engine.position.copy(vehicleToWorld([-.23,0,.57]));
-  const block = roundedBox(.67,.48,.93,.08,0x4c5356,{metalness:.58,roughness:.52});
+  // The 1UZ is the scale anchor for the bay. Keep its full longitudinal and
+  // bank width under the intake; hoses must route around this mass, never
+  // through a compressed engine placeholder.
+  const block = roundedBox(.78,.58,1.02,.08,0x4c5356,{metalness:.58,roughness:.52});
   block.position.y = -.03;
   engine.add(block);
-  const valley = roundedBox(.40,.20,.78,.05,0xaab1b2,{metalness:.72,roughness:.35});
+  const valley = roundedBox(.48,.24,.84,.05,0xaab1b2,{metalness:.72,roughness:.35});
   valley.position.y=.22;
   engine.add(valley);
   addValveCoverDetails(engine,-.29,-.23,'4 CAM 32');
@@ -957,11 +960,20 @@ function buildEngineLandmarks() {
   const afmPlug=roundedBox(.055,.045,.075,.01,0x171b1d,{roughness:.82});
   afmPlug.position.copy(vehicleToWorld([.02,-.40,.84]));
   intake.add(afmPlug);
-  const postMeter = tube([[.02,-.32,.74],[-.02,-.22,.78],[.08,-.08,.84],[.23,.13,.90],[.30,.20,.92]],.073,0x1b2023,{roughness:.88,metalness:.01,segments:38,radialSegments:16});
+  // Factory intake topology is airbox -> AFM -> duct along the passenger
+  // side, then a short high bend across the front of the plenum to the
+  // throttle body. The bend stays ahead of the engine's front face instead
+  // of diagonally crossing the engine volume.
+  const intakeCenterline = [[.02,-.32,.74],[-.04,-.37,.77],[.08,-.40,.82],[.25,-.33,.91],[.32,-.20,.96],[.30,.20,.96]];
+  const postMeter = tube(intakeCenterline,.073,0x1b2023,{roughness:.88,metalness:.01,segments:46,radialSegments:16});
   intake.add(postMeter);
   for(let i=0;i<8;i++){
     const t=i/7;
-    const point=vehicleToWorld([-.02 + .32*t,-.32 + .50*t,.78 + .14*t]);
+    const segment=Math.min(intakeCenterline.length-2,Math.floor(t*(intakeCenterline.length-1)));
+    const localT=t*(intakeCenterline.length-1)-segment;
+    const a=intakeCenterline[segment],b=intakeCenterline[segment+1];
+    const vehiclePoint=a.map((value,index)=>value+(b[index]-value)*localT);
+    const point=vehicleToWorld(vehiclePoint);
     const ring=torus(.076,.006,0x343a3d,'z',{roughness:.82,tubularSegments:28});
     ring.position.copy(point);
     ring.rotation.y=.42;
@@ -969,7 +981,7 @@ function buildEngineLandmarks() {
     intake.add(ring);
   }
   // Worm-drive clamps make the two coupler joints legible at a service-camera distance.
-  for (const point of [[.02,-.32,.74],[.30,.20,.92]]) {
+  for (const point of [[.02,-.32,.74],[.30,.20,.96]]) {
     const clamp=torus(.078,.009,0xa4abad,'z',{roughness:.42,metalness:.72,tubularSegments:28});
     clamp.position.copy(vehicleToWorld(point));
     clamp.rotation.y=.42;
@@ -977,7 +989,7 @@ function buildEngineLandmarks() {
     intake.add(clamp);
   }
   const throttleCoupler=torus(.105,.012,0x242a2d,'x',{roughness:.82,metalness:.08,tubularSegments:30});
-  throttleCoupler.position.copy(vehicleToWorld([.30,.20,.92]));
+  throttleCoupler.position.copy(vehicleToWorld([.30,.20,.96]));
   throttleCoupler.rotation.z=.34;
   intake.add(throttleCoupler);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});

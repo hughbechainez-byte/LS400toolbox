@@ -29,10 +29,13 @@ export const GEOMETRY_DATASET = {
     confidence: 'high-coordinate-contract / body-dimension-numeric-recapture-needed'
   },
   documentsReviewed: [
-    { id: 'CR19X', title: 'Collision Repair Manual', sections: 50, usefulFor: 'body marks, front structure, radiator support, front rails, cowl/firewall context, underbody', status: 'reviewed; CR0049 cached body-dimension render is blank locally' },
-    { id: 'EWD070U', title: 'Electrical Wiring Diagram', sections: 50, usefulFor: 'component locations, harness/relay context, electrical systems near service landmarks', status: 'reviewed; physical loom extraction incomplete' },
-    { id: 'RM144U', title: 'Factory Repair Manual A/C/HVAC context', usefulFor: 'service boundaries, safety gates, receiver/condenser/HVAC procedures and torque values', status: 'reviewed from local extracted references and RM144U PDF' },
+    { id: 'CR19X', title: 'Collision Repair Manual', sections: 50, usefulFor: 'body marks, front structure, radiator support, front rails, cowl/firewall context, underbody and engine-compartment dimensions', status: 'reviewed; CR0049 cached body-dimension render is blank locally' },
+    { id: 'EWD070U', title: 'Electrical Wiring Diagram', sections: 250, usefulFor: 'component locations, harness/relay context, electrical systems near service landmarks', status: 'reviewed; physical loom extraction incomplete' },
+    { id: 'RM144U', title: 'Factory Repair Manual A/C/HVAC context', usefulFor: 'service boundaries, safety gates, receiver/condenser/HVAC procedures, cooling and torque values', status: 'reviewed from local extracted references and RM144U PDF' },
+    { id: 'CHARM_1990', title: '1990 Operation CHARM service archive', usefulFor: 'A/C/HVAC locator, cooling/heater, intake/vacuum/PCV/EGR/EVAP topology, component service views', status: 'reviewed from 1990 exact-model offline pages; diagrams are topology/locator evidence, not scale' },
+    { id: 'EPC_UCF10L', title: 'UCF10L-AEPGKA factory-derived parts diagrams', usefulFor: 'engine, intake, cooling, A/C, brake booster, battery, wiring and mounting relationships', status: 'reviewed from 96 local exploded-view plates; installed centerlines remain approximate' },
     { id: 'EPC_AC', title: 'Factory parts diagrams and exploded views', usefulFor: 'A/C component identity, receiver/fan/condenser relationships, compressor ports, pipe-family topology', status: 'reviewed from local EPC images' },
+    { id: 'REFERENCE_CORPUS', title: 'Curated factory/reference corpus and capture plan', usefulFor: 'source provenance, truth labels, missing-information limits, hard-point and photo capture protocol', status: 'reviewed; no calibrated subject-vehicle survey is present' },
     { id: 'PHOTOS_PRIVATE', title: 'Private hood-open LS400 references', usefulFor: 'visual alignment and spacing sanity checks only', status: 'reviewed; no publication rights' }
   ],
   dimensions: [
@@ -378,6 +381,14 @@ export const COMPONENTS = [
 ];
 
 export const ROUTES = [
+  {
+    id: 'INTAKE_AIR_PATH', displayName: 'Air-cleaner to throttle-body intake path', aliases: ['intake hose', 'air intake duct', 'AFM duct'],
+    system: 'INTAKE', pressureSide: 'NONE', fluidType: 'filtered intake air', from: 'LANDMARK_AIRBOX', to: 'ENGINE_1UZ_FE',
+    direction: 'air cleaner toward throttle body', source: '1990 UCF10 EPC air-cleaner/EFI plates; CHARM intake/AFM service context; private hood-open references',
+    confidence: 'factory topology / installed bend approximate', serviceRole: 'Engine-off inspection path; do not treat as a refrigerant or vacuum service route.',
+    geometryStatus: 'continuous_true_form_approximate', points: [[.02,-.32,.74],[-.04,-.37,.77],[.08,-.40,.82],[.25,-.33,.91],[.32,-.20,.96],[.30,.20,.96]],
+    sections: [{from:0,to:1,type:'rubber',radius:0.031},{from:1,to:5,type:'rubber',radius:0.037}], crimps:[1,5], clamps:[0,1,5], flow:[0.14,0.42,0.76], tags:['intake','line','engine-bay','passenger-side','front-of-plenum']
+  },
   {
     id: 'AC_DISCHARGE_LINE', legacyIds: ['AC-003', 'AC-004', 'AC-C001', 'AC-C002', 'AC-C003'], displayName: 'Compressor-to-condenser discharge line',
     aliases: ['high-pressure discharge hose and tube G'], system: 'AIR_CONDITIONING', pressureSide: 'HIGH', fluidType: 'high-pressure refrigerant vapor',
