@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {
-  VEHICLE, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS,
+  VEHICLE, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS, GEOMETRY_DATASET,
   REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE, AC_R134A_RETROFIT_GUIDE
 } from './model-data.js';
 
@@ -18,6 +18,8 @@ const pickables = [];
 const routeRuntime = new Map();
 const collisionObjects = [];
 const highlightHelpers = [];
+const anchorData = new Map(GEOMETRY_DATASET.componentAnchors.map(item => [item.componentId, item]));
+let geometryValidationGroup;
 
 const state = {
   isolation: 'ALL',
@@ -30,12 +32,13 @@ const state = {
   cutawayFirewall: false,
   cutawayHvac: false,
   comparisonMode: 'OFF',
-  referenceId: REFERENCE_IMAGES[0].id,
+  referenceId: 'LICENSED_EXTERIOR',
   referenceOpacity: .55,
   serviceJobMode: false,
   serviceProfile: 'UNKNOWN',
   serviceStep: 0,
   serviceGuideMode: 'FULL',
+  geometryValidation: false,
   allowInside: false,
   cameraTween: null,
   validationReport: null,
@@ -523,7 +526,7 @@ function buildFrontBody() {
   }
   registerComponent(grille,'LANDMARK_GRILLE',{minLod:1});
 
-  for (const [id,left] of [['LANDMARK_PASSENGER_HEADLIGHT',-.55],['LANDMARK_DRIVER_HEADLIGHT',.55]]) {
+  for (const [id,left] of [['LANDMARK_PASSENGER_HEADLIGHT',-.62],['LANDMARK_DRIVER_HEADLIGHT',.62]]) {
     const headlight = new THREE.Group();
     const trim = roundedBox(.57,.235,.105,.025,0x2b2f32,{metalness:.38,roughness:.42});
     trim.position.copy(vehicleToWorld([.90,left,.67]));
@@ -758,7 +761,9 @@ function buildCoolingStack() {
   registerComponent(outlet,'AC_CONDENSER_OUTLET',{minLod:2});
 
   const fans = new THREE.Group();
-  fans.add(makeFan([.72,-.31,.59],.235),makeFan([.72,.31,.59],.235));
+  // Twin fans sit fully in the opening between the headlights, behind the
+  // condenser/radiator stack, rather than intruding into either lamp envelope.
+  fans.add(makeFan([.72,-.20,.59],.18),makeFan([.72,.20,.59],.18));
   registerComponent(fans,'LANDMARK_COOLING_FANS',{minLod:1});
 }
 
@@ -942,19 +947,39 @@ function buildEngineLandmarks() {
   registerComponent(airbox,'LANDMARK_AIRBOX',{minLod:1});
 
   const intake = new THREE.Group();
-  const duct=tube([[.03,-.48,.69],[-.02,-.39,.72],[-.08,-.29,.75],[-.16,-.20,.78]],.072,0x1b2023,{roughness:.88,metalness:.01,segments:30,radialSegments:16});
-  intake.add(duct);
+  // The UCF10 intake is a chain, not one floating tube: airbox outlet -> AFM
+  // housing -> accordion boot -> throttle body at the front of the plenum.
+  const airboxOutlet = tube([[.05,-.55,.70],[.03,-.49,.72],[.02,-.45,.73]],.062,0x1b2023,{roughness:.88,metalness:.01,segments:20,radialSegments:16});
+  intake.add(airboxOutlet);
+  const afm=roundedBox(.16,.13,.18,.025,0x5d6568,{metalness:.48,roughness:.5});
+  afm.position.copy(vehicleToWorld([.02,-.40,.74]));
+  intake.add(afm);
+  const afmPlug=roundedBox(.055,.045,.075,.01,0x171b1d,{roughness:.82});
+  afmPlug.position.copy(vehicleToWorld([.02,-.40,.84]));
+  intake.add(afmPlug);
+  const postMeter = tube([[.02,-.32,.74],[-.02,-.22,.78],[.08,-.08,.84],[.23,.13,.90],[.30,.20,.92]],.073,0x1b2023,{roughness:.88,metalness:.01,segments:38,radialSegments:16});
+  intake.add(postMeter);
   for(let i=0;i<8;i++){
-    const ring=torus(.075,.006,0x343a3d,'z',{roughness:.82,tubularSegments:28});
-    const point=vehicleToWorld([-.02-i*.015,-.40+i*.025,.72+i*.009]);
+    const t=i/7;
+    const point=vehicleToWorld([-.02 + .32*t,-.32 + .50*t,.78 + .14*t]);
+    const ring=torus(.076,.006,0x343a3d,'z',{roughness:.82,tubularSegments:28});
     ring.position.copy(point);
     ring.rotation.y=.42;
     ring.userData.minLod=2;
     intake.add(ring);
   }
-  const afm=roundedBox(.15,.12,.14,.025,0x5d6568,{metalness:.48,roughness:.5});
-  afm.position.copy(vehicleToWorld([.02,-.44,.72]));
-  intake.add(afm);
+  // Worm-drive clamps make the two coupler joints legible at a service-camera distance.
+  for (const point of [[.02,-.32,.74],[.30,.20,.92]]) {
+    const clamp=torus(.078,.009,0xa4abad,'z',{roughness:.42,metalness:.72,tubularSegments:28});
+    clamp.position.copy(vehicleToWorld(point));
+    clamp.rotation.y=.42;
+    clamp.userData.minLod=1;
+    intake.add(clamp);
+  }
+  const throttleCoupler=torus(.105,.012,0x242a2d,'x',{roughness:.82,metalness:.08,tubularSegments:30});
+  throttleCoupler.position.copy(vehicleToWorld([.30,.20,.92]));
+  throttleCoupler.rotation.z=.34;
+  intake.add(throttleCoupler);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
 
   const booster = new THREE.Group();
@@ -1315,6 +1340,41 @@ function buildRoutes() {
   }
 }
 
+function addValidationLine(group, from, to, color, radius = .006, label = '') {
+  const segment = tube([from, to], radius, color, { metalness: .2, roughness: .48, segments: 2, radialSegments: 6 });
+  segment.userData.validationHelper = true;
+  group.add(segment);
+  if (label) {
+    const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2, (from[2] + to[2]) / 2];
+    const plate = textPlate(label, .34, .10, { fontSize: 52, background: '#091018', border: '#48dbc5', color: '#edf4fb' });
+    plate.position.copy(vehicleToWorld([mid[0], mid[1], mid[2] + .045]));
+    plate.rotation.x = -Math.PI / 2;
+    group.add(plate);
+  }
+}
+
+function addValidationPoint(group, point, color, label, scale = 1) {
+  const marker = new THREE.Mesh(new THREE.SphereGeometry(.022 * scale, 16, 10), material(color, { emissive: color, roughness: .35 }));
+  marker.material.emissiveIntensity = .55;
+  marker.position.copy(vehicleToWorld(point));
+  marker.userData.validationHelper = true;
+  group.add(marker);
+  const plate = textPlate(label, .30, .085, { fontSize: 48, background: '#091018', border: '#f0c76d', color: '#f8e6aa' });
+  plate.position.copy(vehicleToWorld([point[0], point[1], point[2] + .06]));
+  plate.rotation.x = -Math.PI / 2;
+  group.add(plate);
+}
+
+function buildGeometryValidationOverlay() {
+  geometryValidationGroup = new THREE.Group();
+  geometryValidationGroup.name = 'GEOMETRY_VALIDATION_REFERENCES';
+  GEOMETRY_DATASET.datumPoints.forEach(datum => addValidationPoint(geometryValidationGroup, datum.point, 0xf0c76d, datum.id.replace('DATUM_', ''), 1.08));
+  GEOMETRY_DATASET.componentAnchors.forEach(anchor => addValidationPoint(geometryValidationGroup, anchor.anchor, 0x48dbc5, anchor.componentId.replace(/^(LANDMARK_|AC_|ENGINE_|HVAC_)/, ''), .82));
+  GEOMETRY_DATASET.measurementReferences.forEach(reference => addValidationLine(geometryValidationGroup, reference.from, reference.to, 0x8b7cff, .006, reference.label));
+  geometryValidationGroup.visible = false;
+  scene.add(geometryValidationGroup);
+}
+
 function buildScene() {
   buildGround();
   buildBodyShell();
@@ -1328,12 +1388,13 @@ function buildScene() {
   buildReceiverAndServiceDetails();
   buildHvac();
   buildRoutes();
+  buildGeometryValidationOverlay();
   scene.updateMatrixWorld(true);
 }
 
 buildScene();
 // Read-only build/export hook used to keep the native Android mesh in parity.
-window.__LS400_NATIVE_EXPORT__ = { modelRoot, objectById };
+window.__LS400_NATIVE_EXPORT__ = { modelRoot, objectById, geometryDataset: GEOMETRY_DATASET };
 
 const ESSENTIAL_LANDMARKS = new Set([
   'LANDMARK_BODY_SHELL','LANDMARK_FRONT_BUMPER','LANDMARK_GRILLE','LANDMARK_PASSENGER_HEADLIGHT','LANDMARK_DRIVER_HEADLIGHT',
@@ -1361,6 +1422,11 @@ function isolationState(item, group) {
   const isLandmark = ESSENTIAL_LANDMARKS.has(item.id) || tags.has('landmark');
   const side = item.pressureSide ?? 'NONE';
   if (state.isolation === 'ALL') return { visible: true, factor: 1 };
+  if (state.isolation === 'GEOMETRY_VALIDATION') {
+    if (isRoute && item.system === 'AIR_CONDITIONING') return { visible: true, factor: .72 };
+    if (isAC || isHvac || isLandmark || ENGINE_IDS.has(item.id)) return { visible: true, factor: item.system === 'BODY' ? .16 : .62 };
+    return { visible: false, factor: 0 };
+  }
   if (state.isolation === 'LANDMARKS') return { visible: !isAC && !isHvac && !isRoute, factor: 1 };
   if (state.isolation === 'AC_COMPLETE') {
     if (isAC || isHvac || isAcSupport) return { visible: true, factor: 1 };
@@ -1421,6 +1487,7 @@ function shouldForceHide(id) {
 }
 
 function updateVisibility() {
+  state.geometryValidation = state.isolation === 'GEOMETRY_VALIDATION' || !!document.getElementById('showGeometryValidation')?.checked;
   for (const group of registered) {
     const id = group.userData.componentId;
     const item = itemData.get(id) ?? group.userData.meta;
@@ -1438,6 +1505,7 @@ function updateVisibility() {
       if (child.userData.caseShell && state.cutawayHvac) setMaterialOpacity(child.material, Math.min(factor, .18));
     });
   }
+  if (geometryValidationGroup) geometryValidationGroup.visible = state.geometryValidation;
   if (state.selectedId && !isPickAllowed(state.selectedId)) {
     state.selectedId = null;
     state.tracedRouteIds.clear();
@@ -1540,6 +1608,16 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 }
 
+function componentAnchorDeviation(id) {
+  const anchor = anchorData.get(id);
+  const group = objectById.get(id);
+  if (!anchor || !group) return null;
+  const actual = new THREE.Box3().setFromObject(group).getCenter(new THREE.Vector3());
+  const expected = vehicleToWorld(anchor.anchor);
+  const deviationMm = actual.distanceTo(expected) * 1000;
+  return { anchor, deviationMm };
+}
+
 function connectedRouteIds(id) {
   const component = componentData.get(id);
   const neighbours = new Set([id,...(component?.connectsTo ?? [])]);
@@ -1566,6 +1644,11 @@ function renderSelectionCard() {
   const connects = isRoute ? `${item.from} → ${item.to}` : [...new Set([...(item.connectsTo ?? []),...connectedRouteIds(item.id)])].join(', ');
   const functionText = item.function ?? (isRoute ? `Carries ${item.fluidType} ${item.direction}.` : '—');
   const serviceText = item.serviceRole ?? item.serviceRelevance ?? 'Verify against the factory service manual.';
+  const geometry = componentAnchorDeviation(item.id);
+  const geometryRows = geometry ? `
+        <div class="meta-row"><span>Geometry source</span><span>${escapeHtml(`${geometry.anchor.page} · ${geometry.anchor.source}`)}</span></div>
+        <div class="meta-row"><span>Anchor</span><span>${escapeHtml(`${geometry.anchor.anchor.map(value => Math.round(value * 1000)).join(', ')} mm`)}</span></div>
+        <div class="meta-row"><span>Deviation</span><span>${escapeHtml(`${Math.round(geometry.deviationMm)} mm from documented anchor; tolerance ${geometry.anchor.toleranceMm} mm`)}</span></div>` : '';
   card.innerHTML = `
     <div class="selection-header">
       <div class="component-id">${escapeHtml(item.id)}</div>
@@ -1582,6 +1665,7 @@ function renderSelectionCard() {
         <div class="meta-row"><span>Location</span><span>${escapeHtml(item.location ?? item.direction ?? 'See highlighted geometry')}</span></div>
         <div class="meta-row"><span>Confidence</span><span class="confidence">${escapeHtml(item.confidence ?? 'approximate')}</span></div>
         <div class="meta-row"><span>Evidence</span><span>${escapeHtml(item.source ?? '—')}</span></div>
+        ${geometryRows}
         <div class="meta-row"><span>Service note</span><span>${escapeHtml(serviceText)}</span></div>
         <div class="meta-row"><span>Model note</span><span>${escapeHtml(item.notes ?? item.geometryStatus ?? '—')}</span></div>
       </div>
@@ -1781,7 +1865,7 @@ function resetHumanScaleView() {
   document.getElementById('isolation').value='ALL';
   document.getElementById('detailLevel').value='2';
   document.getElementById('bodyTransparent').checked=false;
-  for(const id of ['hideHood','hideBumper','hideRadiator','hideEngine','hideSplash','cutawayFirewall','cutawayHvac']) document.getElementById(id).checked=false;
+  for(const id of ['hideHood','hideBumper','hideRadiator','hideEngine','hideSplash','cutawayFirewall','cutawayHvac','showGeometryValidation']) document.getElementById(id).checked=false;
   clearSelection();
   setCameraPreset('FULL_VEHICLE_HOOD_OPEN_VIEW');
 }
@@ -1891,7 +1975,7 @@ function populateControls() {
     referenceSelect.appendChild(option);
   });
   document.getElementById('uncertaintyList').innerHTML=UNCERTAINTIES.map(value=>`<li>${escapeHtml(value)}</li>`).join('');
-  document.getElementById('modelStats').textContent=`${COMPONENTS.length} components · ${ROUTES.length} routes · 3 detail levels`;
+  document.getElementById('modelStats').textContent=`${COMPONENTS.length} components · ${ROUTES.length} routes · ${GEOMETRY_DATASET.componentAnchors.length} anchors`;
   renderAcceptance();
 }
 
@@ -1970,6 +2054,21 @@ function runValidation() {
   const important=COMPONENTS.filter(item=>item.important);
   const missingBuilt=important.filter(item=>!objectById.has(item.id));
   checks.push(check('Important components have geometry',missingBuilt.length?'error':'pass',missingBuilt.length?`Missing: ${missingBuilt.map(item=>item.id).join(', ')}`:`${important.length} important components built.`));
+
+  const missingGeometrySources = GEOMETRY_DATASET.documentsReviewed.length < 5 || !GEOMETRY_DATASET.componentAnchors.length || !GEOMETRY_DATASET.measurementReferences.length;
+  checks.push(check('Structured geometry dataset is loaded',missingGeometrySources?'error':'pass',missingGeometrySources?'Geometry source, anchor or measurement-reference data is missing.':`${GEOMETRY_DATASET.documentsReviewed.length} source groups, ${GEOMETRY_DATASET.componentAnchors.length} anchors and ${GEOMETRY_DATASET.measurementReferences.length} measurement references loaded.`));
+
+  const anchorDeviations = GEOMETRY_DATASET.componentAnchors.map(anchor => {
+    const group = objectById.get(anchor.componentId);
+    if (!group) return { anchor, missing: true, deviationMm: Infinity };
+    const actual = new THREE.Box3().setFromObject(group).getCenter(new THREE.Vector3());
+    const expected = vehicleToWorld(anchor.anchor);
+    return { anchor, deviationMm: actual.distanceTo(expected) * 1000 };
+  });
+  const badAnchors = anchorDeviations.filter(item => item.missing || item.deviationMm > item.anchor.toleranceMm);
+  checks.push(check('Documented geometry anchors remain within tolerance',badAnchors.length?'error':'pass',badAnchors.length?`Out of tolerance: ${badAnchors.map(item=>`${item.anchor.componentId} ${Math.round(item.deviationMm)} mm`).join(', ')}`:`${anchorDeviations.length} anchors checked against source tolerances.`));
+
+  checks.push(check('Geometry Validation mode can show datum points and anchors',geometryValidationGroup?.children?.length?'pass':'error',geometryValidationGroup?.children?.length?`${geometryValidationGroup.children.length} validation helpers built from datum, anchor and measurement data.`:'No validation helper geometry was built.'));
 
   const missingEndpoints=ROUTES.filter(route=>!itemData.has(route.from)||!itemData.has(route.to)||!objectById.has(route.from)||!objectById.has(route.to));
   checks.push(check('Every modeled line has two valid endpoints',missingEndpoints.length?'error':'pass',missingEndpoints.length?`Broken: ${missingEndpoints.map(route=>route.id).join(', ')}`:`${ROUTES.length} routes have named start and destination objects.`));
@@ -2082,6 +2181,8 @@ function runValidation() {
     vehicle:VEHICLE,
     summary:{status:errors?'FAIL':'PASS_WITH_WARNINGS',errors,warnings,checks:checks.length,unexplainedDisconnectedAcLines:missingEndpoints.filter(item=>item.system==='AIR_CONDITIONING').length},
     checks,
+    geometryDataset: GEOMETRY_DATASET,
+    anchorDeviationMm: anchorDeviations.map(item => ({ componentId: item.anchor.componentId, deviationMm: Number.isFinite(item.deviationMm) ? Math.round(item.deviationMm) : null, toleranceMm: item.anchor.toleranceMm, source: item.anchor.source, page: item.anchor.page, confidence: item.anchor.confidence })),
     confirmedComponents:confirmed,
     approximateComponents:approximate,
     missingComponents:missingBuilt.map(item=>item.id),
@@ -2261,6 +2362,13 @@ function bindControls() {
   document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSidebar();});
   document.getElementById('isolation').addEventListener('change',event=>{
     state.isolation=event.target.value;
+    if(state.isolation==='GEOMETRY_VALIDATION'){
+      document.getElementById('showGeometryValidation').checked=true;
+      state.detailLevel=3;
+      state.bodyTransparent=true;
+      document.getElementById('detailLevel').value='3';
+      document.getElementById('bodyTransparent').checked=true;
+    }
     if(state.isolation==='AC_COMPLETE') markAcceptance(0);
     if(state.isolation==='AC_CABIN'){
       state.cutawayFirewall=true; state.cutawayHvac=true;
@@ -2280,6 +2388,14 @@ function bindControls() {
 
   for(const id of ['hideHood','hideBumper','hideRadiator','hideEngine','hideSplash']) document.getElementById(id).addEventListener('change',updateVisibility);
   document.getElementById('bodyTransparent').addEventListener('change',event=>{state.bodyTransparent=event.target.checked;updateVisibility();});
+  document.getElementById('showGeometryValidation').addEventListener('change',event=>{
+    state.geometryValidation=event.target.checked;
+    if(event.target.checked){
+      state.detailLevel=Math.max(state.detailLevel,3);
+      document.getElementById('detailLevel').value=String(state.detailLevel);
+    }
+    updateVisibility();
+  });
   document.getElementById('cutawayFirewall').addEventListener('change',event=>{state.cutawayFirewall=event.target.checked;updateVisibility();});
   document.getElementById('cutawayHvac').addEventListener('change',event=>{state.cutawayHvac=event.target.checked;if(state.cutawayHvac)markAcceptance(7);updateVisibility();});
   document.getElementById('showLabels').addEventListener('change',event=>{state.labels=event.target.checked;updateSelectionLabel();});
@@ -2401,6 +2517,7 @@ window.LS400Toolbox={
   vehicle:VEHICLE,
   components:COMPONENTS,
   routes:ROUTES,
+  geometryDataset:GEOMETRY_DATASET,
   cameras:CAMERA_PRESETS,
   references:REFERENCE_IMAGES,
   getState:()=>({

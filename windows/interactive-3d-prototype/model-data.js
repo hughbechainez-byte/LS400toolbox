@@ -19,6 +19,66 @@ export const SYSTEMS = {
   POWER_STEERING: { label: 'Power steering', color: 0xff7f87 }
 };
 
+export const GEOMETRY_DATASET = {
+  coordinateSystem: {
+    id: 'UCF10_SERVICE_COORDINATES',
+    units: 'metres',
+    origin: VEHICLE.origin,
+    axes: VEHICLE.coordinateContract,
+    source: 'Project vehicle contract; Collision Repair Manual standard body mark/body dimension sections reviewed',
+    confidence: 'high-coordinate-contract / body-dimension-numeric-recapture-needed'
+  },
+  documentsReviewed: [
+    { id: 'CR19X', title: 'Collision Repair Manual', sections: 50, usefulFor: 'body marks, front structure, radiator support, front rails, cowl/firewall context, underbody', status: 'reviewed; CR0049 cached body-dimension render is blank locally' },
+    { id: 'EWD070U', title: 'Electrical Wiring Diagram', sections: 50, usefulFor: 'component locations, harness/relay context, electrical systems near service landmarks', status: 'reviewed; physical loom extraction incomplete' },
+    { id: 'RM144U', title: 'Factory Repair Manual A/C/HVAC context', usefulFor: 'service boundaries, safety gates, receiver/condenser/HVAC procedures and torque values', status: 'reviewed from local extracted references and RM144U PDF' },
+    { id: 'EPC_AC', title: 'Factory parts diagrams and exploded views', usefulFor: 'A/C component identity, receiver/fan/condenser relationships, compressor ports, pipe-family topology', status: 'reviewed from local EPC images' },
+    { id: 'PHOTOS_PRIVATE', title: 'Private hood-open LS400 references', usefulFor: 'visual alignment and spacing sanity checks only', status: 'reviewed; no publication rights' }
+  ],
+  dimensions: [
+    { id: 'OVERALL_LENGTH', label: 'Overall length', value: 4.995, unit: 'm', source: 'published UCF10 envelope retained in project', confidence: 'high' },
+    { id: 'OVERALL_WIDTH', label: 'Overall width', value: 1.820, unit: 'm', source: 'published UCF10 envelope retained in project', confidence: 'high' },
+    { id: 'OVERALL_HEIGHT', label: 'Overall height', value: 1.400, unit: 'm', source: 'published UCF10 envelope retained in project', confidence: 'high' },
+    { id: 'WHEELBASE', label: 'Wheelbase', value: 2.815, unit: 'm', source: 'published UCF10 envelope retained in project', confidence: 'high' },
+    { id: 'RECEIVER_JOINT_TORQUE', label: 'Receiver liquid-tube joint torque', value: 5.4, unit: 'N.m', source: 'RM144U AC-32 receiver installation', confidence: 'high-service-value' },
+    { id: 'COOLING_UNIT_JOINT_TORQUE', label: 'Cooling-unit liquid/suction joint torque', value: 10, unit: 'N.m', source: 'RM144U torque table/AC procedure context', confidence: 'high-service-value' }
+  ],
+  datumPoints: [
+    { id: 'DATUM_FRONT_AXLE_CENTER', label: 'Front axle center / scene origin', point: [0, 0, 0], source: 'Project coordinate contract', confidence: 'high' },
+    { id: 'DATUM_VEHICLE_CENTERLINE_FRONT', label: 'Front centerline reference', point: [1.00, 0, 0.62], source: 'Collision Repair body-mark centerline concept; grille/radiator-support relationship', confidence: 'high-concept / approximate-coordinate' },
+    { id: 'DATUM_RADIATOR_SUPPORT_CENTER', label: 'Radiator support center', point: [0.62, 0, 0.59], source: 'CR radiator support sections; EPC condenser/fan plate; CHARM locator', confidence: 'high-location' },
+    { id: 'DATUM_FIREWALL_PASSENGER_PASS', label: 'Passenger-side firewall A/C pass-through', point: [-1.00, -0.47, 0.72], source: 'CHARM A/C locator; EPC HVAC tube assemblies', confidence: 'high-area / hidden-detail-approximate' },
+    { id: 'DATUM_ENGINE_BAY_REAR_COWL', label: 'Cowl rear engine-bay datum', point: [-1.04, 0, 0.92], source: 'CR cowl top side panel; private hood-open photos', confidence: 'medium' }
+  ],
+  componentAnchors: [
+    { componentId: 'LANDMARK_RADIATOR_SUPPORT', anchor: [0.62, 0, 0.59], source: 'CR19X radiator support sections; EPC condenser/fans; CHARM locator', page: 'CR19X_CR0014/CR0015; EPC condenser/fans', confidence: 'high-location', toleranceMm: 90 },
+    { componentId: 'AC_CONDENSER', anchor: [0.62, 0, 0.59], source: 'EPC condenser/fans 17822844; CHARM locator', page: 'EPC_AC_CONDENSER', confidence: 'high-location / approximate-dimensions', toleranceMm: 80 },
+    { componentId: 'LANDMARK_RADIATOR', anchor: [0.51, 0, 0.59], source: 'user hood-open photos; EPC condenser/fans', page: 'EPC_AC_CONDENSER', confidence: 'high-order / approximate-depth', toleranceMm: 95 },
+    { componentId: 'LANDMARK_COOLING_FANS', anchor: [0.72, 0, 0.59], source: 'EPC condenser/fans; CHARM locator', page: 'EPC_AC_CONDENSER; FACTORY_AC_LOCATOR', confidence: 'high-location / simplified form', toleranceMm: 100 },
+    { componentId: 'AC_RECEIVER_DRIER', anchor: [0.60, -0.72, 0.59], source: 'RM144U/EPC UCF10L crosswalk; CHARM locator; 12/1989 receiver/condenser plate', page: 'EPC_121989_RECEIVER_FANS', confidence: 'high-location / approximate-dimensions', toleranceMm: 90 },
+    { componentId: 'AC_COMPRESSOR', anchor: [0.30, 0.40, 0.47], source: 'EPC compressor 17822848; CHARM locator; engine accessory-drive relationship', page: 'EPC_COMPRESSOR', confidence: 'high-location / approximate-dimensions', toleranceMm: 120 },
+    { componentId: 'ENGINE_1UZ_FE', anchor: [-0.23, 0, 0.57], source: 'private engine-bay references; vehicle envelope; accessory-drive landmarks', page: 'USER_ENGINE_TOP_1990/1991', confidence: 'medium-layout / form-simplified', toleranceMm: 150 },
+    { componentId: 'LANDMARK_BATTERY', anchor: [0.02, 0.67, 0.58], source: 'private hood-open photos; EWD component-location context', page: 'EWD070U_RP0008', confidence: 'high-area', toleranceMm: 100 },
+    { componentId: 'LANDMARK_AIRBOX', anchor: [0.05, -0.65, 0.58], source: 'private hood-open photos; intake relationship', page: 'USER_ENGINE_TOP_1990', confidence: 'high-area', toleranceMm: 100 },
+    { componentId: 'LANDMARK_BRAKE_BOOSTER', anchor: [-1.00, 0.56, 0.76], source: 'private hood-open photos; firewall landmark relationship', page: 'USER_ENGINE_TOP_1990/1991', confidence: 'high-area', toleranceMm: 100 },
+    { componentId: 'AC_EXPANSION_VALVE', anchor: [-1.00, -0.47, 0.72], source: 'CHARM A/C locator; EPC HVAC tube assemblies', page: 'FACTORY_AC_LOCATOR; EPC_121989_HVAC_TUBES', confidence: 'high-area / hidden-detail-approximate', toleranceMm: 120 },
+    { componentId: 'AC_EPR', anchor: [-1.00, -0.42, 0.67], source: 'RM144U/EPC crosswalk; CHARM locator', page: 'FACTORY_AC_LOCATOR', confidence: 'high-area / hidden-detail-approximate', toleranceMm: 120 },
+    { componentId: 'HVAC_CASE', anchor: [-1.27, -0.28, 0.65], source: 'CHARM A/C locator', page: 'FACTORY_AC_LOCATOR', confidence: 'high-location / approximate-dimensions', toleranceMm: 140 }
+  ],
+  measurementReferences: [
+    { id: 'CENTERLINE', label: 'Vehicle centerline', from: [1.05, 0, 0.04], to: [-1.55, 0, 0.04], source: 'Collision Repair standard body marks and coordinate contract', confidence: 'high-concept' },
+    { id: 'FRONT_STACK_ORDER', label: 'Front heat-exchanger order: fan/condenser/radiator/support', from: [0.76, 0, 0.59], to: [0.48, 0, 0.59], source: 'EPC condenser/fans and CHARM locator', confidence: 'high-order / approximate-depth' },
+    { id: 'PASSENGER_AC_ROUTE_BAND', label: 'Passenger-side A/C pipe band', from: [0.62, -0.72, 0.59], to: [-1.00, -0.47, 0.72], source: 'EPC cooler-piping schemas and CHARM locator', confidence: 'catalog-sequence / installed-bends-approximate' },
+    { id: 'LOW_SIDE_RETURN_BAND', label: 'Low-side suction return band', from: [-1.00, -0.42, 0.67], to: [0.27, 0.42, 0.59], source: 'EPC suction B/C/E family; L-AC003-91; TSB0054L', confidence: 'factory silhouette / installed-bends-approximate' },
+    { id: 'FIREWALL_TO_RADIATOR_SUPPORT', label: 'Firewall to radiator-support service depth', from: [-1.05, 0, 0.65], to: [0.62, 0, 0.59], source: 'CR front structure sections; CHARM locator', confidence: 'medium / numeric recapture needed' }
+  ],
+  assumptions: [
+    'No measurements are invented from the blank CR0049 body-dimension render; body numeric extraction must be recaptured from the source PDF.',
+    'A/C routes use documented topology and multiple supporting factory/reference sources, while bend radii and clamp holes remain provisional.',
+    'Existing components are repositioned inside the documented vehicle coordinate contract; the body is not scaled around them.'
+  ]
+};
+
 const commonAC = {
   system: 'AIR_CONDITIONING',
   fluidType: 'refrigerant / oil film',

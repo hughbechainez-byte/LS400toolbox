@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#091018">
   <title>LS400 Toolbox — 1990 A/C Service Model</title>
+  <link rel="icon" href="ls400-green.ico">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -44,6 +45,7 @@
             <option value="AC_LINES">Refrigerant lines only</option>
             <option value="HARDWARE">Mounting hardware and fittings</option>
             <option value="LANDMARKS">Surrounding landmarks only</option>
+            <option value="GEOMETRY_VALIDATION">Geometry validation mode</option>
           </select>
         </div>
 
@@ -147,6 +149,7 @@
           <label><input id="hideSplash" type="checkbox"> Hide splash shields</label>
           <label><input id="cutawayFirewall" type="checkbox"> Cut away firewall and dashboard</label>
           <label><input id="cutawayHvac" type="checkbox"> Show evaporator inside HVAC case</label>
+          <label><input id="showGeometryValidation" type="checkbox"> Show geometry validation</label>
           <label><input id="showLabels" type="checkbox" checked> Show selected/route labels</label>
         </div>
 
@@ -176,6 +179,7 @@
           <div><dt>Passenger side</dt><dd>−Y vehicle / right side when seated</dd></div>
           <div><dt>Up</dt><dd>+Z vehicle</dd></div>
           <div><dt>Scale</dt><dd>1 scene unit = 1000 mm</dd></div>
+          <div><dt>Validation</dt><dd>Datum points, centerlines, anchors, source/page and deviation are available in Geometry validation mode.</dd></div>
         </dl>
       </section>
 
