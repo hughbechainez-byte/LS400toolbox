@@ -499,8 +499,12 @@ export const ROUTES = [
     system: 'INTAKE', pressureSide: 'NONE', fluidType: 'filtered intake air', from: 'LANDMARK_AIRBOX', to: 'ENGINE_1UZ_FE',
     direction: 'air cleaner toward throttle body', source: '1990 UCF10 EPC air-cleaner/EFI plates; CHARM intake/AFM service context; private hood-open references',
     confidence: 'factory topology / installed bend approximate', serviceRole: 'Engine-off inspection path; do not treat as a refrigerant or vacuum service route.',
-    geometryStatus: 'continuous_true_form_approximate', points: [[.396,-.608,.642],[.335,-.625,.625],[.265,-.735,.608],[.204,-.810,.600],[.264,-.795,.600],[.130,-.765,.625],[.040,-.650,.665],[-.035,-.500,.745],[-.164,-.439,.790],[-.182,-.321,.800]],
-    sections: [{from:0,to:2,type:'rubber',radius:0.069},{from:2,to:3,type:'hard',radius:0.090},{from:3,to:9,type:'rubber',radius:0.075}], crimps:[2,3], clamps:[0,2,3,9], flow:[0.14,0.42,0.76], tags:['intake','line','engine-bay','passenger-side','front-of-plenum']
+    geometryStatus: 'continuous_photo_assembly_approximate',
+    // FI-5 / EPC order is explicit here rather than a screen-relative arc:
+    // low airbox outlet -> flanged rectangular AFM -> ribbed flex -> one
+    // smooth elbow -> the physical silver crossbody/throttle casting.
+    points: [[.401,-.630,.610],[.354,-.648,.620],[.286,-.724,.607],[.246,-.766,.603],[.204,-.810,.600],[.151,-.829,.610],[.107,-.790,.618],[.056,-.742,.641],[.006,-.686,.670],[-.029,-.626,.708],[-.066,-.566,.748],[-.137,-.506,.783],[-.220,-.474,.800],[-.270,-.515,.804],[-.285,-.585,.804],[-.285,-.565,.804],[-.285,-.278,.804],[-.182,-.321,.800]],
+    sections: [{from:0,to:3,type:'rubber',radius:0.092},{from:3,to:5,type:'hard',radius:0.101},{from:5,to:9,type:'rubber',radius:0.106},{from:9,to:14,type:'rubber',radius:0.108},{from:14,to:17,type:'hard',radius:0.117}], crimps:[3,5], clamps:[3,5,9,15], flow:[0.12,0.38,0.64,0.88], tags:['intake','line','engine-bay','passenger-side','front-of-plenum','photo-layout']
   },
   {
     id: 'AC_DISCHARGE_LINE', legacyIds: ['AC-003', 'AC-004', 'AC-C001', 'AC-C002', 'AC-C003'], displayName: 'Compressor-to-condenser discharge line',

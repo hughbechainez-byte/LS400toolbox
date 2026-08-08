@@ -26,6 +26,8 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private static final float OUTER_TOP_APRON_HALF_WIDTH_M=1.310f;
     private static final float INNER_APRON_RAIL_CENTER_OFFSET_M=1.020f;
     private static final float OUTER_APRON_RAIL_CENTER_OFFSET_M=1.200f;
+    private static final float PASSENGER_STRUT_TOWER_FORWARD_M=-.353f,PASSENGER_STRUT_TOWER_LATERAL_M=-1.161f;
+    private static final float DRIVER_STRUT_TOWER_FORWARD_M=-.353f,DRIVER_STRUT_TOWER_LATERAL_M=1.144f;
     private static final float ENGINE_FORWARD_M=-.220f,ENGINE_UP_M=.540f;
     private static final float THROTTLE_FORWARD_M=-.182f,THROTTLE_LATERAL_M=-.321f,THROTTLE_UP_M=.800f;
     private static final float AIRBOX_FORWARD_M=.411f,AIRBOX_LATERAL_M=-.508f,AIRBOX_UP_M=.570f;
@@ -92,7 +94,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         GLES20.glUseProgram(program); GLES20.glUniformMatrix4fv(mvpLoc,1,false,mvp,0); float[] c=highlight?new float[]{1f,.87f,.25f,1}:p.color; GLES20.glUniform4fv(colorLoc,1,c,0); GLES20.glEnableVertexAttribArray(posLoc); FloatBuffer mesh=p.shape==SHAPE_CYLINDER?cylinder:p.shape==SHAPE_TORUS?torus:cube; int count=p.shape==SHAPE_CYLINDER?cylinderVertices:p.shape==SHAPE_TORUS?torusVertices:36; mesh.position(0); GLES20.glVertexAttribPointer(posLoc,3,GLES20.GL_FLOAT,false,0,mesh); GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,count); GLES20.glDisableVertexAttribArray(posLoc);
     }
     private void drawRoute(Route r){
-        float radius=r.id.equals("INTAKE_AIR_PATH")?.088f:r.id.startsWith("BODY_APRON_")?.032f:r.category==LOW?.026f:r.category==HIGH?.019f:.015f;
+        float radius=r.radius>0?r.radius:r.id.startsWith("BODY_APRON_")?.032f:r.category==LOW?.026f:r.category==HIGH?.019f:.015f;
         for(int i=0;i<r.xyz.length/3-1;i++) drawTubeSegment(r.xyz[i*3],r.xyz[i*3+1],r.xyz[i*3+2],r.xyz[i*3+3],r.xyz[i*3+4],r.xyz[i*3+5],radius,r.color);
     }
     private void drawTubeSegment(float ax,float ay,float az,float bx,float by,float bz,float radius,float[] color){
@@ -191,43 +193,60 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("LANDMARK_SPLASH_SHIELDS","Splash shields and undercovers",LANDMARK,.05f,0,.15f,1.65f,1.55f,.06f,dark,"May block lower compressor access.");
         box("LANDMARK_RADIATOR","Engine radiator",LANDMARK,RADIATOR_FORWARD_M,0,.570f,.08f,1.28f,.49f,fin,"Behind the A/C condenser at the corrected rear stack plane.");
         cylinder("LANDMARK_COOLING_FANS","Electric cooling fan pair",LANDMARK,FAN_PLANE_FORWARD_M,0,.575f,.11f,.60f,.60f,dark,"Twin-fan plane between the condenser and radiator support.").rx=90;
-        // Narrow central block plus separate bank covers leaves actual service corridors.
-        box("ENGINE_1UZ_FE","1UZ-FE V8 engine block",LANDMARK,ENGINE_FORWARD_M,0,ENGINE_UP_M,.84f,.78f,.22f,new float[]{.24f,.28f,.30f,1},"Photo-proportioned low 1UZ block; side corridors are authored in the shell.");
-        box("ENGINE_1UZ_FE","Passenger-side 1UZ valve-cover bank",LANDMARK,-.300f,-.610f,.675f,.78f,.30f,.115f,dark,"Low ribbed passenger bank, clear of the apron/tower.");
-        box("ENGINE_1UZ_FE","Driver-side 1UZ valve-cover bank",LANDMARK,-.300f,.610f,.675f,.72f,.34f,.115f,dark,"Low ribbed driver bank, clear of the apron/tower.");
-        box("ENGINE_1UZ_FE","1UZ cast intake plenum",LANDMARK,-.270f,0,.770f,.72f,.43f,.140f,aluminum,"Long central intake spine rather than a tall generic tower.");
-        for(int i=-2;i<=2;i++){
-            box("ENGINE_1UZ_FE","Passenger valve-cover rib",LANDMARK,-.300f+i*.120f,-.610f,.742f,.020f,.275f,.016f,metal,"Raised cover rib.");
-            box("ENGINE_1UZ_FE","Driver valve-cover rib",LANDMARK,-.300f+i*.115f,.610f,.742f,.020f,.305f,.016f,metal,"Raised cover rib.");
-            box("ENGINE_1UZ_FE","Intake plenum runner rib",LANDMARK,-.270f+i*.090f,0,.848f,.030f,.34f,.016f,new float[]{.45f,.50f,.50f,1},"Longitudinal cast runner detail.");
+        // Compact 1UZ envelope reconstructed from the photo-fit vehicle layout.
+        // The lower banks stop at |lateral|=.90 m, leaving real open corridors
+        // before the apron-mounted tower edges at roughly |lateral|=1.00 m.
+        box("ENGINE_1UZ_FE","1UZ-FE central valley block",LANDMARK,ENGINE_FORWARD_M,0,.535f,.88f,.54f,.145f,new float[]{.24f,.28f,.30f,1},"Low central 1UZ mass; the surrounding bank geometry does not consume tower clearance.");
+        box("ENGINE_1UZ_FE","Passenger lower 1UZ V-bank",LANDMARK,-.275f,-.625f,.525f,.98f,.50f,.125f,new float[]{.16f,.20f,.21f,1},"Low passenger bank stays inside the outer-apron corridor.");
+        box("ENGINE_1UZ_FE","Driver lower 1UZ V-bank",LANDMARK,-.275f,.635f,.525f,.98f,.50f,.125f,new float[]{.16f,.20f,.21f,1},"Low driver bank stays inside the outer-apron corridor.");
+        box("ENGINE_1UZ_FE","Passenger-side 1UZ valve-cover strip",LANDMARK,-.310f,-.590f,.650f,.78f,.270f,.100f,dark,"Short passenger cover leaves the throttle and duct exposed.");
+        box("ENGINE_1UZ_FE","Driver-side 1UZ valve-cover strip",LANDMARK,-.310f,.600f,.650f,.80f,.290f,.100f,dark,"Long, narrow driver cover remains clear of the driver strut tower.");
+        for(int i=0;i<5;i++){
+            float forward=-.550f+i*.140f;
+            box("ENGINE_1UZ_FE","Passenger valve-cover cast rib",LANDMARK,forward,-.590f,.710f,.030f,.205f,.016f,metal,"Restrained cast-cover rib.");
+            box("ENGINE_1UZ_FE","Driver valve-cover cast rib",LANDMARK,forward,.600f,.710f,.030f,.220f,.016f,metal,"Restrained cast-cover rib.");
         }
-        box("ENGINE_ACCESSORY_DRIVE","Accessory belt and pulleys",LANDMARK,.35f,0,.47f,.20f,.75f,.35f,dark,"Front engine accessory drive.");
-        cylinder("ENGINE_ALTERNATOR","Alternator",LANDMARK,.23f,-.25f,.38f,.20f,.22f,.22f,metal,"Passenger/front accessory landmark.").rx=90;
-        cylinder("ENGINE_POWER_STEERING_PUMP","Power-steering pump",LANDMARK,.23f,.25f,.56f,.18f,.20f,.20f,metal,"Driver/front accessory landmark.").rx=90;
+        // The reference reads as a rear runner pack and a lower rectangular
+        // Lexus badge face, not a tall generic central block.
+        box("ENGINE_1UZ_FE","1UZ rear runner-pack base",LANDMARK,-.545f,0,.782f,.490f,.340f,.060f,aluminum,"Rear valley runner-pack base.");
+        for(float lateral:new float[]{-.125f,-.075f,-.025f,.025f,.075f,.125f}){
+            box("ENGINE_1UZ_FE","1UZ cast intake runner crest",LANDMARK,-.545f,lateral,.858f,.425f,.030f,.050f,new float[]{.78f,.82f,.81f,1},"Broad longitudinal 1UZ runner crest.");
+        }
+        box("ENGINE_1UZ_FE","1UZ front intake plenum",LANDMARK,-.165f,.005f,.775f,.350f,.290f,.070f,new float[]{.66f,.71f,.70f,1},"Low rectangular front plenum face.");
+        box("ENGINE_1UZ_FE","Lexus intake badge panel",LANDMARK,-.165f,.005f,.836f,.248f,.180f,.022f,new float[]{.80f,.84f,.83f,1},"Recognizable low badge panel on the plenum face.");
+        box("ENGINE_ACCESSORY_DRIVE","Low timing-cover shelf",LANDMARK,.285f,0,.558f,.290f,.460f,.050f,dark,"Shallow front timing cover leaves the accessory reveal open.");
+        cylinder("ENGINE_ACCESSORY_DRIVE","Water-pump hub",LANDMARK,.486f,0,.610f,.075f,.075f,.065f,metal,"Centred water-pump/accessory reveal.").rx=90;
+        cylinder("ENGINE_ALTERNATOR","Alternator",LANDMARK,.458f,-.300f,.555f,.160f,.180f,.180f,metal,"Passenger/front accessory landmark in the open lower bay.").rx=90;
+        cylinder("ENGINE_POWER_STEERING_PUMP","Power-steering pump",LANDMARK,.485f,.300f,.535f,.150f,.170f,.170f,metal,"Driver/front accessory landmark in the open lower bay.").rx=90;
+        // Driver-side photo row is fixed front-to-rear: battery -> fuse -> a
+        // low rectangular reserve.  These are separate vehicle anchors, never
+        // packed together by a display scale.
         box("LANDMARK_BATTERY","Battery case",LANDMARK,DRIVER_BATTERY_FORWARD_M,DRIVER_BATTERY_LATERAL_M,DRIVER_BATTERY_UP_M,.355f,.455f,.180f,dark,"Driver-front photo anchor: [+.542,+.851,+.590] m.");
         box("LANDMARK_BATTERY","Battery lid and hold-down",LANDMARK,DRIVER_BATTERY_FORWARD_M,DRIVER_BATTERY_LATERAL_M,.692f,.365f,.465f,.035f,new float[]{.06f,.08f,.085f,1},"Shallow top and hold-down distinguish the battery from the fuse housing.");
         cylinder("LANDMARK_BATTERY","Battery positive terminal",LANDMARK,.622f,.741f,.722f,.045f,.045f,.030f,new float[]{.72f,.12f,.10f,1},"Visible positive terminal at the driver-front corner.");
-        box("LANDMARK_AIRBOX","Air cleaner box",LANDMARK,AIRBOX_FORWARD_M,AIRBOX_LATERAL_M,AIRBOX_UP_M,.400f,.450f,.175f,dark,"Passenger-front photo anchor; first element of the continuous RH intake path.");
-        box("LANDMARK_AIRBOX","Air cleaner ribbed lid",LANDMARK,AIRBOX_FORWARD_M,AIRBOX_LATERAL_M,.672f,.345f,.420f,.035f,new float[]{.055f,.075f,.080f,1},"Low asymmetric filter-housing lid.");
-        cylinder("LANDMARK_INTAKE_TUBE","Mass air flow meter",LANDMARK,MAF_FORWARD_M,MAF_LATERAL_M,MAF_UP_M,.180f,.145f,.145f,aluminum,"Passenger-front AFM directly downstream of the airbox.").rx=90;
-        box("LANDMARK_INTAKE_TUBE","AFM electronics cap",LANDMARK,MAF_FORWARD_M,MAF_LATERAL_M+.095f,.665f,.115f,.070f,.085f,dark,"Rectangular AFM electronics cap faces the passenger apron.");
-        cylinder("LANDMARK_THROTTLE_BODY","Throttle body at intake plenum",LANDMARK,THROTTLE_FORWARD_M,THROTTLE_LATERAL_M,THROTTLE_UP_M,.260f,.145f,.145f,aluminum,"Central throttle body receives the continuous passenger-side intake duct.").rx=90;
-        box("LANDMARK_THROTTLE_BODY","Passenger-side cast throttle chamber",LANDMARK,-.285f,-.430f,.804f,.305f,.280f,.105f,new float[]{.38f,.43f,.44f,1},"Connected cast transition from duct to the plenum, not a floating horn.");
-        box("LANDMARK_ENGINE_BAY_FUSE_BOX","Engine-bay fuse and relay box",LANDMARK,DRIVER_FUSE_FORWARD_M,DRIVER_FUSE_LATERAL_M,DRIVER_FUSE_UP_M,.300f,.390f,.105f,dark,"Driver-side row anchor behind the battery: [+.297,+.902,+.640] m.");
-        box("LANDMARK_ENGINE_BAY_FUSE_BOX","Fuse/relay-box lid",LANDMARK,DRIVER_FUSE_FORWARD_M,DRIVER_FUSE_LATERAL_M,.707f,.276f,.365f,.030f,new float[]{.05f,.07f,.075f,1},"Flat labeled-style lid distinct from both battery and coolant reserve.");
-        box("LANDMARK_COOLANT_OVERFLOW_RESERVOIR","Shallow rectangular coolant reserve",LANDMARK,DRIVER_COOLANT_RESERVE_FORWARD_M,DRIVER_COOLANT_RESERVE_LATERAL_M,DRIVER_COOLANT_RESERVE_UP_M,.320f,.315f,.078f,new float[]{.72f,.71f,.56f,.92f},"Photo-proportioned rectangular reserve directly behind the fuse box.");
-        box("LANDMARK_COOLANT_OVERFLOW_RESERVOIR","Coolant reserve top seam",LANDMARK,DRIVER_COOLANT_RESERVE_FORWARD_M,DRIVER_COOLANT_RESERVE_LATERAL_M,.822f,.265f,.260f,.018f,new float[]{.82f,.80f,.64f,.94f},"Shallow molded top; not a water-jug silhouette.");
-        cylinder("LANDMARK_COOLANT_OVERFLOW_CAP","Coolant reserve cap",LANDMARK,-.030f,.995f,.842f,.060f,.060f,.028f,new float[]{.20f,.24f,.26f,1},"Low cap on the compact rectangular coolant reserve.");
+        box("LANDMARK_AIRBOX","Air cleaner lower housing",LANDMARK,AIRBOX_FORWARD_M,AIRBOX_LATERAL_M,AIRBOX_UP_M,.455f,.430f,.155f,dark,"Passenger-front photo anchor; first element of the continuous RH intake path.");
+        box("LANDMARK_AIRBOX","Air cleaner stepped lid",LANDMARK,AIRBOX_FORWARD_M+.006f,AIRBOX_LATERAL_M,.660f,.370f,.365f,.036f,new float[]{.055f,.075f,.080f,1},"Low stepped filter-housing lid, not a generic cube.");
+        box("LANDMARK_AIRBOX","Air cleaner outlet neck",LANDMARK,.340f,-.645f,.625f,.135f,.150f,.095f,new float[]{.07f,.09f,.095f,1},"Molded outlet from the low passenger-front housing into the AFM.");
+        cylinder("LANDMARK_INTAKE_TUBE","Mass air flow meter barrel",LANDMARK,MAF_FORWARD_M,MAF_LATERAL_M,MAF_UP_M,.180f,.145f,.145f,aluminum,"Passenger-front AFM directly downstream of the airbox.").rx=90;
+        box("LANDMARK_INTAKE_TUBE","AFM electronics cap",LANDMARK,.204f,-.828f,.724f,.115f,.070f,.085f,dark,"Raised rectangular AFM cap faces the passenger apron.");
+        cylinder("LANDMARK_THROTTLE_BODY","Throttle crossbody barrel",LANDMARK,-.286f,-.430f,.802f,.145f,.145f,.310f,aluminum,"Large horizontal cast barrel receiving the passenger-side intake elbow.").rz=90;
+        cylinder("LANDMARK_THROTTLE_BODY","Throttle inlet collar",LANDMARK,-.286f,-.585f,.802f,.155f,.155f,.026f,metal,"Clamped black-elbow connection at the throttle barrel.").rz=90;
+        box("LANDMARK_THROTTLE_BODY","Passenger-side cast throttle chamber",LANDMARK,-.285f,-.430f,.744f,.420f,.340f,.060f,new float[]{.30f,.35f,.36f,1},"Connected lower cast transition from the duct to the plenum, not a floating horn.");
+        box("LANDMARK_ENGINE_BAY_FUSE_BOX","Engine-bay fuse and relay box",LANDMARK,DRIVER_FUSE_FORWARD_M,DRIVER_FUSE_LATERAL_M,DRIVER_FUSE_UP_M,.390f,.350f,.100f,dark,"Driver-side row anchor behind the battery: [+.297,+.902,+.640] m.");
+        box("LANDMARK_ENGINE_BAY_FUSE_BOX","Fuse/relay-box lid",LANDMARK,DRIVER_FUSE_FORWARD_M,DRIVER_FUSE_LATERAL_M,.707f,.330f,.290f,.030f,new float[]{.05f,.07f,.075f,1},"Flat labeled-style lid distinct from both battery and coolant reserve.");
+        box("LANDMARK_COOLANT_OVERFLOW_RESERVOIR","Shallow rectangular coolant reserve",LANDMARK,DRIVER_COOLANT_RESERVE_FORWARD_M,DRIVER_COOLANT_RESERVE_LATERAL_M,DRIVER_COOLANT_RESERVE_UP_M,.350f,.290f,.084f,new float[]{.72f,.71f,.56f,.92f},"Low opaque rectangular reserve directly behind the fuse box; deliberately not a water-jug silhouette.");
+        box("LANDMARK_COOLANT_OVERFLOW_RESERVOIR","Coolant reserve top seam",LANDMARK,DRIVER_COOLANT_RESERVE_FORWARD_M,DRIVER_COOLANT_RESERVE_LATERAL_M,.822f,.275f,.235f,.018f,new float[]{.82f,.80f,.64f,.94f},"Shallow molded top seam on the rectangular reserve.");
+        cylinder("LANDMARK_COOLANT_OVERFLOW_CAP","Coolant reserve cap",LANDMARK,-.033f,.967f,.842f,.052f,.052f,.028f,new float[]{.20f,.24f,.26f,1},"Low offset cap on the compact rectangular coolant reserve.");
         cylinder("LANDMARK_SPRING_SUPPORT_B_B_HOLES","Passenger B-b inner-front spring support hole",LANDMARK,-.45f,-B_B_INNER_FRONT_HOLE_OFFSET_M,.70f,.025f,.035f,.035f,metal,"RM144U B0-186 B-b is the 1.050 m inner-front hole pair, not the tower centre.");
         cylinder("LANDMARK_SPRING_SUPPORT_B_B_HOLES","Driver B-b inner-front spring support hole",LANDMARK,-.45f,B_B_INNER_FRONT_HOLE_OFFSET_M,.70f,.025f,.035f,.035f,metal,"RM144U B0-186 B-b is the 1.050 m inner-front hole pair, not the tower centre.");
         box("LANDMARK_INNER_APRON_RAILS","Passenger inner apron rail",LANDMARK,-.02f,-INNER_APRON_RAIL_CENTER_OFFSET_M,.77f,2.00f,.050f,.105f,bodyEdge,"Physical inner-apron rail at -1.020 m.");
         box("LANDMARK_INNER_APRON_RAILS","Driver inner apron rail",LANDMARK,-.02f,INNER_APRON_RAIL_CENTER_OFFSET_M,.77f,2.00f,.050f,.105f,bodyEdge,"Physical inner-apron rail at +1.020 m.");
         box("LANDMARK_OUTER_TOP_APRON_RAILS","Passenger outer top-apron rail",LANDMARK,-.02f,-OUTER_APRON_RAIL_CENTER_OFFSET_M,.74f,2.08f,.060f,.115f,bodyEdge,"Physical outer-apron rail at -1.200 m.");
         box("LANDMARK_OUTER_TOP_APRON_RAILS","Driver outer top-apron rail",LANDMARK,-.02f,OUTER_APRON_RAIL_CENTER_OFFSET_M,.74f,2.08f,.060f,.115f,bodyEdge,"Physical outer-apron rail at +1.200 m.");
-        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger front strut-apron dome",LANDMARK,-.353f,-1.161f,.700f,.300f,.320f,.120f,body,"Passenger dome sits on the outer apron edge; clear of the 1UZ bank.");
-        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Driver front strut-apron dome",LANDMARK,-.353f,1.144f,.700f,.300f,.320f,.120f,body,"Driver dome sits on the outer apron edge; clear of the 1UZ bank.");
-        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger strut top and fastener plate",LANDMARK,-.353f,-1.161f,.772f,.125f,.140f,.028f,metal,"Tower top hardware.");
-        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Driver strut top and fastener plate",LANDMARK,-.353f,1.144f,.772f,.125f,.140f,.028f,metal,"Tower top hardware.");
+        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger front strut-apron dome",LANDMARK,PASSENGER_STRUT_TOWER_FORWARD_M,PASSENGER_STRUT_TOWER_LATERAL_M,.700f,.300f,.320f,.120f,body,"Passenger dome sits on the outer apron edge; clear of the compact 1UZ bank.");
+        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Driver front strut-apron dome",LANDMARK,DRIVER_STRUT_TOWER_FORWARD_M,DRIVER_STRUT_TOWER_LATERAL_M,.700f,.300f,.320f,.120f,body,"Driver dome sits on the outer apron edge; clear of the compact 1UZ bank.");
+        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger strut top and fastener plate",LANDMARK,PASSENGER_STRUT_TOWER_FORWARD_M,PASSENGER_STRUT_TOWER_LATERAL_M,.772f,.125f,.140f,.028f,metal,"Tower top hardware.");
+        cylinder("LANDMARK_FRONT_STRUT_TOWERS","Driver strut top and fastener plate",LANDMARK,DRIVER_STRUT_TOWER_FORWARD_M,DRIVER_STRUT_TOWER_LATERAL_M,.772f,.125f,.140f,.028f,metal,"Tower top hardware.");
         box("LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS","Passenger air-suspension service housing",LANDMARK,-.83f,-.72f,.86f,.30f,.29f,.16f,dark,"Rear passenger-side boxed service zone.");
         box("LANDMARK_AIR_SUSPENSION_SERVICE_HOUSINGS","Driver air-suspension service housing",LANDMARK,-.83f,.72f,.86f,.30f,.29f,.16f,dark,"Rear driver-side boxed service zone.");
         box("ENGINE_THROTTLE_CABLE","Throttle cable",LANDMARK,-.12f,-.08f,1.00f,.05f,.05f,.05f,metal,"Cable route above the passenger-side low service fitting into the throttle body.");
@@ -332,11 +351,16 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         route("BRAKE_VACUUM_HOSE",LANDMARK,rubber,new float[][]{{BRAKE_BOOSTER_FORWARD_M,BRAKE_BOOSTER_LATERAL_M,.80f},{-.72f,.80f,.82f},{-.45f,.46f,.80f},{-.30f,.20f,.75f}});
         route("POWER_STEERING_HIGH_PRESSURE",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.23f,.25f,.56f},{.05f,.34f,.48f},{-.20f,.40f,.42f}});
         route("POWER_STEERING_RETURN",LANDMARK,new float[]{.85f,.32f,.37f,1},new float[][]{{.62f,.58f,.28f},{.48f,.48f,.30f},{.35f,.41f,.36f},{.20f,.32f,.52f}});
-        // RM144U FI-5 / FI-47 topology, with the v47 photo-fit installed path:
-        // airbox → AFM → one continuous curved rubber duct → throttle body.
-        route("INTAKE_AIR_PATH",LANDMARK,rubber,new float[][]{{.396f,-.608f,.642f},{.335f,-.625f,.625f},{.265f,-.735f,.608f},{MAF_FORWARD_M,MAF_LATERAL_M,MAF_UP_M},{.264f,-.795f,.600f},{.130f,-.765f,.625f},{.040f,-.650f,.665f},{-.035f,-.500f,.745f},{-.164f,-.439f,.790f},{THROTTLE_FORWARD_M,THROTTLE_LATERAL_M,THROTTLE_UP_M}});
-        route("BODY_APRON_PASSENGER_RAIL",LANDMARK,bodyEdge,new float[][]{{RADIATOR_SUPPORT_FORWARD_M,-1.20f,.71f},{.80f,-1.24f,.80f},{.35f,-1.30f,.88f},{-.10f,-1.31f,.91f},{-.353f,-1.161f,.78f},{-.78f,-1.20f,.83f},{-1.04f,-1.12f,.86f}});
-        route("BODY_APRON_DRIVER_RAIL",LANDMARK,bodyEdge,new float[][]{{RADIATOR_SUPPORT_FORWARD_M,1.20f,.71f},{.80f,1.24f,.80f},{.35f,1.30f,.88f},{-.10f,1.31f,.91f},{-.353f,1.144f,.78f},{-.78f,1.19f,.83f},{-1.04f,1.11f,.86f}});
+        // RM144U FI-5 / FI-47 topology, ported as one physically continuous
+        // installed chain: low airbox outlet -> exposed AFM -> thick ribbed
+        // flex -> one smooth elbow -> horizontal throttle barrel/plenum.
+        route("INTAKE_AIR_PATH",LANDMARK,rubber,.084f,new float[][]{{.401f,-.630f,.610f},{.354f,-.648f,.620f},{.306f,-.698f,.636f},{.282f,-.728f,.640f}});
+        route("INTAKE_AIR_PATH_AFM",LANDMARK,new float[]{.38f,.43f,.44f,1},.103f,new float[][]{{.282f,-.728f,.640f},{MAF_FORWARD_M,MAF_LATERAL_M,MAF_UP_M},{.164f,-.818f,.660f}});
+        route("INTAKE_AIR_PATH_RIBBED_FLEX",LANDMARK,rubber,.125f,new float[][]{{.164f,-.818f,.660f},{.102f,-.838f,.704f},{.020f,-.786f,.730f},{-.055f,-.710f,.770f},{-.103f,-.638f,.795f}});
+        route("INTAKE_AIR_PATH_SMOOTH_ELBOW",LANDMARK,rubber,.126f,new float[][]{{-.103f,-.638f,.795f},{-.140f,-.580f,.848f},{-.196f,-.532f,.836f},{-.247f,-.545f,.818f},{-.285f,-.586f,.804f}});
+        route("INTAKE_AIR_PATH_THROTTLE_NECK",LANDMARK,aluminum,.112f,new float[][]{{-.285f,-.586f,.804f},{-.285f,-.306f,.804f},{-.249f,-.294f,.806f},{-.215f,-.270f,.810f},{THROTTLE_FORWARD_M,THROTTLE_LATERAL_M,THROTTLE_UP_M}});
+        route("BODY_APRON_PASSENGER_RAIL",LANDMARK,bodyEdge,new float[][]{{RADIATOR_SUPPORT_FORWARD_M,-1.20f,.71f},{.80f,-1.24f,.80f},{.35f,-1.30f,.88f},{-.10f,-1.31f,.91f},{PASSENGER_STRUT_TOWER_FORWARD_M,PASSENGER_STRUT_TOWER_LATERAL_M,.78f},{-.78f,-1.20f,.83f},{-1.04f,-1.12f,.86f}});
+        route("BODY_APRON_DRIVER_RAIL",LANDMARK,bodyEdge,new float[][]{{RADIATOR_SUPPORT_FORWARD_M,1.20f,.71f},{.80f,1.24f,.80f},{.35f,1.30f,.88f},{-.10f,1.31f,.91f},{DRIVER_STRUT_TOWER_FORWARD_M,DRIVER_STRUT_TOWER_LATERAL_M,.78f},{-.78f,1.19f,.83f},{-1.04f,1.11f,.86f}});
         route("ENGINE_THROTTLE_CABLE",LANDMARK,metal,new float[][]{{-.88f,.36f,.95f},{-.66f,.25f,.97f},{-.40f,.08f,.98f},{-.12f,-.08f,1.00f},{.18f,-.18f,.99f},{.30f,-.20f,.97f}});
     }
 
@@ -345,7 +369,8 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private Part detailBox(int cat,float f,float l,float u,float sf,float sl,float su,float[] color){Part p=new Part("DETAIL","Component detail",cat,-l,u,-f,sl,su,sf,color,"");decor.add(p);return p;}
     private Part detailCylinder(int cat,float f,float l,float u,float sf,float sl,float su,float[] color){Part p=detailBox(cat,f,l,u,sf,sl,su,color);p.shape=SHAPE_CYLINDER;return p;}
     private Part detailTorus(int cat,float f,float l,float u,float sf,float sl,float su,float[] color){Part p=detailBox(cat,f,l,u,sf,sl,su,color);p.shape=SHAPE_TORUS;return p;}
-    private void route(String id,int cat,float[] color,float[][] pts){float[] xyz=new float[pts.length*3];for(int i=0;i<pts.length;i++){xyz[i*3]=-pts[i][1];xyz[i*3+1]=pts[i][2];xyz[i*3+2]=-pts[i][0];}routes.add(new Route(id,cat,color,xyz));}
+    private void route(String id,int cat,float[] color,float[][] pts){route(id,cat,color,0f,pts);}
+    private void route(String id,int cat,float[] color,float radius,float[][] pts){float[] xyz=new float[pts.length*3];for(int i=0;i<pts.length;i++){xyz[i*3]=-pts[i][1];xyz[i*3+1]=pts[i][2];xyz[i*3+2]=-pts[i][0];}routes.add(new Route(id,cat,color,radius,xyz));}
     private static FloatBuffer buffer(float[] a){FloatBuffer b=ByteBuffer.allocateDirect(a.length*4).order(ByteOrder.nativeOrder()).asFloatBuffer();b.put(a).position(0);return b;}
     private static float[] makeCylinder(int segments){float[] out=new float[segments*12*3];int n=0;for(int i=0;i<segments;i++){double a=i*Math.PI*2/segments,b=(i+1)*Math.PI*2/segments;float ax=(float)Math.cos(a),az=(float)Math.sin(a),bx=(float)Math.cos(b),bz=(float)Math.sin(b);float[] v={ax,-1,az,bx,-1,bz,bx,1,bz, ax,-1,az,bx,1,bz,ax,1,az, 0,1,0,bx,1,bz,ax,1,az, 0,-1,0,ax,-1,az,bx,-1,bz};for(float value:v)out[n++]=value;}return out;}
     private static float[] makeTorus(int major,int minor,float ring,float tube){float[] out=new float[major*minor*6*3];int n=0;for(int i=0;i<major;i++)for(int j=0;j<minor;j++){double a=i*Math.PI*2/major,b=(i+1)*Math.PI*2/major,c=j*Math.PI*2/minor,d=(j+1)*Math.PI*2/minor;float[] p0=torusPoint(a,c,ring,tube),p1=torusPoint(b,c,ring,tube),p2=torusPoint(b,d,ring,tube),p3=torusPoint(a,d,ring,tube);for(float[] p:new float[][]{p0,p1,p2,p0,p2,p3})for(float v:p)out[n++]=v;}return out;}
@@ -354,5 +379,5 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     private static int shader(int type,String src){int s=GLES20.glCreateShader(type);GLES20.glShaderSource(s,src);GLES20.glCompileShader(s);return s;}
     private static int link(String vs,String fs){int p=GLES20.glCreateProgram();GLES20.glAttachShader(p,shader(GLES20.GL_VERTEX_SHADER,vs));GLES20.glAttachShader(p,shader(GLES20.GL_FRAGMENT_SHADER,fs));GLES20.glLinkProgram(p);return p;}
     private static final class Part{final String id,name,note;final int category;final float x,y,z,sx,sy,sz;final float[] color;float rx,ry,rz;int shape=SHAPE_BOX;Part(String i,String n,int c,float x,float y,float z,float sx,float sy,float sz,float[] col,String note){id=i;name=n;category=c;this.x=x;this.y=y;this.z=z;this.sx=sx;this.sy=sy;this.sz=sz;color=col;this.note=note;}}
-    private static final class Route{final String id;final int category;final float[] color,xyz;Route(String i,int c,float[] col,float[] x){id=i;category=c;color=col;xyz=x;}}
+    private static final class Route{final String id;final int category;final float[] color,xyz;final float radius;Route(String i,int c,float[] col,float r,float[] x){id=i;category=c;color=col;radius=r;xyz=x;}}
 }
