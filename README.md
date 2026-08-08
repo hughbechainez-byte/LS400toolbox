@@ -18,6 +18,10 @@ Windows and Android now expose a named air-cleaner-to-throttle intake route that
 
 Windows and Android use the new hood-open photo set to preserve the passenger-side airbox-to-throttle route, place the low-side service fitting below the throttle cable, separate the coolant reservoir and fuse box from the battery, and reserve clear service space around both strut towers and air-suspension housings. Both platforms open with a larger photo-style engine-bay view.
 
+## v2.1.0 structural engine-bay reconstruction
+
+Windows and Android now use the 1990 RM144U B0-186 cowl, spring-support and radiator-support hardpoints as authored vehicle coordinates: the tower domes sit at the outer aprons, the 1UZ envelope is reduced centrally, and the driver-front battery, fuse box and shallow rectangular overflow reservoir are separately anchored. The passenger-front airbox, AFM and corrugated duct are one continuous route to the throttle; Compare uses a fixed-aspect normal 50% overlay against the saved engine-bay camera.
+
 ## Downloads
 
 Use the GitHub Releases page:
@@ -25,6 +29,8 @@ Use the GitHub Releases page:
 - `LS400Toolbox-Android-v1.4.0.apk` — adds factory-bulletin-based pre-May-1991 suction routing, pre-August-1990 EPR identification, and pre-April-1990 power-steering return-tube context. No WebView, browser, private server, internet permission, or network dependency.
 - `LS400Toolbox-Android-v2.0.0.apk` — current native build with photo-proportioned engine-bay spacing, geometry validation, corrected intake route, and photo-coordinate manifests.
 - `LS400Toolbox-Windows-v2.0.0.zip` — current complete Windows desktop package with matching photo-proportioned engine-bay geometry.
+- `LS400Toolbox-Android-v2.1.0.apk` — current native build with structural UCF10 bay hardpoints, outer-apron towers, and corrected driver/passenger-front component sequence.
+- The matching Windows v2.1.0 bundle is a local delivery only because it includes user-supplied working comparison images that are not cleared for public redistribution.
 - `LS400Toolbox-Windows-v1.0.0.zip` — complete Windows desktop package. Extract the ZIP and run `LS400Toolbox.exe`.
 - `LS400Toolbox.exe` — Windows launcher only; use the ZIP unless the adjacent runtime and model folders are already present.
 

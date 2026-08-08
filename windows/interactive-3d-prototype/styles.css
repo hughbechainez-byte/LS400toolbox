@@ -205,9 +205,9 @@ details li + li { margin-top: 6px; }
 .reference-pane > div { position: absolute; left: 9px; bottom: 9px; max-width: calc(100% - 18px); padding: 6px 8px; border: 1px solid rgba(105, 126, 145, .7); border-radius: 7px; background: rgba(6, 10, 15, .78); color: #d8e3eb; font-size: 10px; }
 .stage.compare-side #viewport { right: 50%; }
 .stage.compare-side .reference-pane { display: block; top: 0; right: 0; bottom: 0; width: 50%; border-left: 1px solid var(--accent); }
-.stage.compare-overlay .reference-pane { display: block; inset: 0; mix-blend-mode: screen; }
+.stage.compare-overlay .reference-pane { display: block; inset: 0; mix-blend-mode: normal; }
 .stage.compare-overlay .reference-pane img { object-fit: contain; }
-.stage.compare-overlay .reference-pane > div { opacity: .9; }
+.stage.compare-overlay .reference-pane > div { opacity: 1; }
 
 .label-overlay { position: absolute; z-index: 9; max-width: 260px; padding: 7px 9px; border: 1px solid var(--accent); border-radius: 7px; background: rgba(5, 12, 18, .9); color: #edf6fb; font-size: 11px; pointer-events: none; transform: translate(12px, -50%); box-shadow: 0 8px 24px rgba(0,0,0,.28); }
 .label-overlay strong { display: block; }
