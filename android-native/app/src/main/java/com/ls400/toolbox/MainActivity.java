@@ -81,7 +81,7 @@ public final class MainActivity extends Activity {
         TextView title = text("LS400 TOOLBOX  •  NATIVE OFFLINE", 18, Color.WHITE);
         title.setTypeface(null,1);
         top.addView(title);
-        TextView subtitle = text("RM144U / EPC map • 54 components • 18 routes • guided service locator", 12, Color.rgb(177,198,211));
+        TextView subtitle = text("Shared foundation " + ModelManifest.VERSION + " • " + ModelManifest.COMPONENT_COUNT + " evidence components • " + ModelManifest.CONNECTION_COUNT + " connections • offline", 12, Color.rgb(177,198,211));
         top.addView(subtitle);
 
         LinearLayout buttons = new LinearLayout(this);

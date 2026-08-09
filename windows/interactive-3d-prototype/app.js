@@ -4,7 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import {
   VEHICLE, ENGINE_BAY_RECONSTRUCTION, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS, GEOMETRY_DATASET,
   REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE, AC_R134A_RETROFIT_GUIDE
-} from './model-data.js?v=ucf10-photo-fit-v47';
+} from './model-data.js?foundation=15f305d514141ee6';
+import { MODEL_FOUNDATION_BUILD_KEY, MODEL_FOUNDATION_SUMMARY, MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=15f305d514141ee6';
 
 const stage = document.getElementById('stage');
 const viewport = document.getElementById('viewport');
@@ -20,8 +21,10 @@ const collisionObjects = [];
 const highlightHelpers = [];
 const anchorData = new Map(GEOMETRY_DATASET.componentAnchors.map(item => [item.componentId, item]));
 const BAY = ENGINE_BAY_RECONSTRUCTION;
-const BAY_STRUCTURE = BAY.structural;
-const BAY_ANCHORS = BAY.anchors;
+// The renderer consumes metres only after the generated shared contract has
+// performed the explicit millimetre-to-metre conversion.
+const BAY_STRUCTURE = MODEL_FOUNDATION_METRES.structural;
+const BAY_ANCHORS = MODEL_FOUNDATION_METRES.anchors;
 let geometryValidationGroup;
 
 const state = {
@@ -467,11 +470,13 @@ scene.add(modelRoot);
 
 function buildGround() {
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), material(COLORS.floor, { roughness: .94, metalness: 0 }));
+  ground.userData.qaExclude = true;
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -.005;
   ground.receiveShadow = true;
   scene.add(ground);
   const grid = new THREE.GridHelper(12, 48, 0x304252, 0x1c2832);
+  grid.userData.qaExclude = true;
   grid.position.y = .001;
   grid.material.opacity = .28;
   grid.material.transparent = true;
@@ -513,8 +518,8 @@ function buildBodyShell() {
   // B0-186 fixes the cowl and support pairs.  These stamped apron bands use
   // those underlying coordinates rather than widening a finished scene.
   const apronProfile = [
-    [1.08,.49],[1.05,.67],[.95,.78],[.70,.86],[.28,.90],[-.22,.92],[-.62,.92],
-    [-.94,.90],[-1.12,.84],[-1.15,.67],[-1.06,.56],[-.78,.59],[-.48,.64],
+    [1.08,.49],[1.05,.67],[.95,.78],[.70,.86],[.28,.87],[-.22,.88],[-.62,.88],
+    [-.94,.88],[-1.12,.84],[-1.15,.67],[-1.06,.56],[-.78,.59],[-.48,.64],
     [-.14,.66],[.20,.63],[.52,.57]
   ];
   for (const side of [-1, 1]) {
@@ -1084,6 +1089,10 @@ function buildEngine() {
   // relationships instead of by a screen-facing local transform.
   const photoSurfaces = new THREE.Group();
   photoSurfaces.position.copy(engine.position).multiplyScalar(-1);
+  // The previous photo fit widened the two banks into the towers.  Keep the
+  // authored detail but apply a lateral-only physical envelope guard derived
+  // from the shared +/-900 mm apron limit; this is not a root/display scale.
+  photoSurfaces.scale.x = (BAY_STRUCTURE.apronOuterHalfWidth - .01) / .946;
   engine.add(photoSurfaces);
   const placePhoto = (mesh, point) => {
     mesh.position.copy(vehicleToWorld(point));
@@ -1514,8 +1523,8 @@ function buildEngineLandmarks() {
   // The AFM is a short exposed metallic cylinder, with two bright flanges and
   // one raised rectangular electronics cap.  It avoids the old dark cone while
   // preserving the authored MAF centre and passenger-front placement.
-  const mafInlet=[.282,-.728,.640];
-  const mafOutlet=[.164,-.818,.660];
+  const mafInlet=[.282,mafY-.008,.640];
+  const mafOutlet=[.164,mafY,.660];
   const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
   const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.098,.105,0x626d6f,{roughness:.35,metalness:.66,segments:34});
   intake.add(afmBarrel);
@@ -1542,7 +1551,7 @@ function buildEngineLandmarks() {
   // passenger bank.  Large ring spacing keeps the ribs readable at the native
   // 800-by-489 comparison crop instead of collapsing into small fragments.
   const corrugatedCenterline=[
-    mafOutlet,[.102,-.838,.704],[.020,-.786,.730],[-.055,-.710,.770],[-.103,-.638,.795]
+    mafOutlet,[.102,mafY-.040,.704],[.020,mafY-.020,.730],[-.055,mafY+.010,.770],[-.103,mafY+.080,.795]
   ];
   const corrugated=tube(corrugatedCenterline,.125,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:24});
   intake.add(corrugated);
@@ -2076,11 +2085,17 @@ function buildRoutes() {
   ]);
   for (const route of ROUTES) {
     const group=new THREE.Group();
-    const allPoints=route.points.map(vehicleToWorld);
+    const firstRadius = route.sections[0]?.radius ?? .012;
+    const routeLateralLimit = Math.max(0, BAY_STRUCTURE.apronOuterHalfWidth - firstRadius - .004);
+    // Route data is semantic evidence; clamp only the rendered tube centerline
+    // to the shared physical envelope so a provisional bend cannot protrude
+    // through the body merely to match a broad photograph.
+    const constrainedPoints = route.points.map(([forward, left, up]) => [forward, THREE.MathUtils.clamp(left, -routeLateralLimit, routeLateralLimit), up]);
+    const allPoints=constrainedPoints.map(vehicleToWorld);
     const masterCurve=new THREE.CatmullRomCurve3(allPoints,false,'centripetal',.4);
     const flowArrows=[];
     route.sections.forEach(section=>{
-      const points=route.points.slice(section.from,section.to+1);
+       const points=constrainedPoints.slice(section.from,section.to+1);
       const isHard=section.type==='hard';
       const color=routeColor(route,section.type);
       const routeMesh=tube(points,section.radius,color,{
@@ -2213,6 +2228,67 @@ function buildScene() {
 buildScene();
 // Read-only build/export hook used to keep the native Android mesh in parity.
 window.__LS400_NATIVE_EXPORT__ = { modelRoot, objectById, geometryDataset: GEOMETRY_DATASET };
+
+// Deterministic local QA hook.  It is intentionally read-only from the model's
+// point of view: it changes only the viewport/camera for a capture and can
+// temporarily replace materials to produce a silhouette mask.
+window.__LS400_QA__ = {
+  buildKey: MODEL_FOUNDATION_BUILD_KEY,
+  manifestSummary: MODEL_FOUNDATION_SUMMARY,
+  threeRevision: THREE.REVISION,
+  setFrame(width = 800, height = 489) {
+    const shell = document.querySelector('.app-shell');
+    const stageNode = document.getElementById('stage');
+    if (shell) shell.style.display = 'block';
+    document.querySelectorAll('.sidebar, .stage-topbar, .orientation-cube, #referencePane, #labelOverlay, #flowBanner, #loading, #toast').forEach(node => { node.style.display = 'none'; });
+    if (stageNode) { stageNode.style.position = 'fixed'; stageNode.style.inset = '0'; stageNode.style.width = `${width}px`; stageNode.style.height = `${height}px`; }
+    viewport.style.position = 'absolute'; viewport.style.inset = '0'; viewport.style.width = `${width}px`; viewport.style.height = `${height}px`;
+    renderer.setPixelRatio(1);
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    return [renderer.domElement.width, renderer.domElement.height];
+  },
+  setPhotoCamera() { setCameraPreset('ENGINE_BAY_PHOTO_LAYOUT', true); return this.cameraState(); },
+  cameraState() {
+    const vehicleCamera = worldToVehicle(camera.position).multiplyScalar(1000);
+    const vehicleTarget = worldToVehicle(controls.target).multiplyScalar(1000);
+    return { positionMm: vehicleCamera.toArray(), targetMm: vehicleTarget.toArray(), fovDeg: camera.fov, aspect: camera.aspect, rollDeg: 0 };
+  },
+  projectPoints(pointsMm) {
+    return (pointsMm || []).map(pointMm => {
+      const point = vehicleToWorld(pointMm.map(value => Number(value) * MODEL_FOUNDATION_METRES.coordinateScale)).project(camera);
+      return [((point.x * .5) + .5) * renderer.domElement.width, ((.5 - point.y * .5) * renderer.domElement.height)];
+    });
+  },
+  renderDataUrl(silhouette = false) {
+    const canvas = renderer.domElement;
+    if (!silhouette) { renderer.render(scene, camera); return canvas.toDataURL('image/png'); }
+    const saved = [];
+    const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const oldBackground = scene.background;
+    const oldFog = scene.fog;
+    const oldTone = renderer.toneMapping;
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = null;
+    renderer.toneMapping = THREE.NoToneMapping;
+    scene.traverse(node => {
+      if (node.userData.qaExclude) { saved.push([node, 'visible', node.visible]); node.visible = false; }
+      if (node === geometryValidationGroup) { saved.push([node, 'visible', node.visible]); node.visible = false; }
+      if (node.isMesh) { saved.push([node, 'material', node.material]); node.material = white; }
+    });
+    renderer.render(scene, camera);
+    const result = canvas.toDataURL('image/png');
+    for (const [node, key, value] of saved.reverse()) node[key] = value;
+    white.dispose();
+    scene.background = oldBackground;
+    scene.fog = oldFog;
+    renderer.toneMapping = oldTone;
+    renderer.render(scene, camera);
+    return result;
+  },
+  validation() { return runValidation(); }
+};
 
 const ESSENTIAL_LANDMARKS = new Set([
   'LANDMARK_BODY_SHELL','LANDMARK_FRONT_BUMPER','LANDMARK_GRILLE','LANDMARK_PASSENGER_HEADLIGHT','LANDMARK_DRIVER_HEADLIGHT',
@@ -2823,7 +2899,16 @@ function configureComparison() {
   const reference=REFERENCE_IMAGES.find(item=>item.id===state.referenceId);
   if(!reference) return;
   const image=document.getElementById('referenceImage');
-  image.src=reference.src;
+  const privateOnly=String(reference.rights).startsWith('Private');
+  if (privateOnly) {
+    // Private research images are deliberately not bundled.  Leave the image
+    // slot empty until the user selects the browser-local upload control.
+    image.removeAttribute('src');
+    image.dataset.privateOnly='true';
+  } else {
+    delete image.dataset.privateOnly;
+    image.src=reference.src;
+  }
   image.alt=reference.label;
   document.getElementById('referenceCaption').textContent=`${reference.label} · match: ${reference.landmarks} · ${reference.rights ?? 'Verify reuse rights before publishing.'}`;
   document.getElementById('comparisonLandmarks').textContent=`Align these landmarks: ${reference.landmarks}. Camera pose: ${CAMERA_PRESETS[reference.pose]?.label ?? reference.pose}. ${reference.rights ?? ''}`;
@@ -2905,6 +2990,20 @@ function authoredAnchorFor(componentId) {
 function runValidation() {
   scene.updateMatrixWorld(true);
   const checks=[];
+  const sharedLoaded = MODEL_FOUNDATION_SUMMARY.componentCount === 189
+    && MODEL_FOUNDATION_SUMMARY.connectionCount === 209
+    && MODEL_FOUNDATION_SUMMARY.airConditioningComponentCount === 19
+    && MODEL_FOUNDATION_SUMMARY.airConditioningConnectionCount === 22;
+  checks.push(check('Shared millimetre foundation manifest is loaded', sharedLoaded ? 'pass' : 'error', sharedLoaded ? `Generated contract ${MODEL_FOUNDATION_BUILD_KEY} carries 189 components and 209 connections (19/22 A/C).` : 'Generated shared-manifest counts are missing or divergent.'));
+  const envelopeHalfWidth = MODEL_FOUNDATION_METRES.vehicleDimensions.overallWidth / 2;
+  const structuralSpans = ['cowlOuterHalfWidth','cowlInnerHalfWidth','radiatorSupportHardpointHalfWidth','springSupportInnerHoleHalfWidth','strutTowerPhotoCenterHalfWidth','apronOuterHalfWidth','apronInnerHalfWidth','apronRailHalfWidth'];
+  const impossibleSpans = structuralSpans.filter(key => Math.abs(Number(BAY_STRUCTURE[key])) > envelopeHalfWidth);
+  checks.push(check('Structural hardpoints stay inside the 1,820 mm envelope', impossibleSpans.length ? 'error' : 'pass', impossibleSpans.length ? `Out of envelope: ${impossibleSpans.join(', ')}` : `All ${structuralSpans.length} lateral shell spans stay within +/-${Math.round(envelopeHalfWidth * 1000)} mm.`));
+  const lockedCamera = CAMERA_PRESETS.ENGINE_BAY_PHOTO_LAYOUT;
+  const cameraMatchesContract = JSON.stringify(lockedCamera.position) === JSON.stringify(MODEL_FOUNDATION_METRES.camera.position)
+    && JSON.stringify(lockedCamera.target) === JSON.stringify(MODEL_FOUNDATION_METRES.camera.target)
+    && lockedCamera.fov === MODEL_FOUNDATION_METRES.camera.fov;
+  checks.push(check('Reference camera remains generated and locked', cameraMatchesContract ? 'pass' : 'error', cameraMatchesContract ? `Native 800x489 camera uses build key ${MODEL_FOUNDATION_BUILD_KEY}.` : 'Camera preset drifted from the generated foundation contract.'));
   const allIds=[...COMPONENTS,...ROUTES].map(item=>item.id);
   const duplicateIds=allIds.filter((id,index)=>allIds.indexOf(id)!==index);
   checks.push(check('Component IDs are unique',duplicateIds.length?'error':'pass',duplicateIds.length?`Duplicates: ${[...new Set(duplicateIds)].join(', ')}`:`${allIds.length} stable IDs checked.`));
@@ -3106,7 +3205,11 @@ function renderServiceWalkthrough() {
   if (!step || !card) return;
   const guarded=Boolean(step.requiresPlanningGate);
   const reference=step.referenceId ? REFERENCE_IMAGES.find(item=>item.id===step.referenceId) : null;
-  const referenceMarkup=reference ? `<figure class="walkthrough-reference"><img src="${escapeHtml(reference.src)}" alt="${escapeHtml(reference.label)}"><figcaption>${escapeHtml(reference.label)} · ${escapeHtml(reference.landmarks)}</figcaption></figure>` : '';
+  const referenceMarkup=reference
+    ? String(reference.rights).startsWith('Private')
+      ? `<p class="walkthrough-reference-private">Private reference not bundled; use the browser-local upload control for comparison.</p>`
+      : `<figure class="walkthrough-reference"><img src="${escapeHtml(reference.src)}" alt="${escapeHtml(reference.label)}"><figcaption>${escapeHtml(reference.label)} · ${escapeHtml(reference.landmarks)}</figcaption></figure>`
+    : '';
   const gateNote=guarded && !planningGateReady()
     ? '<p class="walkthrough-lock">Locate-only view: recovery, verified refrigerant and independently verified zero pressure must be confirmed before any boundary-planning overlay is enabled.</p>'
     : guarded ? '<p class="walkthrough-ready">Boundary-planning overlay is enabled. It is still not authorization to open or flush the circuit.</p>' : '';

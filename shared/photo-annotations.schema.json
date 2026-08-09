@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ls400.local/schema/photo-annotations-1.0.0.json",
+  "title": "LS400 private reference image annotations",
+  "type": "object",
+  "required": ["annotationVersion", "sourcePhoto", "calibrationRules", "bodyFeatures", "masks"],
+  "properties": {
+    "sourcePhoto": {"type": "object", "required": ["logicalName", "widthPx", "heightPx", "privacy"]},
+    "calibrationRules": {"type": "object", "required": ["allowedFeatureClasses", "excludedFeatureClasses", "independentBodyOnly"]},
+    "bodyFeatures": {"type": "array", "items": {"type": "object", "required": ["id", "class", "pixel", "modelPointMm", "truthState", "sourceIds", "useForCalibration"]}},
+    "masks": {"type": "array", "items": {"type": "object", "required": ["id", "referencePolygonPx", "modelPolygonMm", "useForCalibration"]}}
+  }
+}

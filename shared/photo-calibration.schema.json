@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ls400.local/schema/photo-calibration-1.0.0.json",
+  "title": "LS400 reference photo calibration",
+  "type": "object",
+  "required": ["manifestId", "manifestVersion", "calibrationId", "sourceManifest", "sourcePhoto", "viewport", "crop", "camera", "shellHardpointsMm", "handednessChecks", "bodyConstraints"],
+  "properties": {
+    "calibrationId": {"const": "REFERENCE_PHOTO_REPLICA"},
+    "sourcePhoto": {"type": "object", "required": ["logicalName", "widthPx", "heightPx", "privacy"]},
+    "viewport": {"type": "object", "required": ["widthPx", "heightPx", "devicePixelRatio"]},
+    "crop": {"type": "object", "required": ["xPx", "yPx", "widthPx", "heightPx"]},
+    "camera": {"type": "object", "required": ["positionMm", "targetMm", "rollDeg", "fovDeg", "nearMm", "farMm", "projection", "locked"]},
+    "shellHardpointsMm": {"type": "object"},
+    "handednessChecks": {"type": "object", "required": ["passengerSideProjectsScreenLeft", "driverSideProjectsScreenRight", "positiveZProjectsScreenUp"]},
+    "bodyConstraints": {"type": "array"}
+  }
+}

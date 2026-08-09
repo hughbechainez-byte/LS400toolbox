@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ls400.local/schema/model-manifest-1.0.0.json",
+  "title": "LS400 renderer-neutral model foundation manifest",
+  "type": "object",
+  "required": [
+    "$schema",
+    "manifestId",
+    "manifestVersion",
+    "units",
+    "coordinateContract",
+    "truthStates",
+    "options",
+    "sources",
+    "foundation",
+    "components",
+    "connections",
+    "runtimeMappings",
+    "platformTargets",
+    "sourceSnapshot",
+    "summary",
+    "integrity"
+  ],
+  "properties": {
+    "manifestId": {"const": "LS400_MODEL_FOUNDATION"},
+    "manifestVersion": {"type": "string", "minLength": 1},
+    "units": {"const": "millimetres"},
+    "truthStates": {
+      "type": "array",
+      "items": {"enum": ["measured", "photo_solved", "diagram_only", "placeholder", "variant_unresolved"]},
+      "minItems": 5
+    },
+    "coordinateContract": {
+      "type": "object",
+      "required": ["units", "handedness", "origin", "axes", "runtimeScale"],
+      "properties": {
+        "units": {"const": "millimetres"},
+        "handedness": {"const": "right-handed"},
+        "origin": {"type": "string"},
+        "axes": {"type": "object", "required": ["x", "y", "z"]},
+        "runtimeScale": {"type": "object", "required": ["metresPerMillimetre"]}
+      }
+    },
+    "options": {"type": "array", "items": {"type": "object", "required": ["id", "label"]}},
+    "sources": {"type": "array", "items": {"type": "object", "required": ["id", "kind", "privacy"]}},
+    "foundation": {"type": "object", "required": ["coordinateContract", "variants", "vehicleDimensionsMm", "physicalEnvelope", "historicalBaseline", "referencePhotoReplica"]},
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stableId", "legacyIds", "system", "displayName", "applicability", "ports", "geometry", "confidence", "sourceIds", "service", "uncertaintyNotes", "rawRecord"]
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stableId", "legacyIds", "system", "from", "to", "medium", "direction", "applicability", "centerline", "sourceIds", "service", "uncertaintyNotes", "rawRecord"]
+      }
+    },
+    "runtimeMappings": {"type": "array", "items": {"type": "object", "required": ["stableId", "viewerId", "kind", "mappingStatus"]}},
+    "sourceSnapshot": {"type": "object", "required": ["componentRecords", "connectionRecords"]},
+    "summary": {"type": "object", "required": ["componentCount", "connectionCount", "airConditioningComponentCount", "airConditioningConnectionCount"]},
+    "integrity": {"type": "object", "required": ["sha256"], "properties": {"sha256": {"type": "string", "minLength": 8}}}
+  }
+}

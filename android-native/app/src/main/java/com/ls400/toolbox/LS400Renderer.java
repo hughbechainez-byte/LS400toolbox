@@ -14,31 +14,31 @@ import javax.microedition.khronos.opengles.GL10;
 
 public final class LS400Renderer implements GLSurfaceView.Renderer {
     // RM144U B0-186 engine-compartment hardpoints, in vehicle metres.
-    private static final float COWL_J_J_SPAN_M=1.552f;
-    private static final float INNER_COWL_C_C_SPAN_M=1.494f;
-    private static final float RADIATOR_SUPPORT_A_A_SPAN_M=1.509f;
-    private static final float SPRING_SUPPORT_B_B_SPAN_M=1.050f;
+    private static final float COWL_J_J_SPAN_M=ModelManifest.COWL_J_J_SPAN_M;
+    private static final float INNER_COWL_C_C_SPAN_M=ModelManifest.INNER_COWL_C_C_SPAN_M;
+    private static final float RADIATOR_SUPPORT_A_A_SPAN_M=ModelManifest.RADIATOR_SUPPORT_A_A_SPAN_M;
+    private static final float SPRING_SUPPORT_B_B_SPAN_M=ModelManifest.SPRING_SUPPORT_B_B_SPAN_M;
     private static final float B_B_INNER_FRONT_HOLE_OFFSET_M=SPRING_SUPPORT_B_B_SPAN_M/2f;
-    // These are authored photo-fit shell coordinates, not a view/root scale.
+    // These shell coordinates are generated from the shared physical envelope.
     // The B-b holes above remain the factory 1.050 m pair; the visible domes
-    // sit farther out on the stamped aprons, as in the native engine-top view.
-    private static final float STRUT_TOWER_APRON_CENTER_OFFSET_M=1.150f;
-    private static final float OUTER_TOP_APRON_HALF_WIDTH_M=1.310f;
-    private static final float INNER_APRON_RAIL_CENTER_OFFSET_M=1.020f;
-    private static final float OUTER_APRON_RAIL_CENTER_OFFSET_M=1.200f;
-    private static final float PASSENGER_STRUT_TOWER_FORWARD_M=-.353f,PASSENGER_STRUT_TOWER_LATERAL_M=-1.161f;
-    private static final float DRIVER_STRUT_TOWER_FORWARD_M=-.353f,DRIVER_STRUT_TOWER_LATERAL_M=1.144f;
-    private static final float ENGINE_FORWARD_M=-.220f,ENGINE_UP_M=.540f;
-    private static final float THROTTLE_FORWARD_M=-.182f,THROTTLE_LATERAL_M=-.321f,THROTTLE_UP_M=.800f;
-    private static final float AIRBOX_FORWARD_M=.411f,AIRBOX_LATERAL_M=-.508f,AIRBOX_UP_M=.570f;
-    private static final float MAF_FORWARD_M=.204f,MAF_LATERAL_M=-.810f,MAF_UP_M=.600f;
-    private static final float DRIVER_BATTERY_FORWARD_M=.542f,DRIVER_BATTERY_LATERAL_M=.851f,DRIVER_BATTERY_UP_M=.590f;
-    private static final float DRIVER_FUSE_FORWARD_M=.297f,DRIVER_FUSE_LATERAL_M=.902f,DRIVER_FUSE_UP_M=.640f;
-    private static final float DRIVER_COOLANT_RESERVE_FORWARD_M=.025f,DRIVER_COOLANT_RESERVE_LATERAL_M=.995f,DRIVER_COOLANT_RESERVE_UP_M=.770f;
-    private static final float BRAKE_BOOSTER_FORWARD_M=-.946f,BRAKE_BOOSTER_LATERAL_M=1.131f,BRAKE_BOOSTER_UP_M=.790f;
-    private static final float RADIATOR_SUPPORT_FORWARD_M=1.060f,CONDENSER_FORWARD_M=.960f,FAN_PLANE_FORWARD_M=.870f,RADIATOR_FORWARD_M=.785f,FRONT_BUMPER_FORWARD_M=1.375f;
-    private static final float RECEIVER_DRIER_FORWARD_M=.950f,RECEIVER_DRIER_LATERAL_M=-.690f,RECEIVER_DRIER_UP_M=.590f;
-    private static final float PHOTO_CAMERA_FOV_DEG=40f,PHOTO_CAMERA_PITCH_DEG=40f,PHOTO_CAMERA_DISTANCE_M=2.215f;
+    // and apron rails stay inside the 1.820 m vehicle width contract.
+    private static final float STRUT_TOWER_APRON_CENTER_OFFSET_M=ModelManifest.STRUT_TOWER_APRON_CENTER_OFFSET_M;
+    private static final float OUTER_TOP_APRON_HALF_WIDTH_M=ModelManifest.OUTER_TOP_APRON_HALF_WIDTH_M;
+    private static final float INNER_APRON_RAIL_CENTER_OFFSET_M=ModelManifest.INNER_APRON_RAIL_CENTER_OFFSET_M;
+    private static final float OUTER_APRON_RAIL_CENTER_OFFSET_M=ModelManifest.OUTER_APRON_RAIL_CENTER_OFFSET_M;
+    private static final float PASSENGER_STRUT_TOWER_FORWARD_M=ModelManifest.PASSENGER_STRUT_TOWER_FORWARD_M, PASSENGER_STRUT_TOWER_LATERAL_M=ModelManifest.PASSENGER_STRUT_TOWER_LATERAL_M;
+    private static final float DRIVER_STRUT_TOWER_FORWARD_M=ModelManifest.DRIVER_STRUT_TOWER_FORWARD_M, DRIVER_STRUT_TOWER_LATERAL_M=ModelManifest.DRIVER_STRUT_TOWER_LATERAL_M;
+    private static final float ENGINE_FORWARD_M=ModelManifest.ENGINE_FORWARD_M, ENGINE_UP_M=ModelManifest.ENGINE_UP_M;
+    private static final float THROTTLE_FORWARD_M=ModelManifest.THROTTLE_FORWARD_M, THROTTLE_LATERAL_M=ModelManifest.THROTTLE_LATERAL_M, THROTTLE_UP_M=ModelManifest.THROTTLE_UP_M;
+    private static final float AIRBOX_FORWARD_M=ModelManifest.AIRBOX_FORWARD_M, AIRBOX_LATERAL_M=ModelManifest.AIRBOX_LATERAL_M, AIRBOX_UP_M=ModelManifest.AIRBOX_UP_M;
+    private static final float MAF_FORWARD_M=ModelManifest.MAF_FORWARD_M, MAF_LATERAL_M=ModelManifest.MAF_LATERAL_M, MAF_UP_M=ModelManifest.MAF_UP_M;
+    private static final float DRIVER_BATTERY_FORWARD_M=ModelManifest.DRIVER_BATTERY_FORWARD_M, DRIVER_BATTERY_LATERAL_M=ModelManifest.DRIVER_BATTERY_LATERAL_M, DRIVER_BATTERY_UP_M=ModelManifest.DRIVER_BATTERY_UP_M;
+    private static final float DRIVER_FUSE_FORWARD_M=ModelManifest.DRIVER_FUSE_FORWARD_M, DRIVER_FUSE_LATERAL_M=ModelManifest.DRIVER_FUSE_LATERAL_M, DRIVER_FUSE_UP_M=ModelManifest.DRIVER_FUSE_UP_M;
+    private static final float DRIVER_COOLANT_RESERVE_FORWARD_M=ModelManifest.DRIVER_COOLANT_RESERVE_FORWARD_M, DRIVER_COOLANT_RESERVE_LATERAL_M=ModelManifest.DRIVER_COOLANT_RESERVE_LATERAL_M, DRIVER_COOLANT_RESERVE_UP_M=ModelManifest.DRIVER_COOLANT_RESERVE_UP_M;
+    private static final float BRAKE_BOOSTER_FORWARD_M=ModelManifest.BRAKE_BOOSTER_FORWARD_M, BRAKE_BOOSTER_LATERAL_M=ModelManifest.BRAKE_BOOSTER_LATERAL_M, BRAKE_BOOSTER_UP_M=ModelManifest.BRAKE_BOOSTER_UP_M;
+    private static final float RADIATOR_SUPPORT_FORWARD_M=ModelManifest.RADIATOR_SUPPORT_FORWARD_M, CONDENSER_FORWARD_M=ModelManifest.CONDENSER_FORWARD_M, FAN_PLANE_FORWARD_M=ModelManifest.FAN_PLANE_FORWARD_M, RADIATOR_FORWARD_M=ModelManifest.RADIATOR_FORWARD_M, FRONT_BUMPER_FORWARD_M=ModelManifest.FRONT_BUMPER_FORWARD_M;
+    private static final float RECEIVER_DRIER_FORWARD_M=ModelManifest.RECEIVER_DRIER_FORWARD_M, RECEIVER_DRIER_LATERAL_M=ModelManifest.RECEIVER_DRIER_LATERAL_M, RECEIVER_DRIER_UP_M=ModelManifest.RECEIVER_DRIER_UP_M;
+    private static final float PHOTO_CAMERA_FOV_DEG=ModelManifest.PHOTO_CAMERA_FOV_DEG;
     private static final int LANDMARK=0, AC=1, HIGH=2, LOW=3, SHAPE_BOX=0, SHAPE_CYLINDER=1, SHAPE_TORUS=2;
     private final Consumer<String> info;
     private final List<Part> parts=new ArrayList<>();
@@ -141,9 +141,20 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
     public void zoom(float factor){distance=Math.max(2.0f,Math.min(10f,distance/factor));}
     public void resetCamera(){setCameraPreset(0);}
     public void setCameraPreset(int preset){
-        // Matches ENGINE_BAY_PHOTO_LAYOUT: vehicle camera [1.50,0,2.08],
-        // target [-.20,0,.66], fov 40.  Geometry stays in vehicle coordinates.
-        if(preset==1){yaw=0;pitch=PHOTO_CAMERA_PITCH_DEG;distance=PHOTO_CAMERA_DISTANCE_M;targetX=0;targetY=.66f;targetZ=.20f;}
+        // Matches the locked REFERENCE_PHOTO_REPLICA camera generated from the
+        // millimetre manifest.  Android receives the same world-space pose;
+        // only the OpenGL projection implementation differs.
+        if(preset==1){
+            targetX=ModelManifest.PHOTO_CAMERA_TARGET_WORLD_X_M;
+            targetY=ModelManifest.PHOTO_CAMERA_TARGET_WORLD_Y_M;
+            targetZ=ModelManifest.PHOTO_CAMERA_TARGET_WORLD_Z_M;
+            float dx=ModelManifest.PHOTO_CAMERA_POSITION_WORLD_X_M-targetX;
+            float dy=ModelManifest.PHOTO_CAMERA_POSITION_WORLD_Y_M-targetY;
+            float dz=ModelManifest.PHOTO_CAMERA_POSITION_WORLD_Z_M-targetZ;
+            distance=(float)Math.sqrt(dx*dx+dy*dy+dz*dz);
+            pitch=(float)Math.toDegrees(Math.asin(dy/distance));
+            yaw=(float)Math.toDegrees(Math.atan2(dx,-dz));
+        }
         else if(preset==2){yaw=-43;pitch=18;distance=1.25f;targetX=-.40f;targetY=.50f;targetZ=-.30f;}
         else if(preset==3){yaw=32;pitch=15;distance=1.35f;targetX=.38f;targetY=.62f;targetZ=1.12f;}
         else {yaw=0;pitch=23;distance=4.8f;targetX=0;targetY=.65f;targetZ=0;}
@@ -182,7 +193,7 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         box("LANDMARK_DRIVER_HEADLIGHT","Driver-side headlight",LANDMARK,1.155f,.72f,.66f,.20f,.47f,.25f,new float[]{.85f,.91f,.90f,1},"Driver side is screen-right while facing the car.");
         box("LANDMARK_HOOD","Articulated hood",LANDMARK,-1.18f,0,1.55f,1.35f,1.68f,.08f,body,"Raised service position with underside volume.").rx=-76;
         box("LANDMARK_HOOD_HINGES","Hood hinges and supports",LANDMARK,-.92f,0,.98f,.20f,1.42f,.08f,metal,"Rear hinge/support landmark.");
-        box("LANDMARK_FRONT_FENDERS","Front fenders and outer top aprons",LANDMARK,.02f,0,.62f,2.18f,OUTER_TOP_APRON_HALF_WIDTH_M*2f,.13f,bodyEdge,"Physical 2.620 m outer-apron envelope; no display scaling.");
+        box("LANDMARK_FRONT_FENDERS","Front fenders and outer top aprons",LANDMARK,.02f,0,.62f,2.18f,OUTER_TOP_APRON_HALF_WIDTH_M*2f,.13f,bodyEdge,"Physical 1.820 m vehicle envelope; no display scaling.");
         box("LANDMARK_WINDSHIELD","Windshield",LANDMARK,-1.58f,0,1.16f,.08f,1.55f,.55f,glass,"Rear engine-bay/cowl landmark.").rx=-22;
         box("LANDMARK_COWL","Cowl and wiper plenum (J-j datum)",LANDMARK,-1.110f,0,.94f,.32f,COWL_J_J_SPAN_M,.12f,dark,"RM144U B0-186 J-j hardpoint span: 1.552 m.");
         box("LANDMARK_FIREWALL","Firewall and inner cowl (C-c datum)",LANDMARK,-1.045f,0,.67f,.08f,INNER_COWL_C_C_SPAN_M,.72f,metal,"RM144U B0-186 C-c hardpoint span: 1.494 m.");
@@ -239,10 +250,10 @@ public final class LS400Renderer implements GLSurfaceView.Renderer {
         cylinder("LANDMARK_COOLANT_OVERFLOW_CAP","Coolant reserve cap",LANDMARK,-.033f,.967f,.842f,.052f,.052f,.028f,new float[]{.20f,.24f,.26f,1},"Low offset cap on the compact rectangular coolant reserve.");
         cylinder("LANDMARK_SPRING_SUPPORT_B_B_HOLES","Passenger B-b inner-front spring support hole",LANDMARK,-.45f,-B_B_INNER_FRONT_HOLE_OFFSET_M,.70f,.025f,.035f,.035f,metal,"RM144U B0-186 B-b is the 1.050 m inner-front hole pair, not the tower centre.");
         cylinder("LANDMARK_SPRING_SUPPORT_B_B_HOLES","Driver B-b inner-front spring support hole",LANDMARK,-.45f,B_B_INNER_FRONT_HOLE_OFFSET_M,.70f,.025f,.035f,.035f,metal,"RM144U B0-186 B-b is the 1.050 m inner-front hole pair, not the tower centre.");
-        box("LANDMARK_INNER_APRON_RAILS","Passenger inner apron rail",LANDMARK,-.02f,-INNER_APRON_RAIL_CENTER_OFFSET_M,.77f,2.00f,.050f,.105f,bodyEdge,"Physical inner-apron rail at -1.020 m.");
-        box("LANDMARK_INNER_APRON_RAILS","Driver inner apron rail",LANDMARK,-.02f,INNER_APRON_RAIL_CENTER_OFFSET_M,.77f,2.00f,.050f,.105f,bodyEdge,"Physical inner-apron rail at +1.020 m.");
-        box("LANDMARK_OUTER_TOP_APRON_RAILS","Passenger outer top-apron rail",LANDMARK,-.02f,-OUTER_APRON_RAIL_CENTER_OFFSET_M,.74f,2.08f,.060f,.115f,bodyEdge,"Physical outer-apron rail at -1.200 m.");
-        box("LANDMARK_OUTER_TOP_APRON_RAILS","Driver outer top-apron rail",LANDMARK,-.02f,OUTER_APRON_RAIL_CENTER_OFFSET_M,.74f,2.08f,.060f,.115f,bodyEdge,"Physical outer-apron rail at +1.200 m.");
+        box("LANDMARK_INNER_APRON_RAILS","Passenger inner apron rail",LANDMARK,-.02f,-INNER_APRON_RAIL_CENTER_OFFSET_M,.77f,2.00f,.050f,.105f,bodyEdge,"Physical inner-apron rail at -0.720 m.");
+        box("LANDMARK_INNER_APRON_RAILS","Driver inner apron rail",LANDMARK,-.02f,INNER_APRON_RAIL_CENTER_OFFSET_M,.77f,2.00f,.050f,.105f,bodyEdge,"Physical inner-apron rail at +0.720 m.");
+        box("LANDMARK_OUTER_TOP_APRON_RAILS","Passenger outer top-apron rail",LANDMARK,-.02f,-OUTER_APRON_RAIL_CENTER_OFFSET_M,.74f,2.08f,.060f,.115f,bodyEdge,"Physical outer-apron rail at -0.850 m.");
+        box("LANDMARK_OUTER_TOP_APRON_RAILS","Driver outer top-apron rail",LANDMARK,-.02f,OUTER_APRON_RAIL_CENTER_OFFSET_M,.74f,2.08f,.060f,.115f,bodyEdge,"Physical outer-apron rail at +0.850 m.");
         cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger front strut-apron dome",LANDMARK,PASSENGER_STRUT_TOWER_FORWARD_M,PASSENGER_STRUT_TOWER_LATERAL_M,.700f,.300f,.320f,.120f,body,"Passenger dome sits on the outer apron edge; clear of the compact 1UZ bank.");
         cylinder("LANDMARK_FRONT_STRUT_TOWERS","Driver front strut-apron dome",LANDMARK,DRIVER_STRUT_TOWER_FORWARD_M,DRIVER_STRUT_TOWER_LATERAL_M,.700f,.300f,.320f,.120f,body,"Driver dome sits on the outer apron edge; clear of the compact 1UZ bank.");
         cylinder("LANDMARK_FRONT_STRUT_TOWERS","Passenger strut top and fastener plate",LANDMARK,PASSENGER_STRUT_TOWER_FORWARD_M,PASSENGER_STRUT_TOWER_LATERAL_M,.772f,.125f,.140f,.028f,metal,"Tower top hardware.");

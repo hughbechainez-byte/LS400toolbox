@@ -1,0 +1,46 @@
+{
+  "$schema": "./photo-annotations.schema.json",
+  "annotationVersion": "ls400-photo-annotations-2026-08-09",
+  "sourcePhoto": {
+    "logicalName": "user-1990-ls400-inline1.jpg",
+    "widthPx": 800,
+    "heightPx": 489,
+    "privacy": "private-no-ship",
+    "useForCameraCalibration": true,
+    "notes": "Private working image. These annotations and derived QA images must not package the source photo."
+  },
+  "calibrationRules": {
+    "allowedFeatureClasses": ["body-shell", "structural-hardpoint", "body-centerline"],
+    "excludedFeatureClasses": ["engine", "airbox", "battery", "fuse-box", "reservoir", "movable-component"],
+    "independentBodyOnly": true
+  },
+  "bodyFeatures": [
+    {"id": "body.cowl.outer.passenger", "class": "body-shell", "pixel": [52, 50], "modelPointMm": [-1110, -776, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.cowl.center", "class": "body-centerline", "pixel": [400, 50], "modelPointMm": [-1110, 0, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.cowl.outer.driver", "class": "body-shell", "pixel": [748, 50], "modelPointMm": [-1110, 776, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.firewall.passenger", "class": "body-shell", "pixel": [82, 74], "modelPointMm": [-1045, -747, 670], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.firewall.driver", "class": "body-shell", "pixel": [718, 74], "modelPointMm": [-1045, 747, 670], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.tower.passenger", "class": "structural-hardpoint", "pixel": [62, 207], "modelPointMm": [-353, -735, 700], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.tower.driver", "class": "structural-hardpoint", "pixel": [733, 207], "modelPointMm": [-353, 735, 700], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.spring-hole.passenger", "class": "structural-hardpoint", "pixel": [170, 248], "modelPointMm": [-450, -525, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
+    {"id": "body.spring-hole.driver", "class": "structural-hardpoint", "pixel": [630, 248], "modelPointMm": [-450, 525, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
+    {"id": "body.radiator-support.passenger", "class": "structural-hardpoint", "pixel": [80, 465], "modelPointMm": [620, -754.5, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
+    {"id": "body.radiator-support.center", "class": "body-centerline", "pixel": [400, 478], "modelPointMm": [620, 0, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.radiator-support.driver", "class": "structural-hardpoint", "pixel": [720, 465], "modelPointMm": [620, 754.5, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
+    {"id": "body.hood-latch", "class": "structural-hardpoint", "pixel": [400, 452], "modelPointMm": [950, 0, 760], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.centerline.rear", "class": "body-centerline", "pixel": [400, 50], "modelPointMm": [-1110, 0, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.centerline.front", "class": "body-centerline", "pixel": [400, 478], "modelPointMm": [620, 0, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true}
+  ],
+  "masks": [
+    {"id": "front-shell-bay-opening", "useForCalibration": true, "referencePolygonPx": [[28, 88], [84, 35], [716, 35], [772, 88], [744, 474], [56, 474]], "modelPolygonMm": [[-1110, -776, 912], [-1045, -747, 670], [620, -754.5, 700], [620, 754.5, 700], [-1045, 747, 670], [-1110, 776, 912]], "notes": "Independent shell/bay-opening comparison mask."},
+    {"id": "central-engine", "useForCalibration": false, "referencePolygonPx": [[190, 88], [602, 88], [666, 466], [134, 466]], "modelPolygonMm": [[-770, -430, 500], [-770, 430, 500], [310, 430, 500], [310, -430, 500]], "notes": "Comparison only; excluded from camera solve."},
+    {"id": "plenum", "useForCalibration": false, "referencePolygonPx": [[348, 88], [510, 88], [542, 302], [315, 302]], "modelPolygonMm": [[-790, -170, 754], [-790, 170, 754], [-300, 170, 820], [-300, -170, 820]], "notes": "Comparison only; excluded from camera solve."},
+    {"id": "valve-timing-covers", "useForCalibration": false, "referencePolygonPx": [[278, 250], [356, 238], [356, 440], [210, 440], [210, 334]], "modelPolygonMm": [[-760, -610, 462], [-760, -330, 462], [250, -330, 710], [250, -610, 710]], "notes": "Comparison only; excluded from camera solve."},
+    {"id": "airbox-intake-duct", "useForCalibration": false, "referencePolygonPx": [[0, 246], [276, 198], [354, 340], [278, 464], [0, 464]], "modelPolygonMm": [[-760, -902, 462], [411, -508, 570], [-182, -321, 800], [-468, -594, 639]], "notes": "Comparison only; excluded from camera solve."},
+    {"id": "brake-booster-master", "useForCalibration": false, "referencePolygonPx": [[622, 20], [766, 20], [766, 190], [626, 200]], "modelPolygonMm": [[-1110, 530, 900], [-1110, 747, 900], [-800, 747, 900], [-800, 530, 900]], "notes": "Comparison only; excluded from camera solve."},
+    {"id": "battery-fuse-reservoir-row", "useForCalibration": false, "referencePolygonPx": [[662, 196], [800, 196], [800, 489], [652, 489]], "modelPolygonMm": [[-50, 500, 520], [620, 500, 520], [620, 900, 520], [-50, 900, 520]], "notes": "Comparison only; excluded from camera solve."},
+    {"id": "front-stack", "useForCalibration": false, "referencePolygonPx": [[84, 428], [716, 428], [760, 489], [40, 489]], "modelPolygonMm": [[620, -754.5, 500], [1060, -754.5, 500], [1060, 754.5, 500], [620, 754.5, 500]], "notes": "Comparison only; excluded from camera solve."}
+  ],
+  "permittedDerivedOutputs": ["metrics.json", "summary.txt", "model-render.png", "reference-frame.png", "overlay-50.png", "edges.png", "difference.png", "mask-*.png"],
+  "noShip": {"sourcePhoto": true, "derivedQaImages": true}
+}

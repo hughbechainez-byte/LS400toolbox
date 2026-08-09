@@ -4,3 +4,7 @@
 *.tmp
 local.properties
 release-assets/*.zip
+qa/model-foundation/
+qa-baseline/
+__pycache__/
+*.pyc
