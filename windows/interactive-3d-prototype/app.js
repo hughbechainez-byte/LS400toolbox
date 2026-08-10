@@ -1297,7 +1297,7 @@ function buildEngine() {
   // preserve that early-1UZ offset rather than centring them geometrically.
   manifoldFit.position.copy(vehicleToWorld([-.020,.025,-.045]));
   tracFit.position.copy(vehicleToWorld([.040,.082,-.008]));
-  throttleFit.position.copy(vehicleToWorld([-.080,.070,.040]));
+  throttleFit.position.copy(vehicleToWorld([-.080,.070,.052]));
 
   // Leave the lower banks mostly recessed.  The former repeated cross-bank
   // ridges made the silhouette look like two short mirrored toy covers.
@@ -1494,6 +1494,7 @@ function buildEngine() {
   // silhouette group; they are a single front-engine recognition region in
   // the reference but remain separately registered for service selection.
   const frontAccessoryFit = registerPhotoFitGroup('front-accessories', new THREE.Group(), 'buildEngine: timing drive, ignition and throttle sensor layers');
+  frontAccessoryFit.position.copy(vehicleToWorld([0,.044,.022]));
   engine.add(frontAccessoryFit);
   const drive = new THREE.Group();
   drive.position.copy(engine.position).multiplyScalar(-1);
@@ -1755,11 +1756,12 @@ function buildEngineLandmarks() {
 
   const intake = new THREE.Group();
   const [mafX,mafY,mafZ] = BAY_ANCHORS.maf;
+  const mafLayoutY=mafY+.060;
   // Keep the photo-side assembly intentionally sparse: there is one short
   // airbox neck, one AFM barrel, one accordion hose and one smooth elbow.  The
   // earlier overlapping sleeves and doubled curves made a broken black cone.
   const airboxToMaf=[
-    airboxOutletStart,[airboxX-.070,airboxY-.060,.628],[mafX+.152,mafY+.070,.636],[mafX+.103,mafY+.092,.640]
+    airboxOutletStart,[airboxX-.070,airboxY-.060,.628],[mafX+.152,mafLayoutY-.030,.636],[mafX+.103,mafLayoutY-.008,.640]
   ];
   const preMeter=tube(airboxToMaf,.068,0x171d20,{roughness:.88,metalness:.01,segments:26,radialSegments:18});
   // The short airbox neck belongs to the housing, leaving the locked-view
@@ -1771,38 +1773,40 @@ function buildEngineLandmarks() {
   // The AFM is a short cast meter with a clipped, stepped electronics cover.
   // The attached closeups show that this is not a plain tube: the black cover
   // spans the cast body, has mounting ears, and sits between two clamps.
-  const mafInlet=[mafX+.103,mafY+.092,.640];
-  const mafOutlet=[mafX-.015,mafY+.100,.660];
+  const mafInlet=[mafX+.103,mafLayoutY-.008,.640];
+  const mafOutlet=[mafX-.015,mafLayoutY,.660];
   const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
-  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.040,.045,0x626d6f,{roughness:.35,metalness:.66,segments:30});
+  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.025,.030,0x626d6f,{roughness:.35,metalness:.66,segments:30});
   intake.add(afmBarrel);
   for (const point of [mafInlet,mafOutlet]) {
     const flange=torus(.052,.005,0xb9c1c1,'z',{roughness:.29,metalness:.79,tubularSegments:34});
     flange.position.copy(vehicleToWorld(point));
     flange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),mafAxis);
+    flange.userData.photoFitExclude=true;
     intake.add(flange);
   }
   const afmShoulder=vehicleTopProfile([
-    [mafX+.055,mafY-.047],[mafX+.071,mafY-.033],[mafX+.067,mafY+.033],[mafX+.048,mafY+.049],
-    [mafX-.047,mafY+.047],[mafX-.061,mafY+.031],[mafX-.058,mafY-.032],[mafX-.041,mafY-.050]
+    [mafX+.055,mafLayoutY-.047],[mafX+.071,mafLayoutY-.033],[mafX+.067,mafLayoutY+.033],[mafX+.048,mafLayoutY+.049],
+    [mafX-.047,mafLayoutY+.047],[mafX-.061,mafLayoutY+.031],[mafX-.058,mafLayoutY-.032],[mafX-.041,mafLayoutY-.050]
   ],mafZ+.060,.026,0x394346,{roughness:.58,metalness:.38,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
   intake.add(afmShoulder);
-  const afmCap=roundedBox(.090,.035,.080,.013,0x171f21,{roughness:.70,metalness:.11,segments:5});
-  afmCap.position.copy(vehicleToWorld([mafX-.008,mafY-.006,mafZ+.082]));
+  const afmCap=roundedBox(.065,.028,.060,.011,0x171f21,{roughness:.70,metalness:.11,segments:5});
+  afmCap.position.copy(vehicleToWorld([mafX-.008,mafLayoutY-.006,mafZ+.082]));
   afmCap.rotation.y=-.54;
   intake.add(afmCap);
   const afmConnector=roundedBox(.036,.024,.034,.007,0x101719,{roughness:.80,metalness:.04,segments:4});
-  afmConnector.position.copy(vehicleToWorld([mafX-.032,mafY+.032,mafZ+.080]));
+  afmConnector.position.copy(vehicleToWorld([mafX-.032,mafLayoutY+.032,mafZ+.080]));
   afmConnector.rotation.y=-.54;
   intake.add(afmConnector);
   for (const [forward,lateral] of [[.068,-.070],[.068,.070]]) {
     const fastener=makeBolt(.008,.014);
-    fastener.position.copy(vehicleToWorld([mafX+forward,mafY+lateral,mafZ+.158]));
+    fastener.position.copy(vehicleToWorld([mafX+forward,mafLayoutY+lateral,mafZ+.158]));
     fastener.userData.minLod=2;
     intake.add(fastener);
   }
   const meterFlange=torus(.045,.004,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
   meterFlange.position.copy(preMeterCurve.getPointAt(.98));
+  meterFlange.userData.photoFitExclude=true;
   meterFlange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),preMeterCurve.getTangentAt(.98).normalize());
   intake.add(meterFlange);
 
@@ -1813,12 +1817,12 @@ function buildEngineLandmarks() {
   const corrugatedCenterline=[
     mafOutlet,[.156,-.632,.650],[.108,-.567,.725]
   ];
-  const corrugated=tube(corrugatedCenterline,.055,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
+  const corrugated=tube(corrugatedCenterline,.052,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
   intake.add(corrugated);
   const corrugatedCurve=new THREE.CatmullRomCurve3(corrugatedCenterline.map(vehicleToWorld),false,'centripetal',.4);
   for(let i=0;i<9;i++){
     const t=.055+i*.105;
-    const rib=torus(.064,.0050,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
+    const rib=torus(.061,.0050,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
     rib.position.copy(corrugatedCurve.getPointAt(t));
     rib.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     rib.userData.minLod=1;
@@ -1839,8 +1843,16 @@ function buildEngineLandmarks() {
     corrugatedCenterline.at(-1),[.0445,-.504,.800],[-.045,-.476,.800],
     [-.138,-.419,.800],BAY_ANCHORS.throttle
   ];
-  const smoothElbow=tube(elbowCenterline,.059,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:18});
+  const smoothElbow=tube(elbowCenterline,.058,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:18});
   intake.add(smoothElbow);
+  // The photo's upper bend is a thick molded elbow with a reinforced outer
+  // wall, not a perfectly circular hose.  This tapered overlapping skin stays
+  // on the same centreline route and widens only the outside of the turn.
+  const elbowOuterWall=tube([
+    [.0445,-.434,.800],[-.045,-.366,.800],[-.138,-.309,.800],
+    [BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]+.075,BAY_ANCHORS.throttle[2]]
+  ],.040,0x1c2426,{roughness:.82,metalness:.03,segments:32,radialSegments:10});
+  intake.add(elbowOuterWall);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
   registerPhotoFitGroup('intake-duct',intake,'buildEngineLandmarks: MAF and continuous intake route');
 
@@ -2021,15 +2033,15 @@ function buildEngineLandmarks() {
   // has a compact, recessed booster behind the master cylinder—not the
   // oversized round disc previously spanning the whole upper-right quadrant.
   const drum=cylinder(.140,.072,0x0d1214,'z',{metalness:.42,roughness:.58,segments:52});
-  drum.scale.y=1.25;
+  drum.scale.y=1.39;
   drum.position.copy(vehicleToWorld(BAY_ANCHORS.brakeBooster));
   booster.add(drum);
   const boosterFace=cylinder(.115,.011,0x101719,'z',{metalness:.38,roughness:.62,segments:48});
-  boosterFace.scale.y=1.25;
+  boosterFace.scale.y=1.39;
   boosterFace.position.copy(vehicleToWorld([boosterX+.057,boosterY,boosterZ]));
   booster.add(boosterFace);
   const boosterRing=torus(.130,.008,0x3b4648,'z',{metalness:.62,roughness:.42,tubularSegments:48});
-  boosterRing.scale.y=1.25;
+  boosterRing.scale.y=1.39;
   boosterRing.position.copy(vehicleToWorld([boosterX+.064,boosterY,boosterZ]));
   booster.add(boosterRing);
   const boosterHub=cylinder(.030,.015,0x202a2c,'z',{metalness:.50,roughness:.46,segments:28});
@@ -2086,7 +2098,7 @@ function buildEngineLandmarks() {
   // Master cylinder/reservoir sit lower and inboard of the firewall-side
   // booster in the locked view; retain the physical separation from the
   // driver cowl rather than flattening the whole assembly into its anchor.
-  booster.position.copy(vehicleToWorld([-.065,.043,-.112]));
+  booster.position.copy(vehicleToWorld([-.065,.058,-.100]));
   registerComponent(booster,'LANDMARK_BRAKE_BOOSTER',{minLod:1});
   registerPhotoFitGroup('brake-area',booster,'buildEngineLandmarks: booster, master cylinder and reservoir');
 }
