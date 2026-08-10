@@ -2,12 +2,14 @@
   "$schema": "./photo-annotations.schema.json",
   "annotationVersion": "ls400-photo-annotations-2026-08-09",
   "sourcePhoto": {
-    "logicalName": "user-1990-ls400-inline1.jpg",
+    "logicalName": "ls400reference.avif",
+    "path": "C:/Users/blowb/Documents/ls400 3d/ls400toolbox/ls400reference.avif",
     "widthPx": 800,
     "heightPx": 489,
     "privacy": "private-no-ship",
     "useForCameraCalibration": true,
-    "notes": "Private working image. These annotations and derived QA images must not package the source photo."
+    "sha256": "fc12f37aa7f9ca98c6c5d814e551e8d2807a2446971db63fbe49f3258a4a3ae7",
+    "notes": "Local working image. Derived QA images must not package the source photo."
   },
   "calibrationRules": {
     "allowedFeatureClasses": ["body-shell", "structural-hardpoint", "body-centerline"],
@@ -15,18 +17,18 @@
     "independentBodyOnly": true
   },
   "bodyFeatures": [
-    {"id": "body.cowl.outer.passenger", "class": "body-shell", "pixel": [52, 50], "modelPointMm": [-1110, -776, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.cowl.center", "class": "body-centerline", "pixel": [400, 50], "modelPointMm": [-1110, 0, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.cowl.outer.driver", "class": "body-shell", "pixel": [748, 50], "modelPointMm": [-1110, 776, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.firewall.passenger", "class": "body-shell", "pixel": [82, 74], "modelPointMm": [-1045, -747, 670], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.firewall.driver", "class": "body-shell", "pixel": [718, 74], "modelPointMm": [-1045, 747, 670], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.tower.passenger", "class": "structural-hardpoint", "pixel": [62, 207], "modelPointMm": [-353, -735, 700], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.tower.driver", "class": "structural-hardpoint", "pixel": [733, 207], "modelPointMm": [-353, 735, 700], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
+    {"id": "body.cowl.outer.passenger", "class": "body-shell", "pixel": [19, 23], "modelPointMm": [-1110, -776, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.cowl.center", "class": "body-centerline", "pixel": [400, 23], "modelPointMm": [-1110, 0, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.cowl.outer.driver", "class": "body-shell", "pixel": [781, 23], "modelPointMm": [-1110, 776, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.firewall.passenger", "class": "body-shell", "pixel": [25, 55], "modelPointMm": [-1045, -747, 670], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.firewall.driver", "class": "body-shell", "pixel": [775, 55], "modelPointMm": [-1045, 747, 670], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.tower.passenger", "class": "structural-hardpoint", "pixel": [73, 179], "modelPointMm": [-353, -735, 700], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.tower.driver", "class": "structural-hardpoint", "pixel": [727, 179], "modelPointMm": [-353, 735, 700], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
     {"id": "body.spring-hole.passenger", "class": "structural-hardpoint", "pixel": [170, 248], "modelPointMm": [-450, -525, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
     {"id": "body.spring-hole.driver", "class": "structural-hardpoint", "pixel": [630, 248], "modelPointMm": [-450, 525, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
-    {"id": "body.radiator-support.passenger", "class": "structural-hardpoint", "pixel": [80, 465], "modelPointMm": [620, -754.5, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
-    {"id": "body.radiator-support.center", "class": "body-centerline", "pixel": [400, 478], "modelPointMm": [620, 0, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
-    {"id": "body.radiator-support.driver", "class": "structural-hardpoint", "pixel": [720, 465], "modelPointMm": [620, 754.5, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO", "RM144U_B0_186"], "useForCalibration": true},
+    {"id": "body.radiator-support.passenger", "class": "structural-hardpoint", "pixel": [10, 478], "modelPointMm": [620, -754.5, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["REFERENCE_AVIF", "RM144U_B0_186"], "useForCalibration": true},
+    {"id": "body.radiator-support.center", "class": "body-centerline", "pixel": [400, 488], "modelPointMm": [620, 0, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["REFERENCE_AVIF"], "useForCalibration": true},
+    {"id": "body.radiator-support.driver", "class": "structural-hardpoint", "pixel": [790, 478], "modelPointMm": [620, 754.5, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["REFERENCE_AVIF", "RM144U_B0_186"], "useForCalibration": true},
     {"id": "body.hood-latch", "class": "structural-hardpoint", "pixel": [400, 452], "modelPointMm": [950, 0, 760], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
     {"id": "body.centerline.rear", "class": "body-centerline", "pixel": [400, 50], "modelPointMm": [-1110, 0, 912], "truthState": "photo_solved", "confidence": "medium", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true},
     {"id": "body.centerline.front", "class": "body-centerline", "pixel": [400, 478], "modelPointMm": [620, 0, 700], "truthState": "photo_solved", "confidence": "low", "sourceIds": ["PRIVATE_REFERENCE_PHOTO"], "useForCalibration": true}

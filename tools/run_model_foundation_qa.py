@@ -150,8 +150,10 @@ def main() -> int:
     reference_path = reference_path.resolve()
     manifest_path = root / "shared" / "model-manifest.json"
     annotations_path = root / "shared" / "photo-annotations.json"
+    landmarks_path = root / "shared" / "photo-landmarks.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     annotations = json.loads(annotations_path.read_text(encoding="utf-8"))
+    photo_landmarks = json.loads(landmarks_path.read_text(encoding="utf-8"))
     validation = validate_manifest(manifest)
     (output / "manifest-validation.json").write_text(json.dumps(validation, indent=2) + "\n", encoding="utf-8")
     if validation["status"] != "PASS":
@@ -173,6 +175,10 @@ def main() -> int:
     reference_silhouette = polygon_mask(annotations["masks"][0]["referencePolygonPx"], reference.size)
 
     draw_reference_frame(reference, annotations, output / "reference-frame.png")
+    side_by_side = Image.new("RGB", (reference.size[0] * 2, reference.size[1]))
+    side_by_side.paste(reference, (0, 0))
+    side_by_side.paste(model, (reference.size[0], 0))
+    side_by_side.save(output / "side-by-side.png")
     Image.blend(reference.convert("RGBA"), model.convert("RGBA"), 0.5).save(output / "overlay-50.png")
     write_edges(output / "model-render.png", reference, output / "edges.png")
     ImageChops.difference(reference, model).save(output / "difference.png")
@@ -184,6 +190,19 @@ def main() -> int:
         actual = np.asarray(projected, dtype=np.float64)
         landmark_rows.append({"id": feature["id"], "referencePx": feature["pixel"], "projectedPx": [round(float(value), 3) for value in actual], "errorPx": round(float(np.linalg.norm(actual - expected)), 3)})
     landmark_errors = [row["errorPx"] for row in landmark_rows]
+
+    calibrated_rows = []
+    class_errors: dict[str, list[float]] = {}
+    for landmark, projected in zip(runtime["projectedLandmarks"]["landmarks"], runtime["projectedLandmarks"]["points"]):
+        expected = np.asarray([landmark["normalized"][0] * reference.size[0], landmark["normalized"][1] * reference.size[1]], dtype=np.float64)
+        actual = np.asarray(projected, dtype=np.float64)
+        error = float(np.linalg.norm(actual - expected))
+        calibrated_rows.append({"id": landmark["id"], "class": landmark["class"], "referencePx": [round(float(value), 3) for value in expected], "projectedPx": [round(float(value), 3) for value in actual], "errorPx": round(error, 3)})
+        class_errors.setdefault(landmark["class"], []).append(error)
+    landmark_class_metrics = {
+        feature_class: {"count": len(errors), "medianErrorPx": round(float(np.median(errors)), 3), "maximumErrorPx": round(float(np.max(errors)), 3)}
+        for feature_class, errors in class_errors.items()
+    }
 
     projected_masks = {item["id"]: item["points"] for item in runtime["projectedMasks"]}
     mask_metrics = {}
@@ -227,6 +246,7 @@ def main() -> int:
         "environment": runtime["environment"],
         "runtime": {"canvasSize": runtime["canvasSize"], "camera": runtime["camera"], "consoleErrors": runtime["consoleErrors"], "pageErrors": runtime["pageErrors"], "failedResponses": runtime["failedResponses"]},
         "bodyLandmarks": {"count": len(landmark_rows), "medianErrorPx": float(np.median(landmark_errors)) if landmark_errors else None, "maximumErrorPx": max(landmark_errors) if landmark_errors else None, "rows": landmark_rows},
+        "photoLandmarks": {"count": len(calibrated_rows), "rows": calibrated_rows, "classes": landmark_class_metrics},
         "majorComponentCentroidErrorPx": {"count": len(centroid_errors), "median": float(np.median(centroid_errors)) if centroid_errors else None, "maximum": max(centroid_errors) if centroid_errors else None},
         "projectedBodySilhouette": {"referenceBBox": reference_bbox, "modelBBox": model_bbox, **size_error},
         "silhouette": {"intersectionOverUnion": round(silhouette_iou, 6), "meanBoundaryDistancePx": round(mean_boundary_distance(reference_silhouette, model_silhouette), 3), "missingPixels": int(missing), "extraPixels": int(extra), "missingExtraAreaPercent": round(float((missing + extra) / max(1, reference_silhouette.sum()) * 100), 3)},

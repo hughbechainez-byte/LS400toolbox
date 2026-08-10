@@ -6,12 +6,12 @@
   "sourceManifest": "model-manifest.json#/foundation/referencePhotoReplica",
   "variantId": "REFERENCE_PHOTO_REPLICA",
   "sourcePhoto": {
-    "logicalName": "user-1990-ls400-inline1.jpg",
-    "path": "private-local-reference/user-1990-ls400-inline1.jpg",
+    "logicalName": "ls400reference.avif",
+    "path": "C:/Users/blowb/Documents/ls400 3d/ls400toolbox/ls400reference.avif",
     "widthPx": 800,
     "heightPx": 489,
     "privacy": "private-no-ship",
-    "sha256": "d9d519e0273eeece13126ad00298cf8f79c217f87482b0c2f059344e7e7cd348"
+    "sha256": "fc12f37aa7f9ca98c6c5d814e551e8d2807a2446971db63fbe49f3258a4a3ae7"
   },
   "viewport": {
     "widthPx": 800,
@@ -37,7 +37,7 @@
       708.148
     ],
     "rollDeg": 0,
-    "fovDeg": 20,
+    "fovDeg": 20.0,
     "nearMm": 25,
     "farMm": 30000,
     "projection": "perspective",
@@ -45,7 +45,7 @@
     "lensAmbiguity": "Unresolved: the private image does not include calibrated intrinsics or an exact subject-camera distance.",
     "locked": true,
     "solver": {
-      "method": "bounded deterministic coordinate descent",
+      "method": "retained photo-layout preset after independent body-only solve exceeded acceptance",
       "seed": 20260809,
       "featureClass": "body-only",
       "featureIds": [
@@ -87,9 +87,9 @@
           60.0
         ]
       },
-      "rmsePx": 44.483318,
-      "medianResidualPx": 53.536546,
-      "maximumResidualPx": 90.265457,
+      "rmsePx": 70.882,
+      "medianResidualPx": 53.275,
+      "maximumResidualPx": 140.328,
       "status": "locked_with_evidence_residual"
     }
   },

@@ -3,8 +3,8 @@ package com.ls400.toolbox;
 
 public final class ModelManifest {
     public static final String VERSION = "ls400-model-foundation-2026-08-09";
-    public static final String BUILD_KEY = "15f305d514141ee6";
-    public static final String SHA256 = "15f305d514141ee6a28a78f9958d2ae7251a637bad6a7232769088469b0f9a38";
+    public static final String BUILD_KEY = "c010a1fe7db533cd";
+    public static final String SHA256 = "c010a1fe7db533cd11ab970aff022278d8c9bf78123c31b42a21a589080524a3";
     public static final int COMPONENT_COUNT = 189;
     public static final int CONNECTION_COUNT = 209;
     public static final float VEHICLE_WIDTH_M = 1.820000000f;

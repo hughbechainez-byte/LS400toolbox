@@ -4,8 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import {
   VEHICLE, ENGINE_BAY_RECONSTRUCTION, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS, GEOMETRY_DATASET,
   REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE, AC_R134A_RETROFIT_GUIDE
-} from './model-data.js?foundation=15f305d514141ee6';
-import { MODEL_FOUNDATION_BUILD_KEY, MODEL_FOUNDATION_SUMMARY, MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=15f305d514141ee6';
+} from './model-data.js?foundation=c010a1fe7db533cd';
+import { MODEL_FOUNDATION_BUILD_KEY, MODEL_FOUNDATION_SUMMARY, MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=c010a1fe7db533cd';
 
 const stage = document.getElementById('stage');
 const viewport = document.getElementById('viewport');
@@ -678,20 +678,20 @@ function buildHoodAndCowl() {
   // chamfered black rectangle.  Its centre is retained while the old rounded
   // tower-like box is replaced with a low stamped-plan silhouette.
   const rearServiceFootprint = [
-    [-.944,-.760],[-.850,-.805],[-.478,-.805],[-.392,-.730],
-    [-.392,-.225],[-.460,-.145],[-.844,-.145],[-.946,-.220]
+    [-.925,-.625],[-.840,-.670],[-.515,-.670],[-.440,-.606],
+    [-.440,-.250],[-.505,-.190],[-.825,-.190],[-.925,-.255]
   ];
   const rearServiceCover = vehicleTopProfile(rearServiceFootprint,.893,.074,0x11171a,{
     roughness:.82,metalness:.06,bevelSize:.026,bevelThickness:.011,bevelSegments:3,curveSegments:18
   });
   cowl.add(rearServiceCover);
   const rearServiceLid = vehicleTopProfile([
-    [-.902,-.728],[-.824,-.760],[-.505,-.760],[-.438,-.698],
-    [-.438,-.260],[-.494,-.196],[-.816,-.196],[-.902,-.258]
+    [-.886,-.593],[-.815,-.625],[-.542,-.625],[-.483,-.572],
+    [-.483,-.286],[-.530,-.238],[-.798,-.238],[-.886,-.292]
   ],.968,.018,0x242d30,{roughness:.72,metalness:.12,bevelSize:.016,bevelThickness:.006,bevelSegments:3,curveSegments:16});
   cowl.add(rearServiceLid);
   const rearServiceInset = vehicleTopProfile([
-    [-.846,-.674],[-.534,-.674],[-.492,-.635],[-.492,-.324],[-.534,-.286],[-.840,-.286]
+    [-.830,-.556],[-.568,-.556],[-.526,-.520],[-.526,-.348],[-.568,-.312],[-.824,-.312]
   ],.986,.008,0x0b1012,{roughness:.88,metalness:.02,bevelSize:.009,bevelThickness:.003,bevelSegments:2,curveSegments:12});
   cowl.add(rearServiceInset);
   for (const [forward,left] of [[-.846,-.720],[-.846,-.235],[-.462,-.720],[-.462,-.235]]) {
@@ -855,6 +855,10 @@ function buildCoolingStack() {
   const bottomTank = roundedBox(1.24,.065,.105,.032,0x20272b,{roughness:.78,metalness:.08});
   bottomTank.position.y = -.265;
   radiator.add(bottomTank);
+  // The locked photo view looks down onto the broad black fan shroud.  The
+  // silver fin field sits behind it and must not become an exposed foreground
+  // grille in that framing.
+  radiator.traverse(child => { child.userData.photoHidden = true; });
   registerComponent(radiator,'LANDMARK_RADIATOR',{minLod:1});
 
   const condenser = makeHeatExchanger(1.26,.47,.045,0x7f898b,{frameColor:0xa1a8a8,finColor:0x929b9c,verticalCount:42,horizontalCount:12});
@@ -900,6 +904,11 @@ function buildCoolingStack() {
     [.205,.355,.565],[.345,.420,.575],[.510,.395,.550],[.655,.290,.545],[BAY_ANCHORS.radiator[0],.255,.565]
   ],.067,0x161c1e,{roughness:.87,segments:40,radialSegments:14});
   fans.add(driverUpperHose);
+  const photoShroud = roundedBox(1.48,.085,.310,.045,0x111719,{roughness:.82,metalness:.07,segments:8});
+  photoShroud.position.copy(vehicleToWorld([.725,0,.585]));
+  fans.add(photoShroud);
+  const shroudLip = tube([ [.595,-.73,.640],[.700,-.75,.654],[.820,-.72,.648],[.890,0,.640],[.820,.72,.648],[.700,.75,.654],[.595,.73,.640] ],.020,0x242d2f,{roughness:.70,metalness:.26,segments:32,radialSegments:8});
+  fans.add(shroudLip);
   const passengerLowerHose = tube([
     [.175,-.305,.505],[.300,-.395,.490],[.515,-.370,.475],[BAY_ANCHORS.radiator[0],-.250,.505]
   ],.055,0x171d20,{roughness:.88,segments:34,radialSegments:12});

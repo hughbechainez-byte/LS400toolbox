@@ -1,4 +1,4 @@
-import { MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=15f305d514141ee6';
+import { MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=c010a1fe7db533cd';
 
 export const VEHICLE = {
   name: '1990 Lexus LS 400 (UCF10)',

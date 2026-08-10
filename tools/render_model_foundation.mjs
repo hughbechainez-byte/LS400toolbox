@@ -16,8 +16,10 @@ const output = path.resolve(arg('--output', path.join(root, 'qa', 'model-foundat
 const browserExecutable = arg('--browser', process.env.LS400_BROWSER_EXE || 'C:/Program Files/Google/Chrome/Application/chrome.exe');
 const privateReference = arg('--private-reference');
 const annotationPath = path.join(root, 'shared', 'photo-annotations.json');
+const landmarkPath = path.join(root, 'shared', 'photo-landmarks.json');
 const manifestPath = path.join(root, 'shared', 'model-manifest.json');
 const annotations = JSON.parse(fs.readFileSync(annotationPath, 'utf8'));
+const photoLandmarks = JSON.parse(fs.readFileSync(landmarkPath, 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 fs.mkdirSync(output, { recursive: true });
 
@@ -84,6 +86,10 @@ try {
     points: window.__LS400_QA__.projectPoints(features.map(item => item.modelPointMm)),
   }), bodyFeatures);
   const projectedMasks = await page.evaluate(masks => masks.map(item => ({ id: item.id, points: window.__LS400_QA__.projectPoints(item.modelPolygonMm) })), maskPoints);
+  const projectedLandmarks = await page.evaluate(landmarks => ({
+    landmarks,
+    points: window.__LS400_QA__.projectPoints(landmarks.map(item => item.modelPointMm)),
+  }), photoLandmarks.landmarks);
   const normalData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(false));
   const silhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(true));
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
@@ -95,6 +101,7 @@ try {
     camera: cameraState,
     projectedBodyFeatures,
     projectedMasks,
+    projectedLandmarks,
     validation,
     environment: {
       browserExecutable,
