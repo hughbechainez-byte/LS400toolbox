@@ -187,7 +187,10 @@ def main() -> int:
     subprocess.run(command, cwd=root, check=True)
     runtime = json.loads((output / "runtime.json").read_text(encoding="utf-8"))
     model = Image.open(output / "model-render.png").convert("RGB")
-    model_silhouette = silhouette_mask(output / "model-silhouette.png")
+    # `model-silhouette.png` is retained as an all-mesh diagnostic.  The
+    # body-only capture is the only image that can support a body-geometry
+    # measurement; projected landmark polygons are never a rendered mask.
+    rendered_body_silhouette = silhouette_mask(output / "body-silhouette.png")
     side_by_side = Image.new("RGB", (reference.size[0] * 2, reference.size[1]))
     side_by_side.paste(reference, (0, 0))
     side_by_side.paste(model, (reference.size[0], 0))
@@ -261,16 +264,17 @@ def main() -> int:
         Image.fromarray(np.where(model_mask, 255, 0).astype(np.uint8), "L").save(output / f"mask-{mask['id']}-model.png")
 
     body_mask = next(item for item in photo_landmarks["masks"] if item["id"] == "body-shell")
-    reference_silhouette = polygon_mask(body_mask["referencePolygonPx"], reference.size)
-    model_silhouette = polygon_mask(projected_masks["body-shell"], reference.size)
-    silhouette_intersection = np.logical_and(reference_silhouette, model_silhouette).sum()
-    silhouette_union = np.logical_or(reference_silhouette, model_silhouette).sum()
-    silhouette_iou = float(silhouette_intersection / silhouette_union) if silhouette_union else 0.0
-    model_bbox = bbox(model_silhouette)
-    reference_bbox = bbox(reference_silhouette)
-    size_error = relative_size_error(reference_bbox, model_bbox)
-    missing = np.logical_and(reference_silhouette, ~model_silhouette).sum()
-    extra = np.logical_and(model_silhouette, ~reference_silhouette).sum()
+    reference_envelope = polygon_mask(body_mask["referencePolygonPx"], reference.size)
+    projected_envelope = polygon_mask(projected_masks["body-shell"], reference.size)
+    envelope_intersection = np.logical_and(reference_envelope, projected_envelope).sum()
+    envelope_union = np.logical_or(reference_envelope, projected_envelope).sum()
+    envelope_iou = float(envelope_intersection / envelope_union) if envelope_union else 0.0
+    projected_bbox = bbox(projected_envelope)
+    reference_bbox = bbox(reference_envelope)
+    size_error = relative_size_error(reference_bbox, projected_bbox)
+    envelope_missing = np.logical_and(reference_envelope, ~projected_envelope).sum()
+    envelope_extra = np.logical_and(projected_envelope, ~reference_envelope).sum()
+    Image.fromarray(np.where(rendered_body_silhouette, 255, 0).astype(np.uint8), "L").save(output / "rendered-body-geometry-mask.png")
     metrics = {
         "manifest": {
             "version": manifest["manifestVersion"],
@@ -285,8 +289,8 @@ def main() -> int:
         "allLandmarkResidualPx": {"median": round(float(np.median(all_landmark_errors)), 3), "maximum": round(float(np.max(all_landmark_errors)), 3), "imageDiagonalPx": round(image_diagonal, 3)},
         "majorComponentCenterResidualPx": {"count": len(component_center_errors), "median": round(float(np.median(component_center_errors)), 3), "maximum": round(float(np.max(component_center_errors)), 3)},
         "majorComponentCentroidErrorPx": {"count": len(centroid_errors), "median": float(np.median(centroid_errors)) if centroid_errors else None, "maximum": max(centroid_errors) if centroid_errors else None},
-        "projectedBodySilhouette": {"referenceBBox": reference_bbox, "modelBBox": model_bbox, **size_error},
-        "silhouette": {"intersectionOverUnion": round(silhouette_iou, 6), "meanBoundaryDistancePx": round(mean_boundary_distance(reference_silhouette, model_silhouette), 3), "missingPixels": int(missing), "extraPixels": int(extra), "missingExtraAreaPercent": round(float((missing + extra) / max(1, reference_silhouette.sum()) * 100), 3)},
+        "projectedAnchorEnvelope": {"referenceBBox": reference_bbox, "modelBBox": projected_bbox, **size_error, "intersectionOverUnion": round(envelope_iou, 6), "meanBoundaryDistancePx": round(mean_boundary_distance(reference_envelope, projected_envelope), 3), "missingPixels": int(envelope_missing), "extraPixels": int(envelope_extra)},
+        "renderedBodyGeometry": {"maskPath": "rendered-body-geometry-mask.png", "modelBBox": bbox(rendered_body_silhouette), "modelPixels": int(rendered_body_silhouette.sum()), "comparisonStatus": "PENDING_SEMANTIC_REFERENCE_MASK", "reason": "The existing body-shell polygon traces the bay opening, while the rendered body-only mask includes exterior shell surfaces. Comparing those different semantics would be a fabricated silhouette score."},
         "masks": mask_metrics,
         "targets": {"bodyLandmarkMedianErrorPx": 14.07, "bodyLandmarkMaximumErrorPx": 28.14, "allLandmarkMedianErrorPx": round(landmark_median_target, 3), "allLandmarkMaximumErrorPx": round(landmark_maximum_target, 3), "majorComponentCenterMaximumErrorPx": round(component_center_target, 3), "majorProjectedWidthHeightErrorPercent": 5, "majorSilhouetteIoU": 0.92, "meanMajorBoundaryDistancePx": 18.76},
         "acceptance": {
@@ -297,13 +301,13 @@ def main() -> int:
             "majorComponentCenters": bool(component_center_errors) and max(component_center_errors) <= component_center_target,
             "projectedWidth": size_error["widthPercent"] is not None and size_error["widthPercent"] <= 5,
             "projectedHeight": size_error["heightPercent"] is not None and size_error["heightPercent"] <= 5,
-            "silhouetteIoU": silhouette_iou >= 0.92,
-            "boundaryDistance": mean_boundary_distance(reference_silhouette, model_silhouette) <= 18.76,
+            "renderedSilhouetteIoU": False,
+            "renderedBoundaryDistance": False,
             "noNewConsoleErrors": not runtime["consoleErrors"] and not runtime["pageErrors"],
         },
         "evidenceBlockers": [
-            "The source photo has no calibrated lens intrinsics or subject-car survey; residuals above target are reported rather than camera/mask-manipulated.",
-            "Component-region masks are comparison-only and were excluded from camera calibration.",
+            "The current body-shell polygon is an anchor envelope, not a rendered-geometry mask; its old IoU and boundary values are diagnostic-only and cannot satisfy visual acceptance.",
+            "A semantic reference mask matching the rendered cowl/fender/support geometry must be traced before silhouette and boundary gates can be evaluated.",
         ],
     }
     metrics["acceptance"]["overallTargets"] = all(value for key, value in metrics["acceptance"].items() if key != "overallTargets")
@@ -318,17 +322,18 @@ def main() -> int:
         "camera": runtime["camera"],
         "acceptance": metrics["acceptance"],
         "allLandmarkResidualPx": metrics["allLandmarkResidualPx"],
-        "bodySilhouette": metrics["silhouette"],
+        "projectedAnchorEnvelope": metrics["projectedAnchorEnvelope"],
+        "renderedBodyGeometry": metrics["renderedBodyGeometry"],
     }
     (output / "calibration-report.json").write_text(json.dumps(calibration_report, indent=2) + "\n", encoding="utf-8")
     acceptance = metrics["acceptance"]
     summary_lines = [
-        f"LS400 model-foundation QA: {'PASS' if acceptance['overallTargets'] else 'PASS_WITH_RESIDUALS'}",
+        f"LS400 model-foundation QA: {'PASS' if acceptance['overallTargets'] else 'INCOMPLETE'}",
         f"Build {runtime['buildKey']} · native canvas {runtime['canvasSize'][0]}x{runtime['canvasSize'][1]} · browser {runtime['environment']['browserVersion']}",
         f"Body landmarks: median {metrics['bodyLandmarks']['medianErrorPx']:.2f}px, max {metrics['bodyLandmarks']['maximumErrorPx']:.2f}px; projected size width {size_error['widthPercent']:.2f}%, height {size_error['heightPercent']:.2f}%.",
         f"All landmarks: median {metrics['allLandmarkResidualPx']['median']:.2f}px, max {metrics['allLandmarkResidualPx']['maximum']:.2f}px; major centres max {metrics['majorComponentCenterResidualPx']['maximum']:.2f}px.",
-        f"Silhouette: IoU {silhouette_iou:.4f}, mean boundary distance {metrics['silhouette']['meanBoundaryDistancePx']:.2f}px, missing {missing}px, extra {extra}px.",
-        "Canonical local source and derived QA images are local/no-ship; camera/body residuals are recorded in metrics.json.",
+        f"Anchor-envelope diagnostic only: IoU {envelope_iou:.4f}, mean boundary distance {metrics['projectedAnchorEnvelope']['meanBoundaryDistancePx']:.2f}px; it is not a rendered-body acceptance metric.",
+        "Rendered body geometry needs a semantic reference mask before the silhouette and boundary gates can be evaluated.",
     ]
     (output / "summary.txt").write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
     print("\n".join(summary_lines))

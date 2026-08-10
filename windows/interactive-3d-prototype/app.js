@@ -510,7 +510,12 @@ function buildBodyShell() {
   const rearBumper = roundedBox(1.74,.23,.24,.08,0x6b353a,{metalness:.2,roughness:.6});
   rearBumper.position.copy(vehicleToWorld([-4.03,0,.43]));
   shell.add(rearBumper);
-  for (const [fwd,left] of [[0,-.83],[0,.83],[-2.815,-.83],[-2.815,.83]]) shell.add(makeWheel(fwd,left));
+  for (const [fwd,left] of [[0,-.83],[0,.83],[-2.815,-.83],[-2.815,.83]]) {
+    const wheel = makeWheel(fwd,left);
+    // Wheels are below the hood-open sightline in the canonical frame.
+    wheel.traverse(child => { child.userData.photoHidden = true; });
+    shell.add(wheel);
+  }
   registerComponent(shell,'LANDMARK_BODY_SHELL',{minLod:1});
   collisionObjects.push({object:shell, kind:'cabin'});
 
@@ -525,7 +530,10 @@ function buildBodyShell() {
   for (const side of [-1, 1]) {
     const inner = side * BAY_STRUCTURE.apronInnerHalfWidth;
     const outer = side * BAY_STRUCTURE.apronOuterHalfWidth;
-    fenders.add(createVehiclePrism(apronProfile, Math.min(inner,outer), Math.max(inner,outer), COLORS.body, { metalness:.46, roughness:.42 }));
+    // The canonical calibration photo is a burgundy car.  The stamped apron
+    // stays in its measured vehicle coordinates, but its painted shell needs
+    // to read as a fender rather than a neutral gray overlay.
+    fenders.add(createVehiclePrism(apronProfile, Math.min(inner,outer), Math.max(inner,outer), 0x742933, { metalness:.46, roughness:.42 }));
     const rail = tube([
       [1.04,side*BAY_STRUCTURE.apronRailHalfWidth,.73],[.84,side*(BAY_STRUCTURE.apronRailHalfWidth+.01),.82],[.46,side*(BAY_STRUCTURE.apronRailHalfWidth+.02),.88],[-.18,side*(BAY_STRUCTURE.apronRailHalfWidth+.025),.91],
       [-.57,side*(BAY_STRUCTURE.apronRailHalfWidth+.02),.91],[-.89,side*(BAY_STRUCTURE.apronRailHalfWidth+.015),.89],[-1.09,side*BAY_STRUCTURE.apronRailHalfWidth,.84]
@@ -583,6 +591,10 @@ function buildFrontBody() {
     slat.position.copy(vehicleToWorld([BAY_STRUCTURE.frontBumperX+.028,i*.031,.63]));
     grille.add(slat);
   }
+  // The hood-open reference ends at the radiator-support/shroud plane; the
+  // exterior grille is below that sightline and was falsely reading as an
+  // exposed silver radiator field in the photo-layout view.
+  grille.traverse(child => { child.userData.photoHidden = true; });
   registerComponent(grille,'LANDMARK_GRILLE',{minLod:1});
 
   for (const [id,left] of [['LANDMARK_PASSENGER_HEADLIGHT',-.62],['LANDMARK_DRIVER_HEADLIGHT',.62]]) {
@@ -603,6 +615,7 @@ function buildFrontBody() {
     inner.position.copy(vehicleToWorld([BAY_STRUCTURE.frontBumperX-.005,left-(Math.sign(left)*.12),.67]));
     inner.userData.minLod = 3;
     headlight.add(inner);
+    headlight.traverse(child => { child.userData.photoHidden = true; });
     registerComponent(headlight,id,{minLod:1});
   }
 
@@ -641,6 +654,9 @@ function buildFrontBody() {
     rails.add(horn);
   }
   registerComponent(rails,'LANDMARK_FRONT_FRAME_RAILS',{minLod:1});
+  // The exact hood-open crop stops at the support/upper-shroud; the frame
+  // rails and horns below it exposed a non-reference undercarriage.
+  rails.traverse(child => { child.userData.photoHidden = true; });
 
   const splash = new THREE.Group();
   const under = roundedBox(1.45,.025,1.45,.012,0x252b2e,{roughness:.86,metalness:.04});
@@ -650,6 +666,7 @@ function buildFrontBody() {
   frontUnder.position.copy(vehicleToWorld([.90,0,.18]));
   splash.add(frontUnder);
   registerComponent(splash,'LANDMARK_SPLASH_SHIELDS',{minLod:1});
+  splash.traverse(child => { child.userData.photoHidden = true; });
 }
 
 let hoodPivot;
@@ -2317,9 +2334,25 @@ window.__LS400_QA__ = {
       return [((point.x * .5) + .5) * renderer.domElement.width, ((.5 - point.y * .5) * renderer.domElement.height)];
     });
   },
-  renderDataUrl(silhouette = false) {
+  inspectLandmarks(landmarks) {
+    return (landmarks || []).map(landmark => {
+      const group = objectById.get(landmark.objectId);
+      const anchor = vehicleToWorld(landmark.modelPointMm.map(value => Number(value) * MODEL_FOUNDATION_METRES.coordinateScale));
+      if (!group) return { id: landmark.id, objectId: landmark.objectId, found: false };
+      group.updateWorldMatrix(true, true);
+      const bounds = new THREE.Box3().setFromObject(group);
+      const nearest = anchor.clone().clamp(bounds.min, bounds.max);
+      return {
+        id: landmark.id, objectId: landmark.objectId, found: true,
+        anchorInsideObjectBounds: bounds.containsPoint(anchor),
+        nearestObjectBoundsDistanceMm: Math.round(anchor.distanceTo(nearest) * 1000),
+        boundsMm: { min: worldToVehicle(bounds.min.clone()).multiplyScalar(1000).toArray(), max: worldToVehicle(bounds.max.clone()).multiplyScalar(1000).toArray() }
+      };
+    });
+  },
+  renderDataUrl(mode = false) {
     const canvas = renderer.domElement;
-    if (!silhouette) { renderer.render(scene, camera); return canvas.toDataURL('image/png'); }
+    if (!mode) { renderer.render(scene, camera); return canvas.toDataURL('image/png'); }
     const saved = [];
     const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const oldBackground = scene.background;
@@ -2333,6 +2366,15 @@ window.__LS400_QA__ = {
       if (node === geometryValidationGroup) { saved.push([node, 'visible', node.visible]); node.visible = false; }
       if (node.isMesh) { saved.push([node, 'material', node.material]); node.material = white; }
     });
+    const selectedComponentIds = Array.isArray(mode) ? new Set(mode) : null;
+    if (mode === 'body' || selectedComponentIds) {
+      for (const group of registered) {
+        if ((mode === 'body' && !BODY_IDS.has(group.userData.componentId)) || (selectedComponentIds && !selectedComponentIds.has(group.userData.componentId))) {
+          saved.push([group, 'visible', group.visible]);
+          group.visible = false;
+        }
+      }
+    }
     renderer.render(scene, camera);
     const result = canvas.toDataURL('image/png');
     for (const [node, key, value] of saved.reverse()) node[key] = value;

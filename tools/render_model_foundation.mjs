@@ -88,11 +88,18 @@ try {
     landmarks,
     points: window.__LS400_QA__.projectPoints(landmarks.map(item => item.modelPointMm)),
   }), photoLandmarks.landmarks.map(item => ({ ...item, modelPointMm: item.worldAnchorMm })));
+  const anchorInspection = await page.evaluate(landmarks => window.__LS400_QA__.inspectLandmarks(landmarks), photoLandmarks.landmarks.map(item => ({ ...item, modelPointMm: item.worldAnchorMm })));
   const normalData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(false));
   const silhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(true));
+  const bodySilhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl('body'));
+  const photoBodyData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl([
+    'LANDMARK_FRONT_FENDERS', 'LANDMARK_COWL', 'LANDMARK_FIREWALL', 'LANDMARK_RADIATOR_SUPPORT'
+  ]));
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
   fs.writeFileSync(path.join(output, 'model-render.png'), decodeDataUrl(normalData));
   fs.writeFileSync(path.join(output, 'model-silhouette.png'), decodeDataUrl(silhouetteData));
+  fs.writeFileSync(path.join(output, 'body-silhouette.png'), decodeDataUrl(bodySilhouetteData));
+  fs.writeFileSync(path.join(output, 'photo-body-geometry-mask.png'), decodeDataUrl(photoBodyData));
   fs.writeFileSync(path.join(output, 'runtime.json'), JSON.stringify({
     buildKey,
     canvasSize,
@@ -100,6 +107,7 @@ try {
     projectedBodyFeatures,
     projectedMasks,
     projectedLandmarks,
+    anchorInspection,
     validation,
     environment: {
       browserExecutable,
