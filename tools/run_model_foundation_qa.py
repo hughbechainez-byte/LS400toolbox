@@ -120,6 +120,50 @@ def centroid(mask: np.ndarray) -> tuple[float, float] | None:
     return float(x), float(y)
 
 
+def principal_orientation(mask: np.ndarray) -> float | None:
+    """Return the major-axis screen angle in degrees, modulo 180."""
+    points = np.argwhere(mask)
+    if len(points) < 3:
+        return None
+    xy = points[:, [1, 0]].astype(np.float64)
+    centered = xy - xy.mean(axis=0)
+    values, vectors = np.linalg.eigh(np.cov(centered, rowvar=False))
+    vector = vectors[:, int(np.argmax(values))]
+    return float(math.degrees(math.atan2(vector[1], vector[0])) % 180.0)
+
+
+def orientation_error(reference: float | None, model: float | None) -> float | None:
+    if reference is None or model is None:
+        return None
+    return float(abs((reference - model + 90.0) % 180.0 - 90.0))
+
+
+def write_component_overlay(reference_mask: np.ndarray, model_mask: np.ndarray, output: Path) -> None:
+    """Cyan reference / red model isolated component comparison."""
+    data = np.zeros((*reference_mask.shape, 4), dtype=np.uint8)
+    data[reference_mask, 1] = 225
+    data[reference_mask, 2] = 255
+    data[model_mask, 0] = 255
+    data[model_mask, 1] = np.maximum(data[model_mask, 1], 84)
+    data[np.logical_and(reference_mask, model_mask)] = (238, 232, 118, 255)
+    data[np.logical_or(reference_mask, model_mask), 3] = 190
+    Image.fromarray(data, "RGBA").save(output)
+
+
+def draw_component_labels(image: Image.Image, rows: list[dict], key: str, output: Path) -> None:
+    frame = image.convert("RGBA")
+    draw = ImageDraw.Draw(frame, "RGBA")
+    for row in rows:
+        location = row.get(key)
+        if location is None:
+            continue
+        x, y = location
+        label = row["id"].replace("-", " ")
+        draw.rectangle((x - 3, y - 10, x + max(30, len(label) * 6), y + 4), fill=(8, 15, 18, 185))
+        draw.text((x, y - 9), label, fill=(246, 236, 140, 255), stroke_width=1, stroke_fill=(0, 0, 0, 245))
+    frame.save(output)
+
+
 def polygon_centroid(points: list[list[float]]) -> tuple[float, float]:
     array = np.asarray(points, dtype=np.float64)
     return float(array[:, 0].mean()), float(array[:, 1].mean())
@@ -332,6 +376,97 @@ def main() -> int:
             "bbox": bbox(silhouette_mask(mask_path)),
         })
 
+    # Component-fit mode is deliberately based on an isolated object-ID mask
+    # against a reviewed reference polygon.  It records the shape properties
+    # that a centre-point gate cannot see: all four bbox edges, visible area,
+    # major-axis orientation, silhouette overlap and boundary distance.
+    component_fit_rows = []
+    component_fit_targets = {
+        "centerResidualPx": 12.0,
+        "bboxEdgeResidualPx": 16.0,
+        "visibleAreaRatioMin": 0.80,
+        "visibleAreaRatioMax": 1.25,
+        "silhouetteIoU": 0.75,
+    }
+    for fit in photo_landmarks.get("componentFits", []):
+        reference_mask = polygon_mask(fit["referencePolygonPx"], reference.size)
+        model_path = output / f"photo-fit-{fit['id']}.png"
+        model_mask = silhouette_mask(model_path) if model_path.exists() else np.zeros_like(reference_mask)
+        reference_bbox = bbox(reference_mask)
+        model_bbox = bbox(model_mask)
+        reference_center = centroid(reference_mask)
+        model_center = centroid(model_mask)
+        center_residual = None if reference_center is None or model_center is None else float(np.linalg.norm(np.asarray(reference_center) - np.asarray(model_center)))
+        if reference_bbox is None or model_bbox is None:
+            bbox_edges = None
+        else:
+            bbox_edges = {
+                name: abs(model_bbox[index] - reference_bbox[index])
+                for index, name in enumerate(("left", "top", "right", "bottom"))
+            }
+        reference_pixels = int(reference_mask.sum())
+        model_pixels = int(model_mask.sum())
+        area_ratio = None if not reference_pixels else model_pixels / reference_pixels
+        intersection = np.logical_and(reference_mask, model_mask).sum()
+        union = np.logical_or(reference_mask, model_mask).sum()
+        iou = None if not union else float(intersection / union)
+        ref_orientation = principal_orientation(reference_mask)
+        model_orientation = principal_orientation(model_mask)
+        row = {
+            "id": fit["id"],
+            "category": fit["category"],
+            "photoFitGroup": fit["photoFitGroup"],
+            "generator": fit["generator"],
+            "referenceCenterPx": None if reference_center is None else [round(value, 3) for value in reference_center],
+            "modelCenterPx": None if model_center is None else [round(value, 3) for value in model_center],
+            "centerResidualPx": None if center_residual is None else round(center_residual, 3),
+            "referenceBBoxPx": reference_bbox,
+            "modelBBoxPx": model_bbox,
+            "bboxEdgeResidualPx": bbox_edges,
+            "referencePixels": reference_pixels,
+            "modelPixels": model_pixels,
+            "visibleAreaRatio": None if area_ratio is None else round(area_ratio, 4),
+            "referenceOrientationDeg": None if ref_orientation is None else round(ref_orientation, 3),
+            "modelOrientationDeg": None if model_orientation is None else round(model_orientation, 3),
+            "orientationResidualDeg": None if orientation_error(ref_orientation, model_orientation) is None else round(orientation_error(ref_orientation, model_orientation), 3),
+            "silhouetteIoU": None if iou is None else round(iou, 6),
+            "meanBoundaryDistancePx": round(mean_boundary_distance(reference_mask, model_mask), 3),
+        }
+        edges_pass = bbox_edges is not None and max(bbox_edges.values()) <= component_fit_targets["bboxEdgeResidualPx"]
+        row["passes"] = bool(
+            row["centerResidualPx"] is not None and row["centerResidualPx"] <= component_fit_targets["centerResidualPx"]
+            and edges_pass
+            and row["visibleAreaRatio"] is not None and component_fit_targets["visibleAreaRatioMin"] <= row["visibleAreaRatio"] <= component_fit_targets["visibleAreaRatioMax"]
+            and row["silhouetteIoU"] is not None and row["silhouetteIoU"] >= component_fit_targets["silhouetteIoU"]
+        )
+        component_fit_rows.append(row)
+        Image.fromarray(np.where(reference_mask, 255, 0).astype(np.uint8), "L").save(output / f"component-fit-{fit['id']}-reference.png")
+        Image.fromarray(np.where(model_mask, 255, 0).astype(np.uint8), "L").save(output / f"component-fit-{fit['id']}-model.png")
+        write_component_overlay(reference_mask, model_mask, output / f"component-fit-{fit['id']}-overlay.png")
+    with (output / "per-component-fit.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["id", "category", "generator", "center_residual_px", "bbox_left_px", "bbox_top_px", "bbox_right_px", "bbox_bottom_px", "visible_area_ratio", "orientation_residual_deg", "silhouette_iou", "mean_boundary_distance_px", "passes"])
+        for row in component_fit_rows:
+            edges = row["bboxEdgeResidualPx"] or {}
+            writer.writerow([row["id"], row["category"], row["generator"], row["centerResidualPx"], edges.get("left"), edges.get("top"), edges.get("right"), edges.get("bottom"), row["visibleAreaRatio"], row["orientationResidualDeg"], row["silhouetteIoU"], row["meanBoundaryDistancePx"], row["passes"]])
+    draw_component_labels(reference, component_fit_rows, "referenceCenterPx", output / "labeled-reference.png")
+    draw_component_labels(model, component_fit_rows, "modelCenterPx", output / "labeled-render.png")
+    intake_route_fit = None
+    route_definition = photo_landmarks.get("intakeRouteFit")
+    if route_definition and runtime.get("projectedIntakeRoute"):
+        expected_route = np.asarray(route_definition["referenceCenterlinePx"], dtype=np.float64)
+        actual_route = np.asarray(runtime["projectedIntakeRoute"], dtype=np.float64)
+        if expected_route.shape == actual_route.shape:
+            route_errors = np.linalg.norm(actual_route - expected_route, axis=1)
+            intake_route_fit = {
+                "referenceCenterlinePx": expected_route.round(3).tolist(),
+                "modelCenterlinePx": actual_route.round(3).tolist(),
+                "endpointResidualPx": [round(float(route_errors[0]), 3), round(float(route_errors[-1]), 3)],
+                "meanCenterlineDeviationPx": round(float(route_errors.mean()), 3),
+                "passes": bool(route_errors[0] <= 8 and route_errors[-1] <= 8 and route_errors.mean() <= 12),
+                "source": route_definition["source"],
+            }
+
     body_mask = next(item for item in photo_landmarks["masks"] if item["id"] == "body-shell")
     reference_body_geometry = region_mask(body_mask["referenceRegionsPx"], reference.size)
     body_intersection = np.logical_and(reference_body_geometry, rendered_photo_body).sum()
@@ -367,9 +502,11 @@ def main() -> int:
         "tenLargestLandmarkResiduals": largest_residuals,
         "majorComponentCentroidErrorPx": {"count": len(centroid_errors), "median": float(np.median(centroid_errors)) if centroid_errors else None, "maximum": max(centroid_errors) if centroid_errors else None},
         "visibleComponentCenters": visible_component_centers,
+        "componentFit": {"targets": component_fit_targets, "rows": component_fit_rows, "allPass": bool(component_fit_rows) and all(row["passes"] for row in component_fit_rows), "generatorMap": runtime.get("photoFitGenerators", [])},
+        "intakeRouteFit": intake_route_fit,
         "renderedBodyGeometry": {"referenceMaskPath": "reference-body-geometry-mask.png", "modelMaskPath": "photo-body-geometry-mask.png", "referenceBBox": reference_bbox, "modelBBox": rendered_body_bbox, **size_error, "intersectionOverUnion": round(body_iou, 6), "meanBoundaryDistancePx": round(body_boundary_error, 3), "missingPixels": int(body_missing), "extraPixels": int(body_extra), "referencePixels": int(reference_body_geometry.sum()), "modelPixels": int(rendered_photo_body.sum()), "source": body_mask["source"]},
         "masks": mask_metrics,
-        "targets": {"bodyLandmarkMedianErrorPx": 14.07, "bodyLandmarkMaximumErrorPx": 28.14, "allLandmarkMedianErrorPx": round(landmark_median_target, 3), "allLandmarkMaximumErrorPx": round(landmark_maximum_target, 3), "majorComponentCenterMaximumErrorPx": round(component_center_target, 3), "majorProjectedWidthHeightErrorPercent": 5, "majorSilhouetteIoU": 0.92, "meanMajorBoundaryDistancePx": 18.76},
+        "targets": {"bodyLandmarkMedianErrorPx": 14.07, "bodyLandmarkMaximumErrorPx": 28.14, "allLandmarkMedianErrorPx": round(landmark_median_target, 3), "allLandmarkMaximumErrorPx": round(landmark_maximum_target, 3), "majorComponentCenterMaximumErrorPx": round(component_center_target, 3), "majorProjectedWidthHeightErrorPercent": 5, "majorSilhouetteIoU": 0.92, "meanMajorBoundaryDistancePx": 18.76, "componentFit": component_fit_targets},
         "acceptance": {
             "bodyLandmarkMedian": bool(landmark_errors) and float(np.median(landmark_errors)) <= 14.07,
             "bodyLandmarkMaximum": bool(landmark_errors) and max(landmark_errors) <= 28.14,
@@ -380,12 +517,14 @@ def main() -> int:
             "projectedHeight": size_error["heightPercent"] is not None and size_error["heightPercent"] <= 5,
             "renderedSilhouetteIoU": body_iou >= 0.92,
             "renderedBoundaryDistance": body_boundary_error <= 18.76,
+            "componentFit": bool(component_fit_rows) and all(row["passes"] for row in component_fit_rows),
+            "intakeRouteFit": intake_route_fit is not None and intake_route_fit["passes"],
             "noNewConsoleErrors": not runtime["consoleErrors"] and not runtime["pageErrors"],
         },
         "evidenceBlockers": [
             "The body comparison uses manually traced cowl/fender/support regions and a grouped render mask; it excludes engine and accessory pixels by construction.",
         ],
-        "stageStatus": "BODY_GATE_FAILED" if not (body_iou >= 0.92 and body_boundary_error <= 18.76) else "BODY_MASK_GATE_PASSED",
+        "stageStatus": "COMPONENT_FIT_GATE_PASSED" if bool(component_fit_rows) and all(row["passes"] for row in component_fit_rows) else "COMPONENT_FIT_INCOMPLETE",
     }
     metrics["acceptance"]["overallTargets"] = all(value for key, value in metrics["acceptance"].items() if key != "overallTargets")
     (output / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")

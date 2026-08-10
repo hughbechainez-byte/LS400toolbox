@@ -88,6 +88,9 @@ try {
     landmarks,
     points: window.__LS400_QA__.projectPoints(landmarks.map(item => item.modelPointMm)),
   }), photoLandmarks.landmarks.map(item => ({ ...item, modelPointMm: item.worldAnchorMm })));
+  const projectedIntakeRoute = photoLandmarks.intakeRouteFit
+    ? await page.evaluate(points => window.__LS400_QA__.projectPoints(points), photoLandmarks.intakeRouteFit.modelCenterlineMm)
+    : null;
   const intakeRoutePixels = [[104, 252], [126, 222], [148, 190], [160, 178], [181, 166], [197, 178]];
   const intakePhotoPlaneIntersections = await page.evaluate(points => ({
     at650Mm: window.__LS400_QA__.unprojectPhotoPlane(points, 650),
@@ -116,6 +119,10 @@ try {
   ]) {
     componentDiagnostics[id] = await page.evaluate(componentId => window.__LS400_QA__.renderComponentMaskDataUrl([componentId]), id);
   }
+  const componentFits = {};
+  for (const fit of photoLandmarks.componentFits || []) {
+    componentFits[fit.id] = await page.evaluate(fitId => window.__LS400_QA__.renderPhotoFitMaskDataUrl([fitId]), fit.photoFitGroup);
+  }
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
   fs.writeFileSync(path.join(output, 'model-render.png'), decodeDataUrl(normalData));
   fs.writeFileSync(path.join(output, 'model-silhouette.png'), decodeDataUrl(silhouetteData));
@@ -126,6 +133,9 @@ try {
   for (const [id, data] of Object.entries(componentDiagnostics)) {
     fs.writeFileSync(path.join(output, `photo-component-${id}.png`), decodeDataUrl(data));
   }
+  for (const [id, data] of Object.entries(componentFits)) {
+    fs.writeFileSync(path.join(output, `photo-fit-${id}.png`), decodeDataUrl(data));
+  }
   fs.copyFileSync(path.join(output, 'photo-mask-body-shell.png'), path.join(output, 'photo-body-geometry-mask.png'));
   fs.writeFileSync(path.join(output, 'runtime.json'), JSON.stringify({
     buildKey,
@@ -134,9 +144,11 @@ try {
     projectedBodyFeatures,
     projectedMasks,
     projectedLandmarks,
+    projectedIntakeRoute,
     intakePhotoPlaneIntersections,
     anchorInspection,
     validation,
+    photoFitGenerators: await page.evaluate(() => window.__LS400_QA__.photoFitGenerators()),
     environment: {
       browserExecutable,
       browserVersion: browser.version(),
