@@ -721,10 +721,10 @@ function buildHoodAndCowl() {
   // The photograph shows a narrow dark cowl lip, not a tall slab at the rear
   // of the bay.  Keep the documented J-j span, but model it as a stepped
   // weather-strip/vent field so the firewall edge remains readable.
-  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2 + .300,.052,.700,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
+  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2 + .315,.052,.700,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
   cowlLedge.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX,0,.912]));
   cowlFit.add(cowlLedge);
-  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2+.240,.018,.210,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
+  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2+.255,.018,.210,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
   cowlWeatherStrip.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX-.038,0,.958]));
   cowlFit.add(cowlWeatherStrip);
   for (let i = -9; i <= 9; i++) {
@@ -783,7 +783,7 @@ function buildHoodAndCowl() {
     const blade=tube([[bladeEnd[0]-.020,bladeEnd[1]-.105,bladeEnd[2]],[bladeEnd[0]-.020,bladeEnd[1]+.105,bladeEnd[2]]],.014,0x080c0d,{roughness:.90,metalness:0,segments:8,radialSegments:6});
     cowlFit.add(spindle,arm,blade);
   }
-  cowlFit.position.copy(vehicleToWorld([0,-.120,-.100]));
+  cowlFit.position.copy(vehicleToWorld([0,-.022,-.123]));
   registerComponent(cowl,'LANDMARK_COWL',{minLod:1});
 
   const hinges = new THREE.Group();
