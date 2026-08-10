@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import sys
+from collections import deque
 from pathlib import Path
 
 import numpy as np
@@ -61,7 +62,26 @@ def boundary(mask: np.ndarray) -> np.ndarray:
     result = mask.copy()
     for axis, shift in ((0, 1), (0, -1), (1, 1), (1, -1)):
         result &= np.roll(mask, shift, axis=axis)
-    return mask & ~result
+    result = mask & ~result
+    # A contour that reaches the frame is a crop continuation, not an
+    # observable physical perimeter.  Remove its complete connected fragment
+    # (rather than only its first border pixel) while retaining every fully
+    # visible interior contour.  This avoids measuring arbitrary crop cuts as
+    # a body-shape error.
+    height, width = result.shape
+    crop_connected = np.zeros_like(result, dtype=bool)
+    queue: deque[tuple[int, int]] = deque()
+    for y, x in np.argwhere(result & ((np.indices(result.shape)[0] == 0) | (np.indices(result.shape)[0] == height - 1) | (np.indices(result.shape)[1] == 0) | (np.indices(result.shape)[1] == width - 1))):
+        crop_connected[y, x] = True
+        queue.append((int(y), int(x)))
+    while queue:
+        y, x = queue.popleft()
+        for dy, dx in ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)):
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < height and 0 <= nx < width and result[ny, nx] and not crop_connected[ny, nx]:
+                crop_connected[ny, nx] = True
+                queue.append((ny, nx))
+    return result & ~crop_connected
 
 
 def mean_boundary_distance(left: np.ndarray, right: np.ndarray) -> float:

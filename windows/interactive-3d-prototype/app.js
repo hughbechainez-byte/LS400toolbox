@@ -523,8 +523,8 @@ function buildBodyShell() {
   // B0-186 fixes the cowl and support pairs.  These stamped apron bands use
   // those underlying coordinates rather than widening a finished scene.
   const apronProfile = [
-    [1.08,.49],[1.05,.67],[.95,.78],[.70,.86],[.28,.87],[-.22,.88],[-.62,.88],
-    [-.94,.88],[-1.12,.84],[-1.15,.67],[-1.06,.56],[-.78,.59],[-.48,.64],
+    [1.08,.66],[1.05,.74],[.95,.80],[.70,.86],[.28,.87],[-.22,.88],[-.62,.88],
+    [-.94,.88],[-1.16,.90],[-1.480,.84],[-1.480,.63],[-1.06,.56],[-.78,.59],[-.48,.64],
     [-.14,.66],[.20,.63],[.52,.57]
   ];
   for (const side of [-1, 1]) {
@@ -544,6 +544,15 @@ function buildBodyShell() {
     ], .012, 0x3d4645, { metalness:.60, roughness:.42, segments:42, radialSegments:8 });
     innerLip.userData.minLod = 2;
     fenders.add(innerLip);
+    if (side < 0) {
+      // The passenger rear apron sweeps broadly into the cowl/service shelf
+      // in the reference.  Keep it a stamped in-bay return, not a mirrored
+      // screen-space patch; the driver side remains open around the booster.
+      const passengerRearReturn = createVehiclePrism([
+        [-1.700,.925],[-1.125,.925],[-.925,.855],[-.900,.710],[-1.255,.655],[-1.575,.720]
+      ],-1.050,-.405,0x742933,{metalness:.46,roughness:.42});
+      fenders.add(passengerRearReturn);
+    }
   }
   registerComponent(fenders,'LANDMARK_FRONT_FENDERS',{minLod:1});
 
@@ -626,6 +635,14 @@ function buildFrontBody() {
   const lowerRail = roundedBox(1.48,.050,.060,.012,0x1b2225,{metalness:.42,roughness:.70});
   lowerRail.position.copy(vehicleToWorld([BAY_STRUCTURE.radiatorSupportX-.03,0,.34]));
   support.add(lowerRail);
+  // A stamped upper-front closure carries the support into the painted front
+  // body.  Its fender-to-fender prism is a real bay panel, not a view-space
+  // scale plate, and removes the physically absent open frame view beneath
+  // the radiator support.
+  const frontCloseout = createVehiclePrism([
+    [.650,.585],[1.075,.548],[1.350,.255],[.905,.225]
+  ],-BAY_STRUCTURE.radiatorSupportHardpointHalfWidth,BAY_STRUCTURE.radiatorSupportHardpointHalfWidth,0x20282b,{metalness:.32,roughness:.72});
+  support.add(frontCloseout);
   for (const left of [-BAY_STRUCTURE.radiatorSupportHardpointHalfWidth,-.31,.31,BAY_STRUCTURE.radiatorSupportHardpointHalfWidth]) {
     const upright = roundedBox(.045,.55,.055,.011,0x283135,{metalness:.5,roughness:.58});
     upright.position.copy(vehicleToWorld([BAY_STRUCTURE.radiatorSupportX,left,.55]));
@@ -675,13 +692,21 @@ let hoodStruts;
 
 function buildHoodAndCowl() {
   const cowl = new THREE.Group();
+  // The rear cowl is a continuous stamped shelf behind the firewall.  The
+  // earlier separated trim pieces left nonphysical photo-view gaps all the
+  // way to the upper frame edge.
+  const rearCowlBacking = vehicleTopProfile([
+    [-1.700,-BAY_STRUCTURE.cowlOuterHalfWidth],[-1.010,-BAY_STRUCTURE.cowlOuterHalfWidth],
+    [-1.010,BAY_STRUCTURE.cowlOuterHalfWidth],[-1.700,BAY_STRUCTURE.cowlOuterHalfWidth]
+  ],.900,.038,0x151b1e,{roughness:.82,metalness:.08,bevelSize:.018,bevelThickness:.008,bevelSegments:3,curveSegments:10});
+  cowl.add(rearCowlBacking);
   // The photograph shows a narrow dark cowl lip, not a tall slab at the rear
   // of the bay.  Keep the documented J-j span, but model it as a stepped
   // weather-strip/vent field so the firewall edge remains readable.
-  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2,.052,.405,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
+  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2,.052,.700,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
   cowlLedge.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX,0,.912]));
   cowl.add(cowlLedge);
-  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2-.030,.018,.120,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
+  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2-.030,.018,.210,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
   cowlWeatherStrip.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX-.038,0,.958]));
   cowl.add(cowlWeatherStrip);
   for (let i = -7; i <= 7; i++) {
