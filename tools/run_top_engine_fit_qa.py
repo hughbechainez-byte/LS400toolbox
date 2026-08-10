@@ -18,7 +18,10 @@ ROOT = Path(__file__).resolve().parents[1]
 NODE = Path(r"C:\Users\blowb\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe")
 FIXTURE_DIR = ROOT / "shared" / "photo-top-engine-reference-fixtures"
 MODEL_FIT_GROUPS = {
-    "airbox-maf-assembly": ["airbox", "maf-housing"],
+    # The recovered 3e6f937 runtime has no experimental MAF-only fit group;
+    # this offline comparator therefore uses its two established intake fit
+    # groups without adding or altering runtime scene nodes.
+    "airbox-maf-assembly": ["airbox", "intake-duct"],
     "corrugated-intake-duct": ["intake-duct"],
     "trac-throttle-assembly": ["trac-housing", "throttle-body"],
     "silver-intake-manifold": ["intake-manifold"],
