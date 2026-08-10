@@ -1637,15 +1637,15 @@ function buildEngineLandmarks() {
   // In the photo the low driver battery is forward of the relay enclosure,
   // with its rear face tucked beneath the shroud rather than high at the
   // tower plane.
-  const batteryX=batteryAnchorX+.160;
+  const batteryX=batteryAnchorX+.040;
   const batteryY=batteryAnchorY-.053;
   // Keep the battery centred on its measured anchor while compacting the
   // physical case envelope to the low, wide driver-front battery in the
   // reference.  This is an in-place plan reduction, not a display scale.
   const batteryProfile = (points, baseUp, height, color, options = {}) => vehicleTopProfile(
     points.map(([forward,lateral]) => [
-      batteryX + (forward - batteryX) * .68,
-      batteryY + (lateral - batteryY) * .84
+      batteryX + (forward - batteryX) * .48,
+      batteryY + (lateral - batteryY) * .72
     ]), baseUp, height, color, options);
   // A battery is a low, chamfered clamped case in the photo, not another
   // anonymous cuboid.  The tray/case/top all remain centred on the documented
@@ -1654,37 +1654,41 @@ function buildEngineLandmarks() {
     [batteryX+.245,batteryY-.215],[batteryX+.270,batteryY-.165],[batteryX+.262,batteryY+.165],
     [batteryX+.215,batteryY+.220],[batteryX-.215,batteryY+.220],[batteryX-.255,batteryY+.168],
     [batteryX-.250,batteryY-.170],[batteryX-.205,batteryY-.222]
-  ],batteryZ-.150,.042,0x2a3234,{roughness:.74,metalness:.30,bevelSize:.020,bevelThickness:.008,bevelSegments:3,curveSegments:16});
+  ],batteryZ-.055,.032,0x2a3234,{roughness:.74,metalness:.30,bevelSize:.020,bevelThickness:.008,bevelSegments:3,curveSegments:16});
   battery.add(batteryTray);
   const caseMesh=batteryProfile([
     [batteryX+.205,batteryY-.182],[batteryX+.228,batteryY-.132],[batteryX+.222,batteryY+.135],
     [batteryX+.176,batteryY+.182],[batteryX-.178,batteryY+.182],[batteryX-.215,batteryY+.132],
     [batteryX-.210,batteryY-.138],[batteryX-.164,batteryY-.184]
-  ],batteryZ-.096,.156,0x1b2123,{roughness:.80,metalness:.025,bevelSize:.026,bevelThickness:.012,bevelSegments:4,curveSegments:18});
+  ],batteryZ-.030,.082,0x1b2123,{roughness:.80,metalness:.025,bevelSize:.026,bevelThickness:.012,bevelSegments:4,curveSegments:18});
   battery.add(caseMesh);
   const top=batteryProfile([
     [batteryX+.178,batteryY-.155],[batteryX+.195,batteryY-.112],[batteryX+.188,batteryY+.112],
     [batteryX+.148,batteryY+.151],[batteryX-.145,batteryY+.151],[batteryX-.177,batteryY+.110],
     [batteryX-.172,batteryY-.114],[batteryX-.140,batteryY-.156]
-  ],batteryZ+.060,.028,0x0d1315,{roughness:.76,metalness:.03,bevelSize:.016,bevelThickness:.006,bevelSegments:3,curveSegments:16});
+  ],batteryZ+.012,.022,0x0d1315,{roughness:.76,metalness:.03,bevelSize:.016,bevelThickness:.006,bevelSegments:3,curveSegments:16});
   battery.add(top);
   const batteryLabel=textPlate('12V',.190,.090,{fontSize:68,minLod:3,background:'#20282a',border:'#c4c6bc',color:'#e9e6cf'});
   batteryLabel.rotation.x=-Math.PI/2;
   batteryLabel.position.copy(vehicleToWorld([batteryX+.015,batteryY,batteryZ+.115]));
+  batteryLabel.userData.photoFitExclude=true;
   battery.add(batteryLabel);
   for(const [sideOffset,color] of [[-.105,0xb54242],[.105,0x646c70]]){
     const terminal=cylinder(.019,.035,color,'y',{metalness:.7,roughness:.32,segments:20});
     terminal.position.copy(vehicleToWorld([batteryX+.065,batteryY+sideOffset,batteryZ+.104]));
+    terminal.userData.photoFitExclude=true;
     battery.add(terminal);
   }
   const holdDown=roundedBox(.038,.024,.325,.010,0x555e5f,{metalness:.65,roughness:.4,segments:4});
   holdDown.position.copy(vehicleToWorld([batteryX-.008,batteryY,batteryZ+.105]));
+  holdDown.userData.photoFitExclude=true;
   battery.add(holdDown);
   // Individual cell caps and the forward cable boot prevent the battery from
   // reading as another anonymous black cuboid in the driver-front row.
   for (const fwdOffset of [-.115,0,.115]) {
     const cellCap=cylinder(.018,.008,0x343c3e,'y',{roughness:.66,segments:18});
     cellCap.position.copy(vehicleToWorld([batteryX+fwdOffset,batteryY-.078,batteryZ+.099]));
+    cellCap.userData.photoFitExclude=true;
     battery.add(cellCap);
   }
   const positiveBoot=roundedBox(.070,.030,.058,.015,0xb54242,{roughness:.58,metalness:.12,segments:5});
@@ -2016,29 +2020,35 @@ function buildEngineLandmarks() {
   // Keep the centre on the documented driver-rear anchor.  The source photo
   // has a compact, recessed booster behind the master cylinder—not the
   // oversized round disc previously spanning the whole upper-right quadrant.
-  const drum=cylinder(.148,.082,0x0d1214,'z',{metalness:.42,roughness:.58,segments:52});
+  const drum=cylinder(.140,.072,0x0d1214,'z',{metalness:.42,roughness:.58,segments:52});
+  drum.scale.y=1.25;
   drum.position.copy(vehicleToWorld(BAY_ANCHORS.brakeBooster));
   booster.add(drum);
-  const boosterFace=cylinder(.119,.012,0x101719,'z',{metalness:.38,roughness:.62,segments:48});
+  const boosterFace=cylinder(.115,.011,0x101719,'z',{metalness:.38,roughness:.62,segments:48});
+  boosterFace.scale.y=1.25;
   boosterFace.position.copy(vehicleToWorld([boosterX+.057,boosterY,boosterZ]));
   booster.add(boosterFace);
-  const boosterRing=torus(.136,.008,0x3b4648,'z',{metalness:.62,roughness:.42,tubularSegments:48});
+  const boosterRing=torus(.130,.008,0x3b4648,'z',{metalness:.62,roughness:.42,tubularSegments:48});
+  boosterRing.scale.y=1.25;
   boosterRing.position.copy(vehicleToWorld([boosterX+.064,boosterY,boosterZ]));
   booster.add(boosterRing);
-  const boosterHub=cylinder(.034,.016,0x202a2c,'z',{metalness:.50,roughness:.46,segments:28});
+  const boosterHub=cylinder(.030,.015,0x202a2c,'z',{metalness:.50,roughness:.46,segments:28});
   boosterHub.position.copy(vehicleToWorld([boosterX+.068,boosterY,boosterZ]));
   booster.add(boosterHub);
   // Offset the metal master inboard so its connected cylinder remains visible
   // beside the disc, leaving a dark negative gap before the coolant/fuse row.
-  const masterJunction=cylinder(.048,.028,0x626c6e,'z',{metalness:.66,roughness:.38,segments:28});
-  masterJunction.position.copy(vehicleToWorld([boosterX+.074,boosterY-.098,boosterZ-.022]));
+  const masterJunction=cylinder(.038,.024,0x626c6e,'z',{metalness:.66,roughness:.38,segments:28});
+  masterJunction.position.copy(vehicleToWorld([boosterX+.060,boosterY-.098,boosterZ-.022]));
   booster.add(masterJunction);
-  const master=cylinder(.035,.158,0x949d9e,'z',{metalness:.74,roughness:.32,segments:30});
-  master.position.copy(vehicleToWorld([boosterX+.173,boosterY-.108,boosterZ-.028]));
+  const master=cylinder(.028,.070,0x949d9e,'z',{metalness:.74,roughness:.32,segments:30});
+  master.position.copy(vehicleToWorld([boosterX+.118,boosterY-.108,boosterZ-.028]));
   booster.add(master);
-  const masterNose=cylinder(.043,.035,0x717b7c,'z',{metalness:.66,roughness:.38,segments:26});
-  masterNose.position.copy(vehicleToWorld([boosterX+.291,boosterY-.108,boosterZ-.028]));
+  const masterNose=cylinder(.030,.022,0x717b7c,'z',{metalness:.66,roughness:.38,segments:26});
+  masterNose.position.copy(vehicleToWorld([boosterX+.174,boosterY-.108,boosterZ-.028]));
   booster.add(masterNose);
+  const masterHousing=roundedBox(.360,.130,.250,.040,0x626a68,{metalness:.56,roughness:.41,segments:6});
+  masterHousing.position.copy(vehicleToWorld([boosterX+.130,boosterY-.112,boosterZ+.045]));
+  booster.add(masterHousing);
   const reservoirBase=vehicleTopProfile([
     [boosterX+.092,boosterY-.176],[boosterX+.211,boosterY-.176],[boosterX+.230,boosterY-.150],
     [boosterX+.230,boosterY-.066],[boosterX+.207,boosterY-.042],[boosterX+.096,boosterY-.042],
@@ -2056,7 +2066,11 @@ function buildEngineLandmarks() {
     reservoirCap.position.copy(vehicleToWorld([boosterX+.151,boosterY+lateralOffset,boosterZ+.086]));
     booster.add(reservoirCap);
   }
-  for (const delta of [-.132,-.088]) booster.add(tube([[boosterX+.282,boosterY+delta,boosterZ-.020],[boosterX+.150,boosterY+delta,boosterZ+.044],[boosterX-.026,boosterY+delta,boosterZ+.080]],.005,0x8d9697,{metalness:.65,roughness:.36,segments:14,radialSegments:6}));
+  for (const delta of [-.132,-.088]) {
+    const brakeLine=tube([[boosterX+.282,boosterY+delta,boosterZ-.020],[boosterX+.150,boosterY+delta,boosterZ+.044],[boosterX-.026,boosterY+delta,boosterZ+.080]],.005,0x8d9697,{metalness:.65,roughness:.36,segments:14,radialSegments:6});
+    brakeLine.userData.photoFitExclude=true;
+    booster.add(brakeLine);
+  }
   const boosterVacuum=tube([
     [boosterX+.020,boosterY-.100,boosterZ+.005],[-.760,.820,.805],[-.560,.560,.825],[-.360,.245,.835]
   ],.018,0x151b1d,{roughness:.88,segments:32,radialSegments:10});
@@ -2072,7 +2086,7 @@ function buildEngineLandmarks() {
   // Master cylinder/reservoir sit lower and inboard of the firewall-side
   // booster in the locked view; retain the physical separation from the
   // driver cowl rather than flattening the whole assembly into its anchor.
-  booster.position.copy(vehicleToWorld([-.065,.055,-.050]));
+  booster.position.copy(vehicleToWorld([-.065,.043,-.112]));
   registerComponent(booster,'LANDMARK_BRAKE_BOOSTER',{minLod:1});
   registerPhotoFitGroup('brake-area',booster,'buildEngineLandmarks: booster, master cylinder and reservoir');
 }
@@ -2745,7 +2759,7 @@ window.__LS400_QA__ = {
       const group=photoFitGroups.get(id);
       if (!group) continue;
       group.traverse(node => {
-        if (node.userData.photoFitExclude) return;
+        if (node.userData.photoFitExclude || node.userData.qaExclude) return;
         node.visible=true;
         if (node.isMesh) {
           savedMaterials.push([node,node.material]);
