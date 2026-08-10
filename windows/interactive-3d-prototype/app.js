@@ -986,6 +986,13 @@ function buildCoolingStack() {
   // The reference front cover is a stepped three-section moulding, not one
   // blank rectangular panel.  Separate centre and outer lobes preserve the
   // fan openings and the visible breaks across the shroud.
+  // Its outer shell is a low, continuous support-top molding.  The prior
+  // isolated fan lobes floated high in the photo view and exposed the wrong
+  // foreground silhouette.
+  const shroudShell = vehicleTopProfile([
+    [.910,-.471],[.910,.389],[1.285,.389],[1.420,.279],
+    [1.455,.074],[1.455,-.156],[1.420,-.361],[1.285,-.471]
+  ],.690,.050,0x111719,{roughness:.84,metalness:.06,bevelSize:.032,bevelThickness:.014,bevelSegments:4,curveSegments:18});
   const shroudCentre = roundedBox(.470,.076,.278,.048,0x111719,{roughness:.82,metalness:.07,segments:8});
   shroudCentre.position.copy(vehicleToWorld([.930,0,.438]));
   const shroudPassenger = roundedBox(.430,.070,.338,.050,0x151c1e,{roughness:.80,metalness:.08,segments:8});
@@ -1000,8 +1007,10 @@ function buildCoolingStack() {
   passengerOpening.position.copy(vehicleToWorld([.888,-.426,.470]));
   const driverOpening = roundedBox(.142,.012,.188,.028,0x050809,{roughness:.94,metalness:0,segments:6});
   driverOpening.position.copy(vehicleToWorld([.888,.426,.470]));
-  shroudFit.add(shroudCentre,shroudPassenger,shroudDriver,centreOpening,passengerOpening,driverOpening);
+  for (const detail of [shroudCentre,shroudPassenger,shroudDriver,centreOpening,passengerOpening,driverOpening]) detail.userData.photoFitExclude=true;
+  shroudFit.add(shroudShell,shroudCentre,shroudPassenger,shroudDriver,centreOpening,passengerOpening,driverOpening);
   const shroudLip = tube([ [.833,-.73,.494],[.938,-.75,.508],[1.058,-.72,.502],[1.128,0,.494],[1.058,.72,.502],[.938,.75,.508],[.833,.73,.494] ],.020,0x242d2f,{roughness:.70,metalness:.26,segments:32,radialSegments:8});
+  shroudLip.userData.photoFitExclude=true;
   shroudFit.add(shroudLip);
   const passengerLowerHose = tube([
     [.175,-.305,.505],[.300,-.395,.490],[.515,-.370,.475],[BAY_ANCHORS.radiator[0],-.250,.505]
@@ -1393,19 +1402,19 @@ function buildEngine() {
     return mesh;
   };
   const throttleCasting = throttleProfile([
-    [-.300,-.515],[-.240,-.518],[-.170,-.475],[-.136,-.405],[-.170,-.340],
-    [-.250,-.305],[-.310,-.330],[-.322,-.405]
+    [-.270,-.505],[-.235,-.512],[-.170,-.475],[-.136,-.405],[-.170,-.340],
+    [-.245,-.312],[-.280,-.338],[-.270,-.405]
   ],.649,.044,0x4e595b,{metalness:.54,roughness:.48,bevelSize:.026,bevelThickness:.012,bevelSegments:3,curveSegments:16});
   const throttleUpper = throttleProfile([
-    [-.278,-.472],[-.238,-.500],[-.168,-.470],[-.138,-.406],[-.180,-.346],
-    [-.248,-.320],[-.278,-.360]
+    [-.255,-.466],[-.232,-.495],[-.168,-.470],[-.138,-.406],[-.180,-.346],
+    [-.244,-.325],[-.255,-.365]
   ],.692,.052,0x9fa8a7,{metalness:.71,roughness:.33,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:14});
   throttleFit.add(throttleCasting,throttleUpper);
   // The photo's throttle is a substantial horizontal cast barrel.  Give it
   // the real visual diameter and one continuous run from the black elbow;
   // a small pipe here was disappearing into the passenger bank.
-  const throttleBody = cylinder(.058,.146,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:28});
-  placeThrottle(throttleBody,[-.285,-.426,.798]);
+  const throttleBody = cylinder(.053,.126,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:28});
+  placeThrottle(throttleBody,[-.263,-.426,.777]);
   for (const left of [-.534,-.318]) {
     const collar = torus(.058,.005,0x5f6b6d,'x',{metalness:.62,roughness:.35,tubularSegments:28,radialSegments:8});
     collar.position.copy(vehicleToWorld(throttleLayout.point([-.285,left,.798])));
@@ -1427,6 +1436,7 @@ function buildEngine() {
   manifoldFit.add(throttleNeck,throttleBridge);
   const throttleFlange = torus(.057,.005,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:28,radialSegments:8});
   throttleFlange.position.copy(vehicleToWorld([BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]-.118,BAY_ANCHORS.throttle[2]]));
+  throttleFlange.userData.photoFitExclude=true;
   const throttleActuator = roundedBox(.066,.042,.062,.014,0x242c2e,{roughness:.69,metalness:.16,segments:5});
   placeThrottle(throttleActuator,[-.178,-.481,.822]);
   throttleActuator.rotation.y=.13;
@@ -1552,7 +1562,9 @@ function buildEngine() {
       ignition.add(lead);
     }
   }
-  registerComponent(ignition,'ENGINE_SPARK_PLUG_WIRING',{minLod:1,parent:frontAccessoryFit});
+  // Coil rails and throttle-sensor wiring live on the bank castings; they are
+  // not part of the lower front pulley/accessory silhouette.
+  registerComponent(ignition,'ENGINE_SPARK_PLUG_WIRING',{minLod:1,parent:engine});
 
   // Throttle-position sensor and a genuine three-conductor loom hang off the
   // passenger body instead of a loose screen-relative part.
@@ -1575,7 +1587,7 @@ function buildEngine() {
     wire.userData.minLod=2;
     tps.add(wire);
   }
-  registerComponent(tps,'ENGINE_THROTTLE_POSITION_SENSOR_WIRING',{minLod:1,parent:frontAccessoryFit});
+  registerComponent(tps,'ENGINE_THROTTLE_POSITION_SENSOR_WIRING',{minLod:1,parent:engine});
 
   registerComponent(engine,'ENGINE_1UZ_FE',{minLod:1});
   collisionObjects.push({object:engine,kind:'engine'});
@@ -2694,6 +2706,30 @@ window.__LS400_QA__ = {
     for (const group of photoFitGroups.values()) {
       savedVisibility.push([group,group.visible]);
       group.visible=false;
+    }
+    // A photo-fit group often sits below a registered assembly (for example,
+    // shroudFit below `fans`).  Re-enabling that ancestor must not also reveal
+    // its unselected sibling geometry; otherwise a component mask silently
+    // measures the whole parent assembly rather than the reviewed generator.
+    const selectedBranches = new Map();
+    for (const id of selected) {
+      const group=photoFitGroups.get(id);
+      if (!group) continue;
+      let child=group;
+      for (let parent=group.parent; parent && parent !== scene; parent=parent.parent) {
+        if (!selectedBranches.has(parent)) selectedBranches.set(parent,new Set());
+        selectedBranches.get(parent).add(child);
+        child=parent;
+      }
+    }
+    for (const [parent,keptChildren] of selectedBranches) {
+      savedVisibility.push([parent,parent.visible]);
+      parent.visible=true;
+      for (const sibling of parent.children) {
+        if (keptChildren.has(sibling)) continue;
+        savedVisibility.push([sibling,sibling.visible]);
+        sibling.visible=false;
+      }
     }
     for (const id of selected) {
       const group=photoFitGroups.get(id);
