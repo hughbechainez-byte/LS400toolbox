@@ -768,6 +768,19 @@ function buildHoodAndCowl() {
     [-1.176,.125,1.019],[-1.160,.470,1.012],[-1.095,.700,.996]
   ],.010,0x9d8257,{metalness:.68,roughness:.34,segments:40,radialSegments:8});
   cowl.add(platedLine);
+  // Two low wiper arms and their pivots break the cowl into the photographed
+  // stamped deck, vent grille and hardware layers; they are intentionally
+  // shallow so they do not become diagonal hood braces in the photo view.
+  for (const [pivot, tip, bladeEnd] of [
+    [[-1.115,-.245,.997],[-1.182,.130,1.012],[-1.158,.475,1.004]],
+    [[-1.122,.175,.997],[-1.196,.465,1.014],[-1.167,.745,1.003]]
+  ]) {
+    const spindle=cylinder(.018,.022,0x1a2022,'y',{roughness:.70,metalness:.18,segments:18});
+    spindle.position.copy(vehicleToWorld(pivot));
+    const arm=tube([pivot,tip,bladeEnd],.010,0x111719,{roughness:.84,metalness:.08,segments:20,radialSegments:6});
+    const blade=tube([[bladeEnd[0]-.020,bladeEnd[1]-.105,bladeEnd[2]],[bladeEnd[0]-.020,bladeEnd[1]+.105,bladeEnd[2]]],.014,0x080c0d,{roughness:.90,metalness:0,segments:8,radialSegments:6});
+    cowl.add(spindle,arm,blade);
+  }
   registerComponent(cowl,'LANDMARK_COWL',{minLod:1});
   registerPhotoFitGroup('cowl-wipers',cowl,'buildHoodAndCowl: vent grille and wiper deck');
 
@@ -1245,22 +1258,8 @@ function buildEngine() {
   addPhotoValveCover(driverValveFit,true,photoLayout);
   addPhotoValveCover(passengerValveFit,false,photoLayout);
 
-  // Narrow cast ridges down each V-bank keep the lower mass legible under the
-  // covers without inflating the measured engine envelope into the towers.
-  for (const side of [-1,1]) {
-    const outer = side > 0 ? .856 : -.795;
-    const inner = side > 0 ? .446 : -.435;
-    for (let i=0;i<5;i++) {
-      const forward = -.565 + i*.145;
-      const ridge = photoTube([
-        [forward,inner,.637],
-        [forward+.094,inner + (outer-inner)*.15,.645],
-        [forward+.150,outer,.622]
-      ],.010,0x495357,{metalness:.48,roughness:.42,segments:16,radialSegments:7});
-      ridge.userData.minLod = 2;
-      addSurface(ridge);
-    }
-  }
+  // Leave the lower banks mostly recessed.  The former repeated cross-bank
+  // ridges made the silhouette look like two short mirrored toy covers.
 
   photoFitTarget = manifoldFit;
   // The early 1UZ intake is not a tall rectangular rack.  It is a shallow
@@ -1430,18 +1429,8 @@ function buildEngine() {
     [.430,.142],[.400,.216],[.316,.268],[.166,.252],[.138,.202]
   ],.658,.046,0x151b1d,{roughness:.72,metalness:.12,bevelSize:.020,bevelThickness:.009,bevelSegments:3,curveSegments:16});
   addSurface(timingCover);
-  for (const side of [-1,1]) {
-    const inner = side * .404;
-    const outer = side * .735;
-    for (let i=0;i<6;i++) {
-      const forward = .205 + i*.050;
-      const rib = frontTube([
-        [forward,inner,.657],[forward+.014,outer,.651]
-      ],.009,0x414c4f,{metalness:.46,roughness:.43,segments:8,radialSegments:7});
-      rib.userData.minLod=2;
-      addSurface(rib);
-    }
-  }
+  // Timing covers are smooth cast shells with only their perimeter break;
+  // repeated lateral rungs here were reading as an oversized generic grille.
 
   // Keep the timing-drive, ignition and throttle-sensor layers in one QA
   // silhouette group; they are a single front-engine recognition region in
@@ -1788,10 +1777,10 @@ function buildEngineLandmarks() {
       [anchor[0]-.055,anchor[1]+side*.225,anchor[2]-.010]
     ],.018,COLORS.bodyEdge,{metalness:.54,roughness:.42,segments:18,radialSegments:8});
     towers.add(outerBlend);
-    const bowl=cylinder(.152,.072,0x697375,'y',{metalness:.52,roughness:.40,segments:48});
+    const bowl=cylinder(.152,.072,0x262e31,'y',{metalness:.26,roughness:.66,segments:48});
     bowl.position.copy(vehicleToWorld(anchor));
     towers.add(bowl);
-    const flange=torus(.148,.013,0xb1bbba,'y',{metalness:.72,roughness:.30,tubularSegments:44});
+    const flange=torus(.148,.013,0x3d484b,'y',{metalness:.42,roughness:.52,tubularSegments:44});
     flange.position.copy(vehicleToWorld([anchor[0],anchor[1],anchor[2]+.040]));
     towers.add(flange);
     const cap=cylinder(.067,.034,0x1e2528,'y',{metalness:.26,roughness:.70,segments:28});
