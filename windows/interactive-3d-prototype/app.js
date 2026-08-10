@@ -1712,7 +1712,7 @@ function buildEngineLandmarks() {
     [airboxX-.230,airboxY-.133],[airboxX-.248,airboxY+.042],[airboxX-.156,airboxY+.150],
     [airboxX+.088,airboxY+.171],[airboxX+.218,airboxY+.085]
   ];
-  const airboxBase=vehicleTopProfile(airboxFootprint,airboxZ-.112,.122,0x161d20,{
+  const airboxBase=vehicleTopProfile(airboxFootprint,airboxZ-.050,.070,0x161d20,{
     roughness:.84,metalness:.025,bevelSize:.024,bevelThickness:.012,bevelSegments:3,curveSegments:18
   });
   airbox.add(airboxBase);
@@ -1720,7 +1720,7 @@ function buildEngineLandmarks() {
     [airboxX+.182,airboxY-.082],[airboxX+.145,airboxY-.164],[airboxX-.090,airboxY-.184],
     [airboxX-.195,airboxY-.110],[airboxX-.205,airboxY+.030],[airboxX-.132,airboxY+.115],
     [airboxX+.070,airboxY+.135],[airboxX+.180,airboxY+.063]
-  ],airboxZ+.012,.040,0x101619,{roughness:.76,metalness:.035,bevelSize:.018,bevelThickness:.009,bevelSegments:3,curveSegments:18});
+  ],airboxZ-.020,.030,0x101619,{roughness:.76,metalness:.035,bevelSize:.018,bevelThickness:.009,bevelSegments:3,curveSegments:18});
   airbox.add(airboxLid);
   const lidSeal=tube([
     [airboxX+.166,airboxY-.070,airboxZ+.052],[airboxX+.122,airboxY-.146,airboxZ+.052],
