@@ -23,6 +23,7 @@ BOUNDS = np.array([
     [-0.5, 0.5], [-0.5, 0.5],                   # principal-point offset, frame fractions
 ], dtype=float)
 HUBER_DELTA_PX = 12.0
+CLEAR_IMPROVEMENT_RATIO = 0.95
 
 
 def vehicle_to_world(point: np.ndarray) -> np.ndarray:
@@ -162,7 +163,14 @@ def main() -> int:
     best = min(candidates, key=lambda item: summary(points, pixels, weights, item, width, height)["objective"])
     before_summary = summary(points, pixels, weights, before, width, height)
     best_summary = summary(points, pixels, weights, best, width, height)
-    accepted = best_summary["objective"] < before_summary["objective"]
+    # A numerical nudge that merely trades median error for a tiny weighted
+    # objective reduction is not a Stage-1 calibration improvement.  Retain
+    # the best-so-far camera unless both robust objective and median residual
+    # improve by a material margin.
+    accepted = (
+        best_summary["objective"] <= before_summary["objective"] * CLEAR_IMPROVEMENT_RATIO
+        and best_summary["medianResidualPx"] <= before_summary["medianResidualPx"] * CLEAR_IMPROVEMENT_RATIO
+    )
     final = best if accepted else before
     final_summary = best_summary if accepted else before_summary
     projected = project(points, final, width, height)
@@ -171,7 +179,7 @@ def main() -> int:
         "solver": "deterministic multistart damped least-squares with Huber loss",
         "landmarkSet": str(args.landmarks), "viewport": [width, height], "bodyLandmarkCount": len(body),
         "before": {**camera_record(before), **before_summary}, "bestCandidate": {**camera_record(best), **best_summary},
-        "accepted": accepted, "final": {**camera_record(final), **final_summary}, "rows": rows,
+        "accepted": accepted, "acceptanceRule": f"objective and median residual each improve by at least {(1 - CLEAR_IMPROVEMENT_RATIO) * 100:.0f} percent", "final": {**camera_record(final), **final_summary}, "rows": rows,
     }
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

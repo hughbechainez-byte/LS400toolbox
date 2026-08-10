@@ -92,9 +92,9 @@ try {
   const normalData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(false));
   const silhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(true));
   const bodySilhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl('body'));
-  const photoBodyData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl([
-    'LANDMARK_FRONT_FENDERS', 'LANDMARK_COWL', 'LANDMARK_FIREWALL', 'LANDMARK_RADIATOR_SUPPORT'
-  ]));
+  const photoBodyComponentIds = photoLandmarks.masks.find(mask => mask.id === 'body-shell')?.modelComponentIds;
+  if (!Array.isArray(photoBodyComponentIds) || !photoBodyComponentIds.length) throw new Error('Canonical body mask must identify its rendered components.');
+  const photoBodyData = await page.evaluate(componentIds => window.__LS400_QA__.renderDataUrl(componentIds), photoBodyComponentIds);
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
   fs.writeFileSync(path.join(output, 'model-render.png'), decodeDataUrl(normalData));
   fs.writeFileSync(path.join(output, 'model-silhouette.png'), decodeDataUrl(silhouetteData));

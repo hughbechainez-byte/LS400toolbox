@@ -42,6 +42,15 @@ def polygon_mask(points: list[list[float]], size: tuple[int, int]) -> np.ndarray
     return np.asarray(image, dtype=np.uint8) > 0
 
 
+def region_mask(regions: list[list[list[float]]], size: tuple[int, int]) -> np.ndarray:
+    """Rasterize an explicit semantic region set, never photo brightness."""
+    image = Image.new("L", size, 0)
+    draw = ImageDraw.Draw(image)
+    for region in regions:
+        draw.polygon([(float(x), float(y)) for x, y in region], fill=255)
+    return np.asarray(image, dtype=np.uint8) > 0
+
+
 def silhouette_mask(path: Path) -> np.ndarray:
     image = Image.open(path).convert("RGB")
     data = np.asarray(image)
@@ -191,6 +200,7 @@ def main() -> int:
     # body-only capture is the only image that can support a body-geometry
     # measurement; projected landmark polygons are never a rendered mask.
     rendered_body_silhouette = silhouette_mask(output / "body-silhouette.png")
+    rendered_photo_body = silhouette_mask(output / "photo-body-geometry-mask.png")
     side_by_side = Image.new("RGB", (reference.size[0] * 2, reference.size[1]))
     side_by_side.paste(reference, (0, 0))
     side_by_side.paste(model, (reference.size[0], 0))
@@ -238,11 +248,15 @@ def main() -> int:
         writer.writerow(["id", "category", "reference_x_px", "reference_y_px", "render_x_px", "render_y_px", "residual_px"])
         for row in calibrated_rows:
             writer.writerow([row["id"], row["class"], *row["referencePx"], *row["projectedPx"], row["errorPx"]])
+    largest_residuals = sorted(calibrated_rows, key=lambda row: row["errorPx"], reverse=True)[:10]
+    (output / "ten-largest-residuals.json").write_text(json.dumps(largest_residuals, indent=2) + "\n", encoding="utf-8")
 
     projected_masks = {item["id"]: item["points"] for item in runtime["projectedMasks"]}
     mask_metrics = {}
     centroid_errors = []
     for mask in photo_landmarks["masks"]:
+        if "referencePolygonPx" not in mask or "modelPolygonMm" not in mask:
+            continue
         reference_mask = polygon_mask(mask["referencePolygonPx"], reference.size)
         model_points = projected_masks.get(mask["id"], [])
         model_mask = polygon_mask(model_points, reference.size) if model_points else np.zeros_like(reference_mask)
@@ -264,16 +278,23 @@ def main() -> int:
         Image.fromarray(np.where(model_mask, 255, 0).astype(np.uint8), "L").save(output / f"mask-{mask['id']}-model.png")
 
     body_mask = next(item for item in photo_landmarks["masks"] if item["id"] == "body-shell")
-    reference_envelope = polygon_mask(body_mask["referencePolygonPx"], reference.size)
-    projected_envelope = polygon_mask(projected_masks["body-shell"], reference.size)
-    envelope_intersection = np.logical_and(reference_envelope, projected_envelope).sum()
-    envelope_union = np.logical_or(reference_envelope, projected_envelope).sum()
-    envelope_iou = float(envelope_intersection / envelope_union) if envelope_union else 0.0
-    projected_bbox = bbox(projected_envelope)
-    reference_bbox = bbox(reference_envelope)
-    size_error = relative_size_error(reference_bbox, projected_bbox)
-    envelope_missing = np.logical_and(reference_envelope, ~projected_envelope).sum()
-    envelope_extra = np.logical_and(projected_envelope, ~reference_envelope).sum()
+    reference_body_geometry = region_mask(body_mask["referenceRegionsPx"], reference.size)
+    body_intersection = np.logical_and(reference_body_geometry, rendered_photo_body).sum()
+    body_union = np.logical_or(reference_body_geometry, rendered_photo_body).sum()
+    body_iou = float(body_intersection / body_union) if body_union else 0.0
+    rendered_body_bbox = bbox(rendered_photo_body)
+    reference_bbox = bbox(reference_body_geometry)
+    size_error = relative_size_error(reference_bbox, rendered_body_bbox)
+    body_missing = np.logical_and(reference_body_geometry, ~rendered_photo_body).sum()
+    body_extra = np.logical_and(rendered_photo_body, ~reference_body_geometry).sum()
+    body_boundary_error = mean_boundary_distance(reference_body_geometry, rendered_photo_body)
+    Image.fromarray(np.where(reference_body_geometry, 255, 0).astype(np.uint8), "L").save(output / "reference-body-geometry-mask.png")
+    Image.blend(
+        Image.open(output / "reference-body-geometry-mask.png").convert("RGBA"),
+        Image.open(output / "photo-body-geometry-mask.png").convert("RGBA"),
+        0.5,
+    ).save(output / "body-geometry-overlay-50.png")
+    write_edges(output / "photo-body-geometry-mask.png", Image.open(output / "reference-body-geometry-mask.png").convert("RGB"), output / "body-geometry-edges.png")
     Image.fromarray(np.where(rendered_body_silhouette, 255, 0).astype(np.uint8), "L").save(output / "rendered-body-geometry-mask.png")
     metrics = {
         "manifest": {
@@ -288,9 +309,9 @@ def main() -> int:
         "photoLandmarks": {"count": len(calibrated_rows), "rows": calibrated_rows, "classes": landmark_class_metrics},
         "allLandmarkResidualPx": {"median": round(float(np.median(all_landmark_errors)), 3), "maximum": round(float(np.max(all_landmark_errors)), 3), "imageDiagonalPx": round(image_diagonal, 3)},
         "majorComponentCenterResidualPx": {"count": len(component_center_errors), "median": round(float(np.median(component_center_errors)), 3), "maximum": round(float(np.max(component_center_errors)), 3)},
+        "tenLargestLandmarkResiduals": largest_residuals,
         "majorComponentCentroidErrorPx": {"count": len(centroid_errors), "median": float(np.median(centroid_errors)) if centroid_errors else None, "maximum": max(centroid_errors) if centroid_errors else None},
-        "projectedAnchorEnvelope": {"referenceBBox": reference_bbox, "modelBBox": projected_bbox, **size_error, "intersectionOverUnion": round(envelope_iou, 6), "meanBoundaryDistancePx": round(mean_boundary_distance(reference_envelope, projected_envelope), 3), "missingPixels": int(envelope_missing), "extraPixels": int(envelope_extra)},
-        "renderedBodyGeometry": {"maskPath": "rendered-body-geometry-mask.png", "modelBBox": bbox(rendered_body_silhouette), "modelPixels": int(rendered_body_silhouette.sum()), "comparisonStatus": "PENDING_SEMANTIC_REFERENCE_MASK", "reason": "The existing body-shell polygon traces the bay opening, while the rendered body-only mask includes exterior shell surfaces. Comparing those different semantics would be a fabricated silhouette score."},
+        "renderedBodyGeometry": {"referenceMaskPath": "reference-body-geometry-mask.png", "modelMaskPath": "photo-body-geometry-mask.png", "referenceBBox": reference_bbox, "modelBBox": rendered_body_bbox, **size_error, "intersectionOverUnion": round(body_iou, 6), "meanBoundaryDistancePx": round(body_boundary_error, 3), "missingPixels": int(body_missing), "extraPixels": int(body_extra), "referencePixels": int(reference_body_geometry.sum()), "modelPixels": int(rendered_photo_body.sum()), "source": body_mask["source"]},
         "masks": mask_metrics,
         "targets": {"bodyLandmarkMedianErrorPx": 14.07, "bodyLandmarkMaximumErrorPx": 28.14, "allLandmarkMedianErrorPx": round(landmark_median_target, 3), "allLandmarkMaximumErrorPx": round(landmark_maximum_target, 3), "majorComponentCenterMaximumErrorPx": round(component_center_target, 3), "majorProjectedWidthHeightErrorPercent": 5, "majorSilhouetteIoU": 0.92, "meanMajorBoundaryDistancePx": 18.76},
         "acceptance": {
@@ -301,14 +322,14 @@ def main() -> int:
             "majorComponentCenters": bool(component_center_errors) and max(component_center_errors) <= component_center_target,
             "projectedWidth": size_error["widthPercent"] is not None and size_error["widthPercent"] <= 5,
             "projectedHeight": size_error["heightPercent"] is not None and size_error["heightPercent"] <= 5,
-            "renderedSilhouetteIoU": False,
-            "renderedBoundaryDistance": False,
+            "renderedSilhouetteIoU": body_iou >= 0.92,
+            "renderedBoundaryDistance": body_boundary_error <= 18.76,
             "noNewConsoleErrors": not runtime["consoleErrors"] and not runtime["pageErrors"],
         },
         "evidenceBlockers": [
-            "The current body-shell polygon is an anchor envelope, not a rendered-geometry mask; its old IoU and boundary values are diagnostic-only and cannot satisfy visual acceptance.",
-            "A semantic reference mask matching the rendered cowl/fender/support geometry must be traced before silhouette and boundary gates can be evaluated.",
+            "The body comparison uses manually traced cowl/fender/support regions and a grouped render mask; it excludes engine and accessory pixels by construction.",
         ],
+        "stageStatus": "BODY_GATE_FAILED" if not (body_iou >= 0.92 and body_boundary_error <= 18.76) else "BODY_MASK_GATE_PASSED",
     }
     metrics["acceptance"]["overallTargets"] = all(value for key, value in metrics["acceptance"].items() if key != "overallTargets")
     (output / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
@@ -322,7 +343,6 @@ def main() -> int:
         "camera": runtime["camera"],
         "acceptance": metrics["acceptance"],
         "allLandmarkResidualPx": metrics["allLandmarkResidualPx"],
-        "projectedAnchorEnvelope": metrics["projectedAnchorEnvelope"],
         "renderedBodyGeometry": metrics["renderedBodyGeometry"],
     }
     (output / "calibration-report.json").write_text(json.dumps(calibration_report, indent=2) + "\n", encoding="utf-8")
@@ -332,8 +352,8 @@ def main() -> int:
         f"Build {runtime['buildKey']} · native canvas {runtime['canvasSize'][0]}x{runtime['canvasSize'][1]} · browser {runtime['environment']['browserVersion']}",
         f"Body landmarks: median {metrics['bodyLandmarks']['medianErrorPx']:.2f}px, max {metrics['bodyLandmarks']['maximumErrorPx']:.2f}px; projected size width {size_error['widthPercent']:.2f}%, height {size_error['heightPercent']:.2f}%.",
         f"All landmarks: median {metrics['allLandmarkResidualPx']['median']:.2f}px, max {metrics['allLandmarkResidualPx']['maximum']:.2f}px; major centres max {metrics['majorComponentCenterResidualPx']['maximum']:.2f}px.",
-        f"Anchor-envelope diagnostic only: IoU {envelope_iou:.4f}, mean boundary distance {metrics['projectedAnchorEnvelope']['meanBoundaryDistancePx']:.2f}px; it is not a rendered-body acceptance metric.",
-        "Rendered body geometry needs a semantic reference mask before the silhouette and boundary gates can be evaluated.",
+        f"Rendered body geometry: IoU {body_iou:.4f}, mean boundary distance {body_boundary_error:.2f}px, missing {body_missing}px, extra {body_extra}px.",
+        "Body comparison uses the explicit semantic cowl/fender/support masks in the canonical landmark file.",
     ]
     (output / "summary.txt").write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
     print("\n".join(summary_lines))
