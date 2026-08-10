@@ -65,8 +65,8 @@ class ModelFoundationValidatorTests(unittest.TestCase):
         self.assertNotIn("envelope_contract", {item["code"] for item in report["errors"]})
         self.assertNotIn("impossible_span", {item["code"] for item in report["errors"]})
         replica = self.manifest["foundation"]["referencePhotoReplica"]
-        self.assertEqual(replica["viewport"]["widthPx"], 800)
-        self.assertEqual(replica["viewport"]["heightPx"], 489)
+        self.assertEqual(replica["viewport"]["widthPx"], 640)
+        self.assertEqual(replica["viewport"]["heightPx"], 484)
         self.assertEqual(replica["calibrationUse"], "body-only")
 
 

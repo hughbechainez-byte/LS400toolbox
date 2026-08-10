@@ -195,8 +195,8 @@ def foundation_errors(manifest: dict[str, Any]) -> list[dict[str, str]]:
                 errors.append(issue("impossible_span", f"{variant_key}.{name}={value!r} exceeds the physical lateral envelope."))
     replica = foundation.get("referencePhotoReplica", {})
     camera = replica.get("camera", {})
-    if replica.get("viewport") != {"widthPx": 800, "heightPx": 489, "devicePixelRatio": 1}:
-        errors.append(issue("camera_contract", "Reference replica viewport must be locked at native 800x489 DPR 1."))
+    if replica.get("viewport") != {"widthPx": 640, "heightPx": 484, "devicePixelRatio": 1}:
+        errors.append(issue("camera_contract", "Reference replica viewport must be locked at native 640x484 DPR 1."))
     if camera.get("projection") != "perspective" or camera.get("locked") is not True:
         errors.append(issue("camera_contract", "Reference camera must be a locked perspective camera."))
     if replica.get("calibrationUse") != "body-only":

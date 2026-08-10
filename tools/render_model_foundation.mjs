@@ -15,10 +15,8 @@ const root = path.resolve(arg('--root', process.cwd()));
 const output = path.resolve(arg('--output', path.join(root, 'qa', 'model-foundation')));
 const browserExecutable = arg('--browser', process.env.LS400_BROWSER_EXE || 'C:/Program Files/Google/Chrome/Application/chrome.exe');
 const privateReference = arg('--private-reference');
-const annotationPath = path.join(root, 'shared', 'photo-annotations.json');
-const landmarkPath = path.join(root, 'shared', 'photo-landmarks.json');
+const landmarkPath = path.join(root, 'shared', 'photo-layout-landmarks.json');
 const manifestPath = path.join(root, 'shared', 'model-manifest.json');
-const annotations = JSON.parse(fs.readFileSync(annotationPath, 'utf8'));
 const photoLandmarks = JSON.parse(fs.readFileSync(landmarkPath, 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 fs.mkdirSync(output, { recursive: true });
@@ -69,18 +67,18 @@ const pageErrors = [];
 const failedResponses = [];
 try {
   browser = await chromium.launch({ headless: true, executablePath: browserExecutable, args: ['--use-angle=swiftshader', '--disable-gpu-sandbox'] });
-  const page = await browser.newPage({ viewport: { width: 800, height: 489 }, deviceScaleFactor: 1, colorScheme: 'dark' });
+  const page = await browser.newPage({ viewport: { width: photoLandmarks.viewport.widthPx, height: photoLandmarks.viewport.heightPx }, deviceScaleFactor: 1, colorScheme: 'dark' });
   page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   page.on('pageerror', error => pageErrors.push(String(error?.stack || error)));
   page.on('response', response => { if (response.status() >= 400) failedResponses.push({ url: response.url(), status: response.status() }); });
   const buildKey = manifest.integrity?.sha256 || 'unknown';
   await page.goto(`http://127.0.0.1:${port}/windows/interactive-3d-prototype/index.html?qa=foundation&foundation=${encodeURIComponent(buildKey)}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => Boolean(window.__LS400_QA__ && window.__LS400_NATIVE_EXPORT__ && document.querySelector('canvas')), null, { timeout: 30000 });
-  const canvasSize = await page.evaluate(() => window.__LS400_QA__.setFrame(800, 489));
+  const canvasSize = await page.evaluate(viewport => window.__LS400_QA__.setFrame(viewport.widthPx, viewport.heightPx), photoLandmarks.viewport);
   const cameraState = await page.evaluate(() => window.__LS400_QA__.setPhotoCamera());
   await page.waitForTimeout(250);
-  const bodyFeatures = annotations.bodyFeatures.filter(item => item.useForCalibration).map(item => ({ id: item.id, pixel: item.pixel, modelPointMm: item.modelPointMm }));
-  const maskPoints = annotations.masks.map(item => ({ id: item.id, modelPolygonMm: item.modelPolygonMm }));
+  const bodyFeatures = photoLandmarks.landmarks.filter(item => item.category === 'body' && item.fit.includes('camera')).map(item => ({ id: item.id, pixel: item.referencePx, modelPointMm: item.worldAnchorMm }));
+  const maskPoints = photoLandmarks.masks.map(item => ({ id: item.id, modelPolygonMm: item.modelPolygonMm }));
   const projectedBodyFeatures = await page.evaluate(features => ({
     features,
     points: window.__LS400_QA__.projectPoints(features.map(item => item.modelPointMm)),
@@ -89,7 +87,7 @@ try {
   const projectedLandmarks = await page.evaluate(landmarks => ({
     landmarks,
     points: window.__LS400_QA__.projectPoints(landmarks.map(item => item.modelPointMm)),
-  }), photoLandmarks.landmarks);
+  }), photoLandmarks.landmarks.map(item => ({ ...item, modelPointMm: item.worldAnchorMm })));
   const normalData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(false));
   const silhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(true));
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());

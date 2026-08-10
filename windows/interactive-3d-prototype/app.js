@@ -4,8 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import {
   VEHICLE, ENGINE_BAY_RECONSTRUCTION, SYSTEMS, COMPONENTS, ROUTES, CAMERA_PRESETS, GEOMETRY_DATASET,
   REFERENCE_IMAGES, UNCERTAINTIES, ACCEPTANCE_STEPS, AC_SERVICE_WALKTHROUGH, AC_RECEIVER_DRIER_REPLACEMENT_GUIDE, AC_FLUSH_AND_EVACUATION_GUIDE, AC_R134A_RETROFIT_GUIDE
-} from './model-data.js?foundation=c010a1fe7db533cd';
-import { MODEL_FOUNDATION_BUILD_KEY, MODEL_FOUNDATION_SUMMARY, MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=c010a1fe7db533cd';
+} from './model-data.js?foundation=ee073ee0504f56ef';
+import { MODEL_FOUNDATION_BUILD_KEY, MODEL_FOUNDATION_SUMMARY, MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=ee073ee0504f56ef';
 
 const stage = document.getElementById('stage');
 const viewport = document.getElementById('viewport');
@@ -879,6 +879,9 @@ function buildCoolingStack() {
     bolt.userData.minLod = 3;
     condenser.add(bolt);
   }
+  // The condenser is behind the fan shroud in the locked camera. Keeping its
+  // bright grid visible here was the foreground-radiator regression.
+  condenser.traverse(child => { child.userData.photoHidden = true; });
   registerComponent(condenser,'AC_CONDENSER',{minLod:1});
 
   const inlet = new THREE.Group();
@@ -917,7 +920,10 @@ function buildCoolingStack() {
   registerComponent(fans,'LANDMARK_COOLING_FANS',{minLod:1});
 }
 
-function addPhotoValveCover(photoSurfaces, driverSide = false) {
+function addPhotoValveCover(photoSurfaces, driverSide = false, layout) {
+  const profile = (points, ...args) => vehicleTopProfile(points.map(layout.plan), ...args);
+  const route = (points, ...args) => tube(points.map(layout.point), ...args);
+  const point = layout.point;
   // These covers are authored directly in the vehicle coordinate system.  A
   // 1UZ has two visibly different cast cover outlines: the driver side is
   // longer/wider with its lettering strip, while the passenger side turns in
@@ -931,20 +937,20 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
     // FOUR CAM 32 rail.  Keep its inner and outer edges deliberately parallel
     // so it reads as one black strip in the photo corridor, rather than a
     // broad faceted V-bank or a ladder made from crosswise fins.
-    const driverSkirt = vehicleTopProfile([
+    const driverSkirt = profile([
       [-.692,.565],[-.682,.694],[-.520,.788],[-.160,.782],[.105,.690],
       [.182,.596],[.126,.518],[-.160,.500],[-.510,.510],[-.660,.548]
     ],.584,.061,0x12181a,{roughness:.72,metalness:.10,bevelSize:.024,bevelThickness:.011,bevelSegments:3,curveSegments:18});
-    const driverCrown = vehicleTopProfile([
+    const driverCrown = profile([
       [-.646,.594],[-.625,.681],[-.490,.742],[-.170,.740],[.070,.666],
       [.118,.594],[.070,.548],[-.180,.535],[-.488,.542],[-.620,.574]
     ],.642,.046,0x20282a,{roughness:.57,metalness:.24,bevelSize:.019,bevelThickness:.008,bevelSegments:3,curveSegments:16});
     photoSurfaces.add(driverSkirt,driverCrown);
 
-    const outerRail = tube([
+    const outerRail = route([
       [-.650,.682,.703],[-.510,.752,.708],[-.160,.748,.706],[.082,.668,.700]
     ],.0075,0x4f5b5d,{metalness:.56,roughness:.38,segments:30,radialSegments:7});
-    const innerRail = tube([
+    const innerRail = route([
       [-.640,.593,.704],[-.470,.548,.709],[-.180,.540,.708],[.090,.566,.700]
     ],.008,0x101719,{metalness:.38,roughness:.55,segments:30,radialSegments:7});
     outerRail.userData.minLod=2;
@@ -954,7 +960,7 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
     // Orient the lettering texture in the horizontal vehicle plane with its
     // long axis fore/aft.  That keeps FOUR CAM 32 visually persistent instead
     // of compressing it sideways into another decorative rung.
-    const letteringBed = vehicleTopProfile([
+    const letteringBed = profile([
       [-.680,.570],[-.668,.628],[-.548,.705],[-.122,.720],[.066,.682],
       [.130,.622],[.072,.566],[-.420,.552]
     ],.703,.017,0x090e10,{roughness:.78,metalness:.05,bevelSize:.009,bevelThickness:.004,bevelSegments:2,curveSegments:14});
@@ -962,10 +968,10 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
     lettering.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(
       new THREE.Vector3(0,0,-1),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,1,0)
     ));
-    lettering.position.copy(vehicleToWorld([-.275,.640,.728]));
+    lettering.position.copy(vehicleToWorld(point([-.275,.640,.728])));
     lettering.renderOrder=5;
     const oilCap = cylinder(.037,.018,0x13191b,'y',{roughness:.78,metalness:.08,segments:24});
-    oilCap.position.copy(vehicleToWorld([.055,.575,.718]));
+    oilCap.position.copy(vehicleToWorld(point([.055,.575,.718])));
     oilCap.userData.minLod=2;
     photoSurfaces.add(letteringBed,lettering,oilCap);
     return;
@@ -993,13 +999,13 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
     [.022,.557],[-.198,.486],[-.440,.490]
   ]).map(([forward, width]) => [forward, lateral(width)]);
 
-  const skirt = vehicleTopProfile(lowerPlan,.565,.076,0x151b1e,{
+  const skirt = profile(lowerPlan,.565,.076,0x151b1e,{
     roughness:.69,metalness:.13,bevelSize:.030,bevelThickness:.015,bevelSegments:3,curveSegments:18
   });
-  const crown = vehicleTopProfile(crownPlan,.638,.074,0x252d2f,{
+  const crown = profile(crownPlan,.638,.074,0x252d2f,{
     roughness:.54,metalness:.31,bevelSize:.028,bevelThickness:.014,bevelSegments:3,curveSegments:18
   });
-  const inset = vehicleTopProfile(insetPlan,.709,.021,0x111719,{
+  const inset = profile(insetPlan,.709,.021,0x111719,{
     roughness:.72,metalness:.12,bevelSize:.012,bevelThickness:.006,bevelSegments:2,curveSegments:16
   });
   photoSurfaces.add(skirt,crown,inset);
@@ -1022,7 +1028,7 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
     [-.626,.496],[-.455,.452],[-.202,.446],[.050,.466],[.094,.512]
   ]).map(([forward,width]) => [forward,lateral(width),.742]);
   for (const points of [outerRailPoints,innerRailPoints]) {
-    const rail=tube(points,.007,0x566064,{metalness:.55,roughness:.40,segments:32,radialSegments:7});
+    const rail=route(points,.007,0x566064,{metalness:.55,roughness:.40,segments:32,radialSegments:7});
     rail.userData.minLod=2;
     photoSurfaces.add(rail);
   }
@@ -1034,14 +1040,14 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
     const frontTaper = Math.max(0,forward) * (driverSide ? .24 : .26);
     const inboard = driverSide ? .558 : .482;
     const outboard = (driverSide ? .780 : .675) - frontTaper;
-    const rib = tube([
+    const rib = route([
       [forward-.008,lateral(inboard),.752],
       [forward+.007,lateral(outboard),.754]
     ],.009,0x6a7578,{metalness:.62,roughness:.34,segments:8,radialSegments:7});
     rib.userData.minLod = 1;
     photoSurfaces.add(rib);
   }
-  const innerRail = tube([
+  const innerRail = route([
     [-.592,lateral(driverSide?.575:.505),.754],[-.330,lateral(driverSide?.558:.482),.758],
     [-.060,lateral(driverSide?.552:.476),.755],[.095,lateral(driverSide?.575:.500),.748]
   ],.008,0x3e494c,{metalness:.49,roughness:.43,segments:28,radialSegments:8});
@@ -1051,23 +1057,23 @@ function addPhotoValveCover(photoSurfaces, driverSide = false) {
   const fasteners = driverSide ? [[-.575,.742],[-.285,.780],[-.012,.754],[.155,.665]] : [[-.548,.686],[-.290,.712],[-.025,.682],[.115,.600]];
   for (const [forward,width] of fasteners) {
     const bolt = cylinder(.012,.016,0xac9364,'y',{metalness:.78,roughness:.32,segments:8});
-    bolt.position.copy(vehicleToWorld([forward,lateral(width),.763]));
+    bolt.position.copy(vehicleToWorld(point([forward,lateral(width),.763])));
     bolt.userData.minLod = 2;
     photoSurfaces.add(bolt);
   }
 
   if (driverSide) {
-    const letteringRail = vehicleTopProfile([
+    const letteringRail = profile([
       [-.535,.618],[-.515,.700],[-.365,.728],[-.105,.723],[.050,.660],[.040,.595],[-.178,.570],[-.430,.578]
     ],.742,.014,0x1b2224,{roughness:.62,metalness:.22,bevelSize:.009,bevelThickness:.004,curveSegments:12});
     const plate = textPlate('FOUR CAM 32',.128,.470,{fontSize:58,minLod:1,background:'#121719',border:'#768185',color:'#e1e4e0'});
     plate.rotation.x=-Math.PI/2;
-    plate.position.copy(vehicleToWorld([-.250,lateral(.660),.764]));
-    const oilWell = vehicleTopProfile([
+    plate.position.copy(vehicleToWorld(point([-.250,lateral(.660),.764])));
+    const oilWell = profile([
       [-.032,.690],[.018,.744],[.091,.728],[.105,.653],[.062,.610],[-.020,.618]
     ],.744,.012,0x101517,{roughness:.78,metalness:.08,bevelSize:.010,bevelThickness:.005});
     const oilCap = cylinder(.046,.022,0x161c1e,'y',{roughness:.76,metalness:.10,segments:28});
-    oilCap.position.copy(vehicleToWorld([.038,lateral(.673),.778]));
+    oilCap.position.copy(vehicleToWorld(point([.038,lateral(.673),.778])));
     oilCap.userData.minLod = 1;
     photoSurfaces.add(letteringRail,plate,oilWell,oilCap);
   }
@@ -1092,19 +1098,33 @@ function buildEngine() {
   const engine = new THREE.Group();
   engine.position.copy(vehicleToWorld(BAY_ANCHORS.engine));
 
-  // All photo-critical engine geometry lives in vehicle coordinates.  The
-  // cancellation group protects the measured engine anchor while allowing the
-  // castings, hoses and belts below to be laid out by real fore/aft/lateral
-  // relationships instead of by a screen-facing local transform.
+  // The 640x484 reference establishes a physically narrower 1UZ footprint,
+  // mounted farther forward in the bay.  This is a vehicle-space re-layout of
+  // each casting and route (not a group/display scale): the two cover centres
+  // sit about 660 mm apart, and their forward faces clear the radiator shroud.
+  const photoLayout = {
+    point: ([forward, lateral, up]) => [forward + .340, lateral * .520, up],
+    plan: ([forward, lateral]) => [forward + .340, lateral * .520]
+  };
+  // The front accessory plane is rearward and higher than the lower block
+  // casting. This preserves the open lower-front space in the reference.
+  const frontLayout = {
+    point: ([forward, lateral, up]) => [forward + .040, lateral * .520, up + .100],
+    plan: ([forward, lateral]) => [forward + .040, lateral * .520]
+  };
+  const photoProfile = (points, ...args) => vehicleTopProfile(points.map(photoLayout.plan), ...args);
+  const photoTube = (points, ...args) => tube(points.map(photoLayout.point), ...args);
+  const frontProfile = (points, ...args) => vehicleTopProfile(points.map(frontLayout.plan), ...args);
+  const frontTube = (points, ...args) => tube(points.map(frontLayout.point), ...args);
+
+  // All photo-critical engine geometry lives in vehicle coordinates. The
+  // cancellation group retains the measured engine mount while all visible
+  // castings, hoses and belts are laid out by their actual bay relationships.
   const photoSurfaces = new THREE.Group();
   photoSurfaces.position.copy(engine.position).multiplyScalar(-1);
-  // The previous photo fit widened the two banks into the towers.  Keep the
-  // authored detail but apply a lateral-only physical envelope guard derived
-  // from the shared +/-900 mm apron limit; this is not a root/display scale.
-  photoSurfaces.scale.x = (BAY_STRUCTURE.apronOuterHalfWidth - .01) / .946;
   engine.add(photoSurfaces);
   const placePhoto = (mesh, point) => {
-    mesh.position.copy(vehicleToWorld(point));
+    mesh.position.copy(vehicleToWorld(photoLayout.point(point)));
     photoSurfaces.add(mesh);
     return mesh;
   };
@@ -1112,23 +1132,32 @@ function buildEngine() {
   // Deep, separated V-bank castings sit below the covers.  Their unequal
   // front and rear shoulders leave the open front accessory valley that is
   // plainly visible in the paired engine-bay photograph.
-  const passengerCrankcase = vehicleTopProfile([
+  const passengerCrankcase = photoProfile([
     [-.760,-.378],[-.792,-.610],[-.698,-.838],[-.440,-.902],[-.142,-.842],
     [.078,-.710],[.183,-.500],[.126,-.342],[-.214,-.330],[-.585,-.350]
   ],.462,.124,0x20282b,{roughness:.65,metalness:.20,bevelSize:.042,bevelThickness:.020,bevelSegments:3,curveSegments:18});
-  const driverCrankcase = vehicleTopProfile([
+  const driverCrankcase = photoProfile([
     [-.782,.386],[-.804,.628],[-.688,.862],[-.415,.946],[-.098,.930],
     [.138,.820],[.252,.642],[.204,.438],[-.126,.362],[-.564,.356]
   ],.462,.126,0x20282b,{roughness:.65,metalness:.20,bevelSize:.044,bevelThickness:.020,bevelSegments:3,curveSegments:18});
-  const valleyFloor = vehicleTopProfile([
+  const valleyFloor = photoProfile([
     [-.706,-.180],[-.728,.146],[-.570,.285],[-.098,.278],[.116,.186],
     [.206,.048],[.178,-.146],[-.130,-.250],[-.528,-.270]
   ],.572,.055,0x111719,{roughness:.78,metalness:.08,bevelSize:.026,bevelThickness:.012,bevelSegments:3,curveSegments:16});
   photoSurfaces.add(passengerCrankcase,driverCrankcase,valleyFloor);
 
+  // Shallow rear head shoulders retain the real 1UZ's broad upper-bank
+  // corners without widening the covers all the way into the strut towers.
+  for (const side of [-1, 1]) {
+    const rearShoulder = photoProfile([
+      [-.905,side*.720],[-.838,side*.955],[-.690,side*.975],[-.548,side*.760],[-.594,side*.520],[-.804,side*.500]
+    ],.820,.040,0x171e20,{roughness:.70,metalness:.15,bevelSize:.020,bevelThickness:.009,bevelSegments:3,curveSegments:14});
+    photoSurfaces.add(rearShoulder);
+  }
+
   // The cover helper is intentionally asymmetric and direct-coordinate.
-  addPhotoValveCover(photoSurfaces,true);
-  addPhotoValveCover(photoSurfaces,false);
+  addPhotoValveCover(photoSurfaces,true,photoLayout);
+  addPhotoValveCover(photoSurfaces,false,photoLayout);
 
   // Narrow cast ridges down each V-bank keep the lower mass legible under the
   // covers without inflating the measured engine envelope into the towers.
@@ -1137,7 +1166,7 @@ function buildEngine() {
     const inner = side > 0 ? .446 : -.435;
     for (let i=0;i<5;i++) {
       const forward = -.565 + i*.145;
-      const ridge = tube([
+      const ridge = photoTube([
         [forward,inner,.637],
         [forward+.094,inner + (outer-inner)*.15,.645],
         [forward+.150,outer,.622]
@@ -1153,10 +1182,10 @@ function buildEngine() {
   // without recreating the earlier tall, narrow ladder.
   const rearRunnerBase = roundedBox(.340,.044,.490,.028,0x737e7e,{metalness:.62,roughness:.42,segments:8});
   placePhoto(rearRunnerBase,[-.545,0,.783]);
-  const passengerPlenumShoulder = vehicleTopProfile([
+  const passengerPlenumShoulder = photoProfile([
     [-.790,-.170],[-.760,-.300],[-.625,-.350],[-.355,-.322],[-.300,-.205],[-.336,-.158],[-.670,-.150]
   ],.754,.052,0x8b9493,{metalness:.69,roughness:.34,bevelSize:.030,bevelThickness:.013,bevelSegments:3,curveSegments:16});
-  const driverPlenumShoulder = vehicleTopProfile([
+  const driverPlenumShoulder = photoProfile([
     [-.790,.170],[-.758,.302],[-.620,.354],[-.350,.326],[-.300,.205],[-.336,.158],[-.670,.150]
   ],.756,.054,0x929b99,{metalness:.71,roughness:.32,bevelSize:.030,bevelThickness:.013,bevelSegments:3,curveSegments:16});
   const runnerCrown = roundedBox(.318,.032,.468,.022,0xaeb8b6,{metalness:.75,roughness:.29,segments:7});
@@ -1179,7 +1208,7 @@ function buildEngine() {
     channel.userData.minLod = 1;
   }
   for (const lateral of [-.170,.170]) {
-    const runnerRail = tube([
+    const runnerRail = photoTube([
       [-.782,lateral,.798],[-.625,lateral,.815],[-.405,lateral,.813],[-.305,lateral*.92,.792]
     ],.010,0x566164,{metalness:.54,roughness:.42,segments:28,radialSegments:8});
     runnerRail.userData.minLod = 2;
@@ -1201,8 +1230,8 @@ function buildEngine() {
   placePhoto(lexusCap,[-.165,.005,.836]);
   const lexusOval = torus(.034,.0048,0x3d474a,'y',{metalness:.72,roughness:.30,tubularSegments:28,radialSegments:8});
   lexusOval.scale.x=.72;
-  lexusOval.position.copy(vehicleToWorld([-.165,.005,.852]));
-  const lexusStroke = tube([
+  lexusOval.position.copy(vehicleToWorld(photoLayout.point([-.165,.005,.852])));
+  const lexusStroke = photoTube([
     [-.182,.005,.854],[-.166,-.004,.856],[-.148,.005,.854],[-.166,.014,.856]
   ],.0038,0x3d474a,{metalness:.68,roughness:.32,segments:12,radialSegments:6});
   lexusOval.userData.minLod=1;
@@ -1213,11 +1242,24 @@ function buildEngine() {
   // hose, crosses into the plenum shoulder and terminates exactly at the
   // named throttle anchor.  The external actuator/lever remains visible at
   // detail level 2 instead of being lost as a floating black cube.
-  const throttleCasting = vehicleTopProfile([
+  // Throttle body retains the wider passenger-side flange seen in the source;
+  // it is physically re-anchored separately from the narrowed V-banks.
+  const throttleLayout = {
+    point: ([forward, lateral, up]) => [forward + .246, lateral * .844, up],
+    plan: ([forward, lateral]) => [forward + .246, lateral * .844]
+  };
+  const throttleProfile = (points, ...args) => vehicleTopProfile(points.map(throttleLayout.plan), ...args);
+  const throttleTube = (points, ...args) => tube(points.map(throttleLayout.point), ...args);
+  const placeThrottle = (mesh, point) => {
+    mesh.position.copy(vehicleToWorld(throttleLayout.point(point)));
+    photoSurfaces.add(mesh);
+    return mesh;
+  };
+  const throttleCasting = throttleProfile([
     [-.468,-.594],[-.280,-.598],[-.126,-.519],[-.070,-.402],[-.104,-.287],
     [-.222,-.217],[-.380,-.257],[-.490,-.390]
   ],.639,.052,0x4e595b,{metalness:.54,roughness:.48,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
-  const throttleUpper = vehicleTopProfile([
+  const throttleUpper = throttleProfile([
     [-.375,-.494],[-.262,-.548],[-.134,-.501],[-.081,-.402],[-.135,-.302],
     [-.250,-.263],[-.347,-.326]
   ],.690,.080,0x9fa8a7,{metalness:.71,roughness:.33,bevelSize:.031,bevelThickness:.014,bevelSegments:3,curveSegments:16});
@@ -1226,28 +1268,28 @@ function buildEngine() {
   // the real visual diameter and one continuous run from the black elbow;
   // a small pipe here was disappearing into the passenger bank.
   const throttleBody = cylinder(.145,.310,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:38});
-  placePhoto(throttleBody,[-.286,-.430,.802]);
+  placeThrottle(throttleBody,[-.286,-.430,.802]);
   for (const left of [-.585,-.275]) {
     const collar = torus(.147,.009,0x5f6b6d,'x',{metalness:.62,roughness:.35,tubularSegments:36,radialSegments:8});
-    collar.position.copy(vehicleToWorld([-.286,left,.802]));
+    collar.position.copy(vehicleToWorld(throttleLayout.point([-.286,left,.802])));
     collar.userData.minLod=2;
     photoSurfaces.add(collar);
   }
   const throttleNeck = tube([
-    [-.286,-.306,.802],[-.249,-.294,.806],[-.215,-.270,.810],BAY_ANCHORS.throttle
+    throttleLayout.point([-.286,-.306,.802]),throttleLayout.point([-.249,-.294,.806]),throttleLayout.point([-.215,-.270,.810]),BAY_ANCHORS.throttle
   ],.112,0xaeb7b7,{metalness:.72,roughness:.33,segments:24,radialSegments:16});
   const throttleBridge = tube([
-    BAY_ANCHORS.throttle,[-.205,-.220,.808],[-.230,-.164,.806]
+    BAY_ANCHORS.throttle,throttleLayout.point([-.205,-.220,.808]),throttleLayout.point([-.230,-.164,.806])
   ],.056,0xaeb7b7,{metalness:.72,roughness:.34,segments:18,radialSegments:14});
   photoSurfaces.add(throttleNeck,throttleBridge);
   const throttleFlange = torus(.121,.010,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:36,radialSegments:8});
   throttleFlange.position.copy(vehicleToWorld([BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]-.118,BAY_ANCHORS.throttle[2]]));
   const throttleActuator = roundedBox(.104,.065,.102,.022,0x242c2e,{roughness:.69,metalness:.16,segments:5});
-  placePhoto(throttleActuator,[-.178,-.481,.822]);
+  placeThrottle(throttleActuator,[-.178,-.481,.822]);
   throttleActuator.rotation.y=.13;
   const throttleLever = cylinder(.035,.028,0x303a3d,'x',{metalness:.51,roughness:.42,segments:20});
-  placePhoto(throttleLever,[-.176,-.548,.829]);
-  const actuatorCable = tube([
+  placeThrottle(throttleLever,[-.176,-.548,.829]);
+  const actuatorCable = throttleTube([
     [-.173,-.560,.829],[-.244,-.596,.838],[-.350,-.611,.810],[-.430,-.574,.774]
   ],.006,0x171b1d,{roughness:.88,metalness:.02,segments:22,radialSegments:6});
   throttleFlange.userData.minLod=1;
@@ -1259,38 +1301,38 @@ function buildEngine() {
   // The old solid front collector is intentionally gone.  These two
   // separately shaped lower-bank shells stop short of the centre and frame a
   // genuinely open, mechanically layered accessory/water-pump cluster.
-  const passengerFrontShell = vehicleTopProfile([
+  const passengerFrontShell = frontProfile([
     [.105,-.780],[.198,-.858],[.398,-.852],[.574,-.750],[.612,-.578],
     [.528,-.430],[.382,-.342],[.222,-.352],[.124,-.468]
-  ],.490,.102,0x141a1c,{roughness:.75,metalness:.10,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
-  const driverFrontShell = vehicleTopProfile([
+  ],.590,.102,0x141a1c,{roughness:.75,metalness:.10,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
+  const driverFrontShell = frontProfile([
     [.116,.776],[.224,.858],[.420,.866],[.602,.758],[.636,.582],
     [.550,.426],[.394,.350],[.226,.358],[.128,.478]
-  ],.488,.104,0x151b1e,{roughness:.74,metalness:.11,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
-  const passengerShellCrown = vehicleTopProfile([
+  ],.588,.104,0x151b1e,{roughness:.74,metalness:.11,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
+  const passengerShellCrown = frontProfile([
     [.166,-.722],[.250,-.782],[.405,-.780],[.514,-.704],[.520,-.570],
     [.452,-.458],[.328,-.402],[.210,-.410],[.150,-.496]
-  ],.585,.035,0x161d20,{roughness:.68,metalness:.14,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
-  const driverShellCrown = vehicleTopProfile([
+  ],.685,.035,0x161d20,{roughness:.68,metalness:.14,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
+  const driverShellCrown = frontProfile([
     [.172,.720],[.258,.786],[.428,.790],[.542,.706],[.550,.566],
     [.474,.452],[.336,.402],[.214,.412],[.154,.502]
-  ],.583,.037,0x161d20,{roughness:.68,metalness:.14,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
+  ],.683,.037,0x161d20,{roughness:.68,metalness:.14,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
   photoSurfaces.add(passengerFrontShell,driverFrontShell,passengerShellCrown,driverShellCrown);
   // One low, broad timing-cover shelf bridges the two lower banks.  It stays
   // deliberately shallow and stops before the pump face, so the photo reads
   // as one trapezoidal front cover with a small centred accessory reveal—not
   // nested upright bars or a giant closed foreground polygon.
-  const timingCover = vehicleTopProfile([
+  const timingCover = frontProfile([
     [.142,-.204],[.164,-.254],[.324,-.270],[.406,-.216],[.432,-.142],
     [.430,.142],[.400,.216],[.316,.268],[.166,.252],[.138,.202]
-  ],.558,.046,0x151b1d,{roughness:.72,metalness:.12,bevelSize:.020,bevelThickness:.009,bevelSegments:3,curveSegments:16});
+  ],.658,.046,0x151b1d,{roughness:.72,metalness:.12,bevelSize:.020,bevelThickness:.009,bevelSegments:3,curveSegments:16});
   photoSurfaces.add(timingCover);
   for (const side of [-1,1]) {
     const inner = side * .404;
     const outer = side * .735;
     for (let i=0;i<6;i++) {
       const forward = .205 + i*.050;
-      const rib = tube([
+      const rib = frontTube([
         [forward,inner,.657],[forward+.014,outer,.651]
       ],.009,0x414c4f,{metalness:.46,roughness:.43,segments:8,radialSegments:7});
       rib.userData.minLod=2;
@@ -1301,11 +1343,11 @@ function buildEngine() {
   const drive = new THREE.Group();
   drive.position.copy(engine.position).multiplyScalar(-1);
   const placeDrive = (mesh, point) => {
-    mesh.position.copy(vehicleToWorld(point));
+    mesh.position.copy(vehicleToWorld(frontLayout.point(point)));
     drive.add(mesh);
     return mesh;
   };
-  const waterPumpCasting = vehicleTopProfile([
+  const waterPumpCasting = frontProfile([
     [.338,-.098],[.318,-.038],[.324,.068],[.382,.114],[.470,.103],
     [.510,.050],[.504,-.057],[.448,-.108]
   ],.560,.063,0x697474,{metalness:.60,roughness:.40,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
@@ -1315,14 +1357,14 @@ function buildEngine() {
   const waterPumpFace = cylinder(.044,.074,0xb6bfbd,'z',{metalness:.76,roughness:.26,segments:30});
   placeDrive(waterPumpFace,[.486,0,.610]);
   const waterPumpRing = torus(.080,.006,0x374144,'z',{metalness:.52,roughness:.40,tubularSegments:34,radialSegments:8});
-  waterPumpRing.position.copy(vehicleToWorld([.522,0,.610]));
+  waterPumpRing.position.copy(vehicleToWorld(frontLayout.point([.522,0,.610])));
   drive.add(waterPumpRing);
-  const crankPulley = makePulley([.578,0,.548],.083,.042);
-  const pumpPulley = makePulley([.522,0,.612],.058,.037);
-  const passengerIdler = makePulley([.522,-.164,.589],.041,.032);
-  const driverIdler = makePulley([.518,.168,.595],.043,.032);
+  const crankPulley = makePulley(frontLayout.point([.578,0,.548]),.083,.042);
+  const pumpPulley = makePulley(frontLayout.point([.522,0,.612]),.058,.037);
+  const passengerIdler = makePulley(frontLayout.point([.522,-.164,.589]),.041,.032);
+  const driverIdler = makePulley(frontLayout.point([.518,.168,.595]),.043,.032);
   drive.add(crankPulley,pumpPulley,passengerIdler,driverIdler);
-  const accessoryBelt = tube([
+  const accessoryBelt = frontTube([
     [.610,0,.548],[.573,-.108,.558],[.522,-.164,.589],[.450,-.114,.658],
     [.426,0,.674],[.452,.118,.658],[.518,.168,.595],[.575,.112,.560]
   ],.008,0x0a0d0e,{roughness:.92,metalness:0,closed:true,segments:64,radialSegments:7});
@@ -1341,12 +1383,12 @@ function buildEngine() {
   const ignition = new THREE.Group();
   ignition.position.copy(engine.position).multiplyScalar(-1);
   const addIgnition = (mesh, point) => {
-    mesh.position.copy(vehicleToWorld(point));
+    mesh.position.copy(vehicleToWorld(photoLayout.point(point)));
     ignition.add(mesh);
     return mesh;
   };
   for (const side of [-1,1]) {
-    const coilRail = vehicleTopProfile([
+    const coilRail = photoProfile([
       [-.515,side*.445],[-.552,side*.510],[-.405,side*.575],[-.120,side*.568],
       [.060,side*.508],[.072,side*.448],[-.204,side*.422]
     ],.704,.021,0x1c2325,{roughness:.71,metalness:.13,bevelSize:.014,bevelThickness:.006,curveSegments:14});
@@ -1358,7 +1400,7 @@ function buildEngine() {
       const boot=cylinder(.026,.028,0x14191b,'y',{roughness:.80,metalness:.06,segments:18});
       addIgnition(well,[forward,lateral,.734]);
       addIgnition(boot,[forward,lateral,.769]);
-      const lead=tube([
+      const lead=photoTube([
         [-.552,side*.444,.738],[-.405,side*.462,.758],[forward,side*(lateral<0?Math.abs(lateral)+.010:Math.abs(lateral)-.010),.785]
       ],.0065,0x15191a,{roughness:.90,metalness:.02,segments:18,radialSegments:6});
       lead.userData.minLod=2;
@@ -1372,7 +1414,7 @@ function buildEngine() {
   const tps = new THREE.Group();
   tps.position.copy(engine.position).multiplyScalar(-1);
   const addTps = (mesh, point) => {
-    mesh.position.copy(vehicleToWorld(point));
+    mesh.position.copy(vehicleToWorld(photoLayout.point(point)));
     tps.add(mesh);
     return mesh;
   };
@@ -1381,7 +1423,7 @@ function buildEngine() {
   const connector=roundedBox(.048,.042,.067,.010,0x151b1d,{roughness:.82,metalness:.05,segments:4});
   addTps(connector,[-.177,-.558,.811]);
   for (let i=0;i<3;i++) {
-    const wire=tube([
+    const wire=photoTube([
       [-.175,-.584,.809],[-.228,-.621,.802],[-.340,-.612,.770],[-.418,-.560,.735]
     ],.0045,[0x17191a,0xb9a52e,0x384b57][i],{roughness:.88,segments:18,radialSegments:5});
     wire.position.y += i*.004;
@@ -1523,22 +1565,22 @@ function buildEngineLandmarks() {
   // airbox neck, one AFM barrel, one accordion hose and one smooth elbow.  The
   // earlier overlapping sleeves and doubled curves made a broken black cone.
   const airboxToMaf=[
-    airboxOutletStart,[.352,-.646,.628],[.306,-.698,.636],[.282,-.728,.640]
+    airboxOutletStart,[airboxX-.070,airboxY-.060,.628],[mafX+.152,mafY-.020,.636],[mafX+.103,mafY-.008,.640]
   ];
-  const preMeter=tube(airboxToMaf,.084,0x171d20,{roughness:.88,metalness:.01,segments:26,radialSegments:18});
+  const preMeter=tube(airboxToMaf,.068,0x171d20,{roughness:.88,metalness:.01,segments:26,radialSegments:18});
   intake.add(preMeter);
   const preMeterCurve=new THREE.CatmullRomCurve3(airboxToMaf.map(vehicleToWorld),false,'centripetal',.4);
 
   // The AFM is a short exposed metallic cylinder, with two bright flanges and
   // one raised rectangular electronics cap.  It avoids the old dark cone while
   // preserving the authored MAF centre and passenger-front placement.
-  const mafInlet=[.282,mafY-.008,.640];
-  const mafOutlet=[.164,mafY,.660];
+  const mafInlet=[mafX+.103,mafY-.008,.640];
+  const mafOutlet=[mafX-.015,mafY,.660];
   const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
-  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.098,.105,0x626d6f,{roughness:.35,metalness:.66,segments:34});
+  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.078,.084,0x626d6f,{roughness:.35,metalness:.66,segments:34});
   intake.add(afmBarrel);
   for (const point of [mafInlet,mafOutlet]) {
-    const flange=torus(.111,.008,0xb9c1c1,'z',{roughness:.29,metalness:.79,tubularSegments:34});
+    const flange=torus(.091,.007,0xb9c1c1,'z',{roughness:.29,metalness:.79,tubularSegments:34});
     flange.position.copy(vehicleToWorld(point));
     flange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),mafAxis);
     intake.add(flange);
@@ -1551,7 +1593,7 @@ function buildEngineLandmarks() {
   afmConnector.position.copy(vehicleToWorld([mafX-.048,mafY+.054,mafZ+.115]));
   afmConnector.rotation.y=-.54;
   intake.add(afmConnector);
-  const meterFlange=torus(.090,.006,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
+  const meterFlange=torus(.074,.006,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
   meterFlange.position.copy(preMeterCurve.getPointAt(.98));
   meterFlange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),preMeterCurve.getTangentAt(.98).normalize());
   intake.add(meterFlange);
@@ -1560,21 +1602,21 @@ function buildEngineLandmarks() {
   // passenger bank.  Large ring spacing keeps the ribs readable at the native
   // 800-by-489 comparison crop instead of collapsing into small fragments.
   const corrugatedCenterline=[
-    mafOutlet,[.102,mafY-.040,.704],[.020,mafY-.020,.730],[-.055,mafY+.010,.770],[-.103,mafY+.080,.795]
+    mafOutlet,[mafX-.062,mafY+.030,.704],[mafX-.126,mafY+.090,.730],[mafX-.188,mafY+.155,.770],[-.057,-.478,.795]
   ];
-  const corrugated=tube(corrugatedCenterline,.125,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:24});
+  const corrugated=tube(corrugatedCenterline,.086,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:22});
   intake.add(corrugated);
   const corrugatedCurve=new THREE.CatmullRomCurve3(corrugatedCenterline.map(vehicleToWorld),false,'centripetal',.4);
   for(let i=0;i<9;i++){
     const t=.055+i*.105;
-    const rib=torus(.135,.0085,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:36});
+    const rib=torus(.095,.0065,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:32});
     rib.position.copy(corrugatedCurve.getPointAt(t));
     rib.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     rib.userData.minLod=1;
     intake.add(rib);
   }
   for (const t of [.02,.98]) {
-    const clamp=torus(.136,.009,0xb4bcbc,'z',{roughness:.32,metalness:.77,tubularSegments:34});
+    const clamp=torus(.096,.007,0xb4bcbc,'z',{roughness:.32,metalness:.77,tubularSegments:32});
     clamp.position.copy(corrugatedCurve.getPointAt(t));
     clamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     intake.add(clamp);
@@ -1585,10 +1627,10 @@ function buildEngineLandmarks() {
   // overlap itself supplies the physical continuity and keeps the barrel shape
   // authored in buildEngine as the single visible silver part.
   const elbowCenterline=[
-    corrugatedCenterline.at(-1),[-.140,-.580,.848],[-.196,-.532,.836],
-    [-.247,-.545,.818],[-.285,-.586,.804]
+    corrugatedCenterline.at(-1),[-.085,-.445,.842],[-.058,-.406,.828],
+    [-.042,-.378,.814],BAY_ANCHORS.throttle
   ];
-  const smoothElbow=tube(elbowCenterline,.126,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:22});
+  const smoothElbow=tube(elbowCenterline,.092,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:20});
   intake.add(smoothElbow);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
 
@@ -2245,7 +2287,7 @@ window.__LS400_QA__ = {
   buildKey: MODEL_FOUNDATION_BUILD_KEY,
   manifestSummary: MODEL_FOUNDATION_SUMMARY,
   threeRevision: THREE.REVISION,
-  setFrame(width = 800, height = 489) {
+  setFrame(width = 640, height = 484) {
     const shell = document.querySelector('.app-shell');
     const stageNode = document.getElementById('stage');
     if (shell) shell.style.display = 'block';
@@ -2262,7 +2304,12 @@ window.__LS400_QA__ = {
   cameraState() {
     const vehicleCamera = worldToVehicle(camera.position).multiplyScalar(1000);
     const vehicleTarget = worldToVehicle(controls.target).multiplyScalar(1000);
-    return { positionMm: vehicleCamera.toArray(), targetMm: vehicleTarget.toArray(), fovDeg: camera.fov, aspect: camera.aspect, rollDeg: 0 };
+    const preset = CAMERA_PRESETS.ENGINE_BAY_PHOTO_LAYOUT;
+    return {
+      positionMm: vehicleCamera.toArray(), targetMm: vehicleTarget.toArray(), fovDeg: camera.fov, aspect: camera.aspect,
+      rollDeg: stage.classList.contains('photo-layout') ? (preset.roll || 0) : 0,
+      principalPointOffset: stage.classList.contains('photo-layout') ? (preset.principalPointOffset || [0, 0]) : [0, 0]
+    };
   },
   projectPoints(pointsMm) {
     return (pointsMm || []).map(pointMm => {
@@ -2722,10 +2769,18 @@ function animateCamera(fromPosition,toPosition,fromTarget,toTarget,toFov,duratio
   };
 }
 
+function applyPhotoProjectionOffset() {
+  const [offsetX, offsetY] = camera.userData.photoProjectionOffset || [0, 0];
+  if (!offsetX && !offsetY) return;
+  camera.projectionMatrix.elements[8] = -2 * offsetX;
+  camera.projectionMatrix.elements[9] = 2 * offsetY;
+  camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+}
+
 function setCameraPreset(id, immediate = false) {
   const preset = CAMERA_PRESETS[id];
   if (!preset) return;
-  // The primary reference is an 800 × 489 image.  Render into that same
+  // The primary reference is a 640 × 484 image.  Render into that same
   // aspect frame so Compare never measures a letterboxed photo against a
   // differently-proportioned WebGL canvas.
   stage.classList.toggle('photo-layout', id === 'ENGINE_BAY_PHOTO_LAYOUT');
@@ -2736,7 +2791,18 @@ function setCameraPreset(id, immediate = false) {
     camera.position.copy(position);
     controls.target.copy(target);
     camera.fov = preset.fov;
+    // The photo-layout solve stores a small principal-point crop and roll in
+    // the saved camera itself.  This changes projection only for that locked
+    // reference view; it is not a scene or body scale adjustment.
+    if (id === 'ENGINE_BAY_PHOTO_LAYOUT') {
+      camera.lookAt(target);
+      if (preset.roll) camera.rotateZ(THREE.MathUtils.degToRad(preset.roll));
+      camera.userData.photoProjectionOffset = preset.principalPointOffset || [0, 0];
+    } else {
+      camera.userData.photoProjectionOffset = [0, 0];
+    }
     camera.updateProjectionMatrix();
+    applyPhotoProjectionOffset();
   } else {
     animateCamera(camera.position.clone(),position,controls.target.clone(),target,preset.fov,900);
   }
@@ -3436,6 +3502,7 @@ function resizeRenderer() {
   if(canvas.width!==Math.floor(width*renderer.getPixelRatio())||canvas.height!==Math.floor(height*renderer.getPixelRatio())) renderer.setSize(width,height,false);
   camera.aspect=width/height;
   camera.updateProjectionMatrix();
+  applyPhotoProjectionOffset();
 }
 
 new ResizeObserver(resizeRenderer).observe(viewport);
@@ -3449,6 +3516,7 @@ function tickCameraTween(now) {
   controls.target.lerpVectors(tween.fromTarget,tween.toTarget,t);
   camera.fov=THREE.MathUtils.lerp(tween.fromFov,tween.toFov,t);
   camera.updateProjectionMatrix();
+  applyPhotoProjectionOffset();
   if(raw>=1) state.cameraTween=null;
 }
 

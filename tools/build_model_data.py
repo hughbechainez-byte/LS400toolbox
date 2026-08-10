@@ -148,10 +148,10 @@ FOUNDATION_MM: dict[str, Any] = {
     "referencePhotoReplica": {
         "variantId": "REFERENCE_PHOTO_REPLICA",
         "sourcePhoto": {
-            "logicalName": "user-1990-ls400-inline1.jpg",
-            "path": "private-local-reference/user-1990-ls400-inline1.jpg",
-            "widthPx": 800,
-            "heightPx": 489,
+            "logicalName": "ls400_engine_bay_reference_exact.jpg",
+            "path": "C:/Users/blowb/Desktop/LS400toolbox/ls400_engine_bay_reference_exact.jpg",
+            "widthPx": 640,
+            "heightPx": 484,
             "privacy": "private-no-ship",
         },
         "viewport": {"widthPx": 800, "heightPx": 489, "devicePixelRatio": 1},
@@ -568,6 +568,7 @@ def platform_contract(manifest: dict[str, Any]) -> dict[str, Any]:
         "target": millimetres_to_metres(camera["targetMm"]),
         "roll": camera["rollDeg"],
         "fov": camera["fovDeg"],
+        "principalPointOffset": camera.get("principalPointOffset", [0.0, 0.0]),
         "near": millimetres_to_metres(camera["nearMm"]),
         "far": millimetres_to_metres(camera["farMm"]),
         "locked": camera["locked"],

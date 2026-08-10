@@ -3,8 +3,8 @@ package com.ls400.toolbox;
 
 public final class ModelManifest {
     public static final String VERSION = "ls400-model-foundation-2026-08-09";
-    public static final String BUILD_KEY = "c010a1fe7db533cd";
-    public static final String SHA256 = "c010a1fe7db533cd11ab970aff022278d8c9bf78123c31b42a21a589080524a3";
+    public static final String BUILD_KEY = "ee073ee0504f56ef";
+    public static final String SHA256 = "ee073ee0504f56efce81836303de775b15546aa9d12e4b39c5d023c8201db24c";
     public static final int COMPONENT_COUNT = 189;
     public static final int CONNECTION_COUNT = 209;
     public static final float VEHICLE_WIDTH_M = 1.820000000f;
@@ -22,27 +22,27 @@ public final class ModelManifest {
     public static final float DRIVER_STRUT_TOWER_LATERAL_M = 0.735000000f;
     public static final float ENGINE_FORWARD_M = -0.220000000f;
     public static final float ENGINE_UP_M = 0.540000000f;
-    public static final float THROTTLE_FORWARD_M = -0.182000000f;
-    public static final float THROTTLE_LATERAL_M = -0.321000000f;
+    public static final float THROTTLE_FORWARD_M = -0.040000000f;
+    public static final float THROTTLE_LATERAL_M = -0.363000000f;
     public static final float THROTTLE_UP_M = 0.800000000f;
-    public static final float AIRBOX_FORWARD_M = 0.411000000f;
-    public static final float AIRBOX_LATERAL_M = -0.508000000f;
+    public static final float AIRBOX_FORWARD_M = 0.330000000f;
+    public static final float AIRBOX_LATERAL_M = -0.706000000f;
     public static final float AIRBOX_UP_M = 0.570000000f;
-    public static final float MAF_FORWARD_M = 0.204000000f;
-    public static final float MAF_LATERAL_M = -0.720000000f;
+    public static final float MAF_FORWARD_M = 0.179000000f;
+    public static final float MAF_LATERAL_M = -0.692000000f;
     public static final float MAF_UP_M = 0.600000000f;
     public static final float DRIVER_BATTERY_FORWARD_M = 0.542000000f;
     public static final float DRIVER_BATTERY_LATERAL_M = 0.675000000f;
     public static final float DRIVER_BATTERY_UP_M = 0.590000000f;
-    public static final float DRIVER_FUSE_FORWARD_M = 0.297000000f;
-    public static final float DRIVER_FUSE_LATERAL_M = 0.690000000f;
+    public static final float DRIVER_FUSE_FORWARD_M = -0.120000000f;
+    public static final float DRIVER_FUSE_LATERAL_M = 0.730000000f;
     public static final float DRIVER_FUSE_UP_M = 0.640000000f;
-    public static final float DRIVER_COOLANT_RESERVE_FORWARD_M = 0.025000000f;
-    public static final float DRIVER_COOLANT_RESERVE_LATERAL_M = 0.720000000f;
+    public static final float DRIVER_COOLANT_RESERVE_FORWARD_M = 0.450000000f;
+    public static final float DRIVER_COOLANT_RESERVE_LATERAL_M = 0.613000000f;
     public static final float DRIVER_COOLANT_RESERVE_UP_M = 0.770000000f;
     public static final float BRAKE_BOOSTER_FORWARD_M = -0.946000000f;
     public static final float BRAKE_BOOSTER_LATERAL_M = 0.690000000f;
-    public static final float BRAKE_BOOSTER_UP_M = 0.790000000f;
+    public static final float BRAKE_BOOSTER_UP_M = 0.645000000f;
     public static final float RADIATOR_SUPPORT_FORWARD_M = 1.060000000f;
     public static final float CONDENSER_FORWARD_M = 0.960000000f;
     public static final float FAN_PLANE_FORWARD_M = 0.870000000f;
@@ -51,12 +51,12 @@ public final class ModelManifest {
     public static final float RECEIVER_DRIER_FORWARD_M = 0.950000000f;
     public static final float RECEIVER_DRIER_LATERAL_M = -0.690000000f;
     public static final float RECEIVER_DRIER_UP_M = 0.590000000f;
-    public static final float PHOTO_CAMERA_FOV_DEG = 20.000000000f;
+    public static final float PHOTO_CAMERA_FOV_DEG = 18.291916000f;
     public static final float PHOTO_CAMERA_POSITION_WORLD_X_M = 0f;
-    public static final float PHOTO_CAMERA_POSITION_WORLD_Y_M = 2.295073000f;
-    public static final float PHOTO_CAMERA_POSITION_WORLD_Z_M = -2.758506000f;
+    public static final float PHOTO_CAMERA_POSITION_WORLD_Y_M = 2.611524000f;
+    public static final float PHOTO_CAMERA_POSITION_WORLD_Z_M = -4.152877000f;
     public static final float PHOTO_CAMERA_TARGET_WORLD_X_M = 0f;
-    public static final float PHOTO_CAMERA_TARGET_WORLD_Y_M = 0.708148000f;
-    public static final float PHOTO_CAMERA_TARGET_WORLD_Z_M = 0.200456000f;
+    public static final float PHOTO_CAMERA_TARGET_WORLD_Y_M = 0.300000000f;
+    public static final float PHOTO_CAMERA_TARGET_WORLD_Z_M = -0.039537000f;
     private ModelManifest() {}
 }

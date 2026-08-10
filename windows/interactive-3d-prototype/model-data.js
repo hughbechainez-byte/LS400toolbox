@@ -1,4 +1,4 @@
-import { MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=c010a1fe7db533cd';
+import { MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=ee073ee0504f56ef';
 
 export const VEHICLE = {
   name: '1990 Lexus LS 400 (UCF10)',
@@ -583,7 +583,7 @@ export const ROUTES = [
 
 export const CAMERA_PRESETS = {
   // High-angle native-photo viewpoint verified against visible bay corners,
-  // cowl and the component landmark set.  The frame is 800 × 489.
+  // cowl and the component landmark set.  The canonical frame is 640 × 484.
   ENGINE_BAY_PHOTO_LAYOUT: { label: 'Engine bay — photo layout', ...MODEL_FOUNDATION_METRES.camera, hood: 1, hideHood: true, hideBumper: true, hideSplash: true },
   FULL_VEHICLE_HOOD_OPEN_VIEW: { label: 'Full vehicle — hood open', position: [3.25,0,1.68], target: [-0.05,0,1.15], fov: 55, hood: 1 },
   FRONT_STANDING: { label: 'Standing centered in front', position: [3.10,0,1.62], target: [0.00,0,0.70], fov: 46, hood: 1 },

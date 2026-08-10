@@ -1,0 +1,50 @@
+{
+  "landmarkSetId": "LS400_ENGINE_BAY_REFERENCE_EXACT_640X484",
+  "reference": {
+    "path": "C:/Users/blowb/Desktop/LS400toolbox/ls400_engine_bay_reference_exact.jpg",
+    "widthPx": 640,
+    "heightPx": 484,
+    "sha256": "f8d74eec1af9c3014c107e0be18fc1fb83f5aff5d50e7ccd34d2da5318bfb725",
+    "orientation": "image-left passenger, image-right driver, image-top firewall/cowl, image-bottom radiator/front"
+  },
+  "viewport": {"xPx": 0, "yPx": 0, "widthPx": 640, "heightPx": 484},
+  "coordinateSystem": "vehicle millimetres: +X forward, +Y driver side, +Z up",
+  "landmarks": [
+    {"id":"body.cowl.passenger","category":"body","referencePx":[94,30],"objectId":"LANDMARK_COWL","worldAnchorMm":[-1110,-776,912],"weight":1.0,"confidence":"medium","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.cowl.center","category":"body","referencePx":[320,20],"objectId":"LANDMARK_COWL","worldAnchorMm":[-1110,0,912],"weight":1.2,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.cowl.driver","category":"body","referencePx":[538,30],"objectId":"LANDMARK_COWL","worldAnchorMm":[-1110,776,912],"weight":1.0,"confidence":"medium","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.firewall.passenger","category":"body","referencePx":[106,102],"objectId":"LANDMARK_FIREWALL","worldAnchorMm":[-1045,-747,670],"weight":1.0,"confidence":"medium","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.firewall.center","category":"body","referencePx":[320,101],"objectId":"LANDMARK_FIREWALL","worldAnchorMm":[-1045,0,670],"weight":1.2,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.firewall.driver","category":"body","referencePx":[526,100],"objectId":"LANDMARK_FIREWALL","worldAnchorMm":[-1045,747,670],"weight":1.0,"confidence":"medium","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.strut.passenger","category":"body","referencePx":[78,178],"objectId":"LANDMARK_FRONT_STRUT_TOWERS","worldAnchorMm":[-353,-735,700],"weight":1.3,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.strut.driver","category":"body","referencePx":[540,176],"objectId":"LANDMARK_FRONT_STRUT_TOWERS","worldAnchorMm":[-353,735,700],"weight":1.3,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.apron.passenger","category":"body","referencePx":[0,228],"objectId":"LANDMARK_FRONT_FENDERS","worldAnchorMm":[400,-900,850],"weight":0.9,"confidence":"medium","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.apron.driver","category":"body","referencePx":[640,226],"objectId":"LANDMARK_FRONT_FENDERS","worldAnchorMm":[400,900,850],"weight":0.9,"confidence":"medium","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.support.passenger","category":"body","referencePx":[4,367],"objectId":"LANDMARK_RADIATOR_SUPPORT","worldAnchorMm":[1060,-754.5,780],"weight":1.1,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.support.center","category":"body","referencePx":[320,369],"objectId":"LANDMARK_RADIATOR_SUPPORT","worldAnchorMm":[1060,0,780],"weight":1.3,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"body.support.driver","category":"body","referencePx":[636,367],"objectId":"LANDMARK_RADIATOR_SUPPORT","worldAnchorMm":[1060,754.5,780],"weight":1.1,"confidence":"high","source":"reference exact JPG","fit":["camera","geometry"]},
+    {"id":"engine.bound.passenger_rear","category":"engine","referencePx":[163,125],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[-352,-492,850],"weight":1.0,"confidence":"medium","source":"reference exact JPG: 1UZ rear head shoulder","fit":["geometry"]},
+    {"id":"engine.bound.driver_rear","category":"engine","referencePx":[471,125],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[-352,492,850],"weight":1.0,"confidence":"medium","source":"reference exact JPG: 1UZ rear head shoulder","fit":["geometry"]},
+    {"id":"engine.bound.passenger_front","category":"engine","referencePx":[160,317],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[465,-443,600],"weight":1.0,"confidence":"medium","source":"reference exact JPG: lower-bank front shoulder","fit":["geometry"]},
+    {"id":"engine.bound.driver_front","category":"engine","referencePx":[479,317],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[470,450,600],"weight":1.0,"confidence":"medium","source":"reference exact JPG: lower-bank front shoulder","fit":["geometry"]},
+    {"id":"engine.center","category":"engine","referencePx":[320,218],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[70,0,720],"weight":1.3,"confidence":"high","source":"reference exact JPG","fit":["geometry"]},
+    {"id":"engine.plenum.rear","category":"engine","referencePx":[320,116],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[-450,0,840],"weight":1.1,"confidence":"high","source":"reference exact JPG","fit":["geometry"]},
+    {"id":"engine.plenum.front","category":"engine","referencePx":[320,212],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[255,0,820],"weight":1.1,"confidence":"high","source":"reference exact JPG","fit":["geometry"]},
+    {"id":"engine.valve.passenger","category":"engine","referencePx":[208,210],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[60,-330,735],"weight":1.0,"confidence":"medium","source":"reference exact JPG","fit":["geometry"]},
+    {"id":"engine.valve.driver","category":"engine","referencePx":[433,212],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[60,345,735],"weight":1.0,"confidence":"medium","source":"reference exact JPG","fit":["geometry"]},
+    {"id":"engine.throttle","category":"engine","referencePx":[205,177],"objectId":"ENGINE_1UZ_FE","worldAnchorMm":[-40,-363,802],"weight":1.2,"confidence":"high","source":"reference exact JPG","fit":["geometry"]},
+    {"id":"accessory.airbox","category":"accessory","referencePx":[69,303],"objectId":"LANDMARK_AIRBOX","worldAnchorMm":[330,-706,570],"weight":1.2,"confidence":"high","source":"reference exact JPG and attached photos","fit":["geometry"]},
+    {"id":"accessory.maf","category":"accessory","referencePx":[83,270],"objectId":"LANDMARK_INTAKE_TUBE","worldAnchorMm":[179,-692,600],"weight":1.2,"confidence":"high","source":"reference exact JPG and attached photos","fit":["geometry"]},
+    {"id":"accessory.intake.bend","category":"accessory","referencePx":[160,178],"objectId":"LANDMARK_INTAKE_TUBE","worldAnchorMm":[-57,-478,795],"weight":1.1,"confidence":"high","source":"reference exact JPG and attached photos","fit":["geometry"]},
+    {"id":"accessory.battery","category":"accessory","referencePx":[566,331],"objectId":"LANDMARK_BATTERY","worldAnchorMm":[542,675,590],"weight":1.2,"confidence":"high","source":"reference exact JPG and attached photos","fit":["geometry"]},
+    {"id":"accessory.fuse_box","category":"accessory","referencePx":[554,216],"objectId":"LANDMARK_ENGINE_BAY_FUSE_BOX","worldAnchorMm":[-120,730,640],"weight":1.1,"confidence":"high","source":"reference exact JPG and attached photos","fit":["geometry"]},
+    {"id":"accessory.brake_booster","category":"accessory","referencePx":[512,118],"objectId":"LANDMARK_BRAKE_BOOSTER","worldAnchorMm":[-946,690,645],"weight":1.2,"confidence":"high","source":"reference exact JPG and attached photos","fit":["geometry"]},
+    {"id":"accessory.coolant_reservoir","category":"accessory","referencePx":[542,259],"objectId":"LANDMARK_COOLANT_OVERFLOW_RESERVOIR","worldAnchorMm":[450,613,770],"weight":1.0,"confidence":"medium","source":"reference exact JPG and attached photos","fit":["geometry"]}
+  ],
+  "masks": [
+    {"id":"body-shell","category":"body","referencePolygonPx":[[94,30],[538,30],[636,367],[4,367]],"modelPolygonMm":[[-1110,-776,912],[-1110,776,912],[1060,754.5,780],[1060,-754.5,780]],"source":"hand-traced inner bay-opening boundary from exact JPG"},
+    {"id":"engine-assembly","category":"engine","referencePolygonPx":[[114,104],[500,104],[506,322],[126,322]],"modelPolygonMm":[[-770,-690,670],[-770,690,670],[520,700,600],[520,-700,600]],"source":"hand-traced exact JPG"},
+    {"id":"passenger-accessories","category":"accessory","referencePolygonPx":[[0,180],[190,142],[200,345],[0,350]],"modelPolygonMm":[[-500,-900,700],[-500,-380,700],[750,-380,550],[750,-900,550]],"source":"hand-traced exact JPG"},
+    {"id":"driver-accessories","category":"accessory","referencePolygonPx":[[485,100],[640,90],[640,360],[480,350]],"modelPolygonMm":[[-1045,500,800],[-1045,900,800],[1060,900,550],[1060,500,550]],"source":"hand-traced exact JPG"}
+  ]
+}
