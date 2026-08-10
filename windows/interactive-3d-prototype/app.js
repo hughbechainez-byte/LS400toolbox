@@ -1509,22 +1509,30 @@ function buildEngine() {
 function buildEngineLandmarks() {
   const battery = new THREE.Group();
   const [batteryX,batteryY,batteryZ] = BAY_ANCHORS.battery;
+  // Keep the battery centred on its measured anchor while compacting the
+  // physical case envelope to the low, wide driver-front battery in the
+  // reference.  This is an in-place plan reduction, not a display scale.
+  const batteryProfile = (points, baseUp, height, color, options = {}) => vehicleTopProfile(
+    points.map(([forward,lateral]) => [
+      batteryX + (forward - batteryX) * .78,
+      batteryY + (lateral - batteryY) * .78
+    ]), baseUp, height, color, options);
   // A battery is a low, chamfered clamped case in the photo, not another
   // anonymous cuboid.  The tray/case/top all remain centred on the documented
   // driver-front anchor.
-  const batteryTray=vehicleTopProfile([
+  const batteryTray=batteryProfile([
     [batteryX+.245,batteryY-.215],[batteryX+.270,batteryY-.165],[batteryX+.262,batteryY+.165],
     [batteryX+.215,batteryY+.220],[batteryX-.215,batteryY+.220],[batteryX-.255,batteryY+.168],
     [batteryX-.250,batteryY-.170],[batteryX-.205,batteryY-.222]
   ],batteryZ-.150,.042,0x2a3234,{roughness:.74,metalness:.30,bevelSize:.020,bevelThickness:.008,bevelSegments:3,curveSegments:16});
   battery.add(batteryTray);
-  const caseMesh=vehicleTopProfile([
+  const caseMesh=batteryProfile([
     [batteryX+.205,batteryY-.182],[batteryX+.228,batteryY-.132],[batteryX+.222,batteryY+.135],
     [batteryX+.176,batteryY+.182],[batteryX-.178,batteryY+.182],[batteryX-.215,batteryY+.132],
     [batteryX-.210,batteryY-.138],[batteryX-.164,batteryY-.184]
   ],batteryZ-.096,.156,0x1b2123,{roughness:.80,metalness:.025,bevelSize:.026,bevelThickness:.012,bevelSegments:4,curveSegments:18});
   battery.add(caseMesh);
-  const top=vehicleTopProfile([
+  const top=batteryProfile([
     [batteryX+.178,batteryY-.155],[batteryX+.195,batteryY-.112],[batteryX+.188,batteryY+.112],
     [batteryX+.148,batteryY+.151],[batteryX-.145,batteryY+.151],[batteryX-.177,batteryY+.110],
     [batteryX-.172,batteryY-.114],[batteryX-.140,batteryY-.156]
@@ -1640,11 +1648,12 @@ function buildEngineLandmarks() {
   meterFlange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),preMeterCurve.getTangentAt(.98).normalize());
   intake.add(meterFlange);
 
-  // The accordion section is one long, evenly ribbed run that sits above the
-  // passenger bank.  Large ring spacing keeps the ribs readable at the native
-  // 800-by-489 comparison crop instead of collapsing into small fragments.
+  // The accordion stops at the passenger-front shoulder, then hands off to a
+  // smooth rising elbow.  In the reference the ribbed section is not the
+  // entire route: the distinct un-ribbed bend is what carries it up to the
+  // throttle body.
   const corrugatedCenterline=[
-    mafOutlet,[mafX-.062,mafY+.030,.704],[mafX-.126,mafY+.090,.730],[mafX-.188,mafY+.155,.770],[-.057,-.478,.795]
+    mafOutlet,[.156,-.632,.650],[.108,-.567,.725]
   ];
   const corrugated=tube(corrugatedCenterline,.086,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:22});
   intake.add(corrugated);
@@ -1664,13 +1673,13 @@ function buildEngineLandmarks() {
     intake.add(clamp);
   }
 
-  // One tangent, uninterrupted 90-degree elbow ends inside the existing silver
-  // crossbody's passenger collar.  No extra pale sleeve is added here: the
-  // overlap itself supplies the physical continuity and keeps the barrel shape
-  // authored in buildEngine as the single visible silver part.
+  // One tangent, uninterrupted elbow rises from that last rib through the
+  // photographed upper bend and ends inside the silver throttle collar.  Its
+  // endpoints overlap the two adjoining assemblies, so the route is visibly
+  // continuous with no concealed gap or decorative second hose.
   const elbowCenterline=[
-    corrugatedCenterline.at(-1),[-.085,-.445,.842],[-.058,-.406,.828],
-    [-.042,-.378,.814],BAY_ANCHORS.throttle
+    corrugatedCenterline.at(-1),[.0445,-.504,.800],[-.045,-.476,.800],
+    [-.138,-.419,.800],BAY_ANCHORS.throttle
   ];
   const smoothElbow=tube(elbowCenterline,.092,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:20});
   intake.add(smoothElbow);
@@ -1725,7 +1734,15 @@ function buildEngineLandmarks() {
   // Battery → fuse box → shallow rectangular overflow reserve tank is the
   // driver-side front-to-rear sequence seen in the supplied 1990 bay photo.
   const [coolantX,coolantY,coolantZ] = BAY_ANCHORS.coolantReservoir;
-  const coolantTray=vehicleTopProfile([
+  // The reference's overflow reserve is smaller than the battery tray and
+  // does not occupy the whole driver-front quadrant.  Reduce its moulded
+  // plan about the documented centre, leaving its mounted location intact.
+  const coolantProfile = (points, baseUp, height, color, options = {}) => vehicleTopProfile(
+    points.map(([forward,lateral]) => [
+      coolantX + (forward - coolantX) * .72,
+      coolantY + (lateral - coolantY) * .72
+    ]), baseUp, height, color, options);
+  const coolantTray=coolantProfile([
     [coolantX+.184,coolantY-.184],[coolantX+.204,coolantY-.145],[coolantX+.195,coolantY+.144],
     [coolantX+.158,coolantY+.184],[coolantX-.172,coolantY+.184],[coolantX-.205,coolantY+.142],
     [coolantX-.200,coolantY-.145],[coolantX-.165,coolantY-.186]
@@ -1733,13 +1750,13 @@ function buildEngineLandmarks() {
   coolantReservoir.add(coolantTray);
   // The LS400 overflow is a low opaque molded rectangle.  Its clipped plan,
   // shallow front face and offset cap explicitly avoid the old water-jug read.
-  const coolantTank=vehicleTopProfile([
+  const coolantTank=coolantProfile([
     [coolantX+.150,coolantY-.142],[coolantX+.176,coolantY-.105],[coolantX+.176,coolantY+.105],
     [coolantX+.142,coolantY+.145],[coolantX-.146,coolantY+.145],[coolantX-.174,coolantY+.104],
     [coolantX-.174,coolantY-.105],[coolantX-.142,coolantY-.145]
   ],coolantZ-.062,.084,0xb5b092,{roughness:.66,metalness:.01,bevelSize:.016,bevelThickness:.008,bevelSegments:4,curveSegments:18});
   coolantReservoir.add(coolantTank);
-  const coolantTop=vehicleTopProfile([
+  const coolantTop=coolantProfile([
     [coolantX+.112,coolantY-.102],[coolantX+.135,coolantY-.074],[coolantX+.135,coolantY+.071],
     [coolantX+.105,coolantY+.104],[coolantX-.112,coolantY+.104],[coolantX-.136,coolantY+.071],
     [coolantX-.136,coolantY-.074],[coolantX-.109,coolantY-.104]
@@ -1832,30 +1849,30 @@ function buildEngineLandmarks() {
 
   const booster = new THREE.Group();
   const [boosterX,boosterY,boosterZ] = BAY_ANCHORS.brakeBooster;
-  // Keep the centre on the documented driver-rear anchor.  The reference reads
-  // first as a large, nearly black round booster; the low master reservoir
-  // sits inboard/forward of it instead of covering the circular face.
-  const drum=cylinder(.229,.098,0x0d1214,'z',{metalness:.42,roughness:.58,segments:52});
+  // Keep the centre on the documented driver-rear anchor.  The source photo
+  // has a compact, recessed booster behind the master cylinder—not the
+  // oversized round disc previously spanning the whole upper-right quadrant.
+  const drum=cylinder(.148,.082,0x0d1214,'z',{metalness:.42,roughness:.58,segments:52});
   drum.position.copy(vehicleToWorld(BAY_ANCHORS.brakeBooster));
   booster.add(drum);
-  const boosterFace=cylinder(.183,.014,0x101719,'z',{metalness:.38,roughness:.62,segments:48});
+  const boosterFace=cylinder(.119,.012,0x101719,'z',{metalness:.38,roughness:.62,segments:48});
   boosterFace.position.copy(vehicleToWorld([boosterX+.057,boosterY,boosterZ]));
   booster.add(boosterFace);
-  const boosterRing=torus(.211,.009,0x3b4648,'z',{metalness:.62,roughness:.42,tubularSegments:48});
+  const boosterRing=torus(.136,.008,0x3b4648,'z',{metalness:.62,roughness:.42,tubularSegments:48});
   boosterRing.position.copy(vehicleToWorld([boosterX+.064,boosterY,boosterZ]));
   booster.add(boosterRing);
-  const boosterHub=cylinder(.050,.018,0x202a2c,'z',{metalness:.50,roughness:.46,segments:28});
+  const boosterHub=cylinder(.034,.016,0x202a2c,'z',{metalness:.50,roughness:.46,segments:28});
   boosterHub.position.copy(vehicleToWorld([boosterX+.068,boosterY,boosterZ]));
   booster.add(boosterHub);
   // Offset the metal master inboard so its connected cylinder remains visible
   // beside the disc, leaving a dark negative gap before the coolant/fuse row.
-  const masterJunction=cylinder(.061,.030,0x626c6e,'z',{metalness:.66,roughness:.38,segments:28});
+  const masterJunction=cylinder(.048,.028,0x626c6e,'z',{metalness:.66,roughness:.38,segments:28});
   masterJunction.position.copy(vehicleToWorld([boosterX+.074,boosterY-.098,boosterZ-.022]));
   booster.add(masterJunction);
-  const master=cylinder(.041,.198,0x949d9e,'z',{metalness:.74,roughness:.32,segments:30});
+  const master=cylinder(.035,.158,0x949d9e,'z',{metalness:.74,roughness:.32,segments:30});
   master.position.copy(vehicleToWorld([boosterX+.173,boosterY-.108,boosterZ-.028]));
   booster.add(master);
-  const masterNose=cylinder(.051,.040,0x717b7c,'z',{metalness:.66,roughness:.38,segments:26});
+  const masterNose=cylinder(.043,.035,0x717b7c,'z',{metalness:.66,roughness:.38,segments:26});
   masterNose.position.copy(vehicleToWorld([boosterX+.291,boosterY-.108,boosterZ-.028]));
   booster.add(masterNose);
   const reservoirBase=vehicleTopProfile([
@@ -2357,6 +2374,20 @@ window.__LS400_QA__ = {
     return (pointsMm || []).map(pointMm => {
       const point = vehicleToWorld(pointMm.map(value => Number(value) * MODEL_FOUNDATION_METRES.coordinateScale)).project(camera);
       return [((point.x * .5) + .5) * renderer.domElement.width, ((.5 - point.y * .5) * renderer.domElement.height)];
+    });
+  },
+  unprojectPhotoPlane(pointsPx, upMm = 800) {
+    // Direct image-to-vehicle conversion for photo-layout geometry work.  The
+    // camera remains fixed; this only intersects its exact pixel rays with a
+    // specified physical height plane.
+    const height = renderer.domElement.height;
+    const width = renderer.domElement.width;
+    const planeY = Number(upMm) * MODEL_FOUNDATION_METRES.coordinateScale;
+    return (pointsPx || []).map(([x,y]) => {
+      const rayPoint = new THREE.Vector3((x / width) * 2 - 1, 1 - (y / height) * 2, .5).unproject(camera);
+      const direction = rayPoint.sub(camera.position).normalize();
+      const distance = (planeY - camera.position.y) / direction.y;
+      return worldToVehicle(camera.position.clone().add(direction.multiplyScalar(distance))).multiplyScalar(1000).toArray();
     });
   },
   inspectLandmarks(landmarks) {

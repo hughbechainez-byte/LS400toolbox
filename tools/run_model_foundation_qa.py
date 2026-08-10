@@ -275,11 +275,15 @@ def main() -> int:
     mask_metrics = {}
     centroid_errors = []
     for mask in photo_landmarks["masks"]:
-        if "referencePolygonPx" not in mask or "modelPolygonMm" not in mask:
+        if "referencePolygonPx" not in mask:
             continue
         reference_mask = polygon_mask(mask["referencePolygonPx"], reference.size)
-        model_points = projected_masks.get(mask["id"], [])
-        model_mask = polygon_mask(model_points, reference.size) if model_points else np.zeros_like(reference_mask)
+        semantic_path = output / f"photo-mask-{mask['id']}.png"
+        if semantic_path.exists():
+            model_mask = silhouette_mask(semantic_path)
+        else:
+            model_points = projected_masks.get(mask["id"], [])
+            model_mask = polygon_mask(model_points, reference.size) if model_points else np.zeros_like(reference_mask)
         reference_centroid = centroid(reference_mask)
         model_centroid = centroid(model_mask)
         centroid_error = None

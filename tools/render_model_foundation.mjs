@@ -88,18 +88,30 @@ try {
     landmarks,
     points: window.__LS400_QA__.projectPoints(landmarks.map(item => item.modelPointMm)),
   }), photoLandmarks.landmarks.map(item => ({ ...item, modelPointMm: item.worldAnchorMm })));
+  const intakeRoutePixels = [[104, 252], [126, 222], [148, 190], [160, 178], [181, 166], [197, 178]];
+  const intakePhotoPlaneIntersections = await page.evaluate(points => ({
+    at650Mm: window.__LS400_QA__.unprojectPhotoPlane(points, 650),
+    at725Mm: window.__LS400_QA__.unprojectPhotoPlane(points, 725),
+    at800Mm: window.__LS400_QA__.unprojectPhotoPlane(points, 800),
+  }), intakeRoutePixels);
   const anchorInspection = await page.evaluate(landmarks => window.__LS400_QA__.inspectLandmarks(landmarks), photoLandmarks.landmarks.map(item => ({ ...item, modelPointMm: item.worldAnchorMm })));
   const normalData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(false));
   const silhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(true));
   const bodySilhouetteData = await page.evaluate(() => window.__LS400_QA__.renderDataUrl('body'));
-  const photoBodyComponentIds = photoLandmarks.masks.find(mask => mask.id === 'body-shell')?.modelComponentIds;
-  if (!Array.isArray(photoBodyComponentIds) || !photoBodyComponentIds.length) throw new Error('Canonical body mask must identify its rendered components.');
-  const photoBodyData = await page.evaluate(componentIds => window.__LS400_QA__.renderDataUrl(componentIds), photoBodyComponentIds);
+  const semanticMasks = {};
+  for (const mask of photoLandmarks.masks) {
+    if (!Array.isArray(mask.modelComponentIds) || !mask.modelComponentIds.length) continue;
+    semanticMasks[mask.id] = await page.evaluate(componentIds => window.__LS400_QA__.renderDataUrl(componentIds), mask.modelComponentIds);
+  }
+  if (!semanticMasks['body-shell']) throw new Error('Canonical body mask must identify its rendered components.');
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
   fs.writeFileSync(path.join(output, 'model-render.png'), decodeDataUrl(normalData));
   fs.writeFileSync(path.join(output, 'model-silhouette.png'), decodeDataUrl(silhouetteData));
   fs.writeFileSync(path.join(output, 'body-silhouette.png'), decodeDataUrl(bodySilhouetteData));
-  fs.writeFileSync(path.join(output, 'photo-body-geometry-mask.png'), decodeDataUrl(photoBodyData));
+  for (const [id, data] of Object.entries(semanticMasks)) {
+    fs.writeFileSync(path.join(output, `photo-mask-${id}.png`), decodeDataUrl(data));
+  }
+  fs.copyFileSync(path.join(output, 'photo-mask-body-shell.png'), path.join(output, 'photo-body-geometry-mask.png'));
   fs.writeFileSync(path.join(output, 'runtime.json'), JSON.stringify({
     buildKey,
     canvasSize,
@@ -107,6 +119,7 @@ try {
     projectedBodyFeatures,
     projectedMasks,
     projectedLandmarks,
+    intakePhotoPlaneIntersections,
     anchorInspection,
     validation,
     environment: {
