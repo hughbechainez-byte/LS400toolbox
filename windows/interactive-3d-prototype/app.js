@@ -1388,27 +1388,28 @@ function buildEngine() {
     return mesh;
   };
   const throttleCasting = throttleProfile([
-    [-.420,-.548],[-.282,-.552],[-.178,-.496],[-.146,-.405],[-.180,-.326],
-    [-.292,-.278],[-.398,-.312],[-.442,-.402]
+    [-.300,-.515],[-.240,-.518],[-.170,-.475],[-.136,-.405],[-.170,-.340],
+    [-.250,-.305],[-.310,-.330],[-.322,-.405]
   ],.649,.044,0x4e595b,{metalness:.54,roughness:.48,bevelSize:.026,bevelThickness:.012,bevelSegments:3,curveSegments:16});
   const throttleUpper = throttleProfile([
-    [-.354,-.482],[-.266,-.522],[-.174,-.484],[-.148,-.406],[-.190,-.337],
-    [-.274,-.308],[-.348,-.350]
+    [-.278,-.472],[-.238,-.500],[-.168,-.470],[-.138,-.406],[-.180,-.346],
+    [-.248,-.320],[-.278,-.360]
   ],.692,.052,0x9fa8a7,{metalness:.71,roughness:.33,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:14});
   throttleFit.add(throttleCasting,throttleUpper);
   // The photo's throttle is a substantial horizontal cast barrel.  Give it
   // the real visual diameter and one continuous run from the black elbow;
   // a small pipe here was disappearing into the passenger bank.
-  const throttleBody = cylinder(.070,.158,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:28});
-  placeThrottle(throttleBody,[-.315,-.426,.798]);
+  const throttleBody = cylinder(.058,.146,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:28});
+  placeThrottle(throttleBody,[-.285,-.426,.798]);
   for (const left of [-.534,-.318]) {
-    const collar = torus(.072,.006,0x5f6b6d,'x',{metalness:.62,roughness:.35,tubularSegments:28,radialSegments:8});
-    collar.position.copy(vehicleToWorld(throttleLayout.point([-.315,left,.798])));
+    const collar = torus(.058,.005,0x5f6b6d,'x',{metalness:.62,roughness:.35,tubularSegments:28,radialSegments:8});
+    collar.position.copy(vehicleToWorld(throttleLayout.point([-.285,left,.798])));
     collar.userData.minLod=2;
+    collar.userData.photoFitExclude=true;
     throttleFit.add(collar);
   }
   const throttleNeck = tube([
-    throttleLayout.point([-.315,-.318,.798]),throttleLayout.point([-.266,-.294,.804]),throttleLayout.point([-.226,-.270,.810]),BAY_ANCHORS.throttle
+    throttleLayout.point([-.285,-.318,.798]),throttleLayout.point([-.246,-.294,.804]),throttleLayout.point([-.216,-.270,.810]),BAY_ANCHORS.throttle
   ],.043,0xaeb7b7,{metalness:.72,roughness:.33,segments:24,radialSegments:10});
   const throttleBridge = tube([
     BAY_ANCHORS.throttle,throttleLayout.point([-.205,-.220,.808]),throttleLayout.point([-.230,-.164,.806])
@@ -1419,16 +1420,19 @@ function buildEngine() {
   // housing itself.  Keep it continuous in the model while isolating the
   // compact actuator/barrel silhouette for component-fit review.
   manifoldFit.add(throttleNeck,throttleBridge);
-  const throttleFlange = torus(.076,.007,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:30,radialSegments:8});
+  const throttleFlange = torus(.057,.005,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:28,radialSegments:8});
   throttleFlange.position.copy(vehicleToWorld([BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]-.118,BAY_ANCHORS.throttle[2]]));
   const throttleActuator = roundedBox(.066,.042,.062,.014,0x242c2e,{roughness:.69,metalness:.16,segments:5});
   placeThrottle(throttleActuator,[-.178,-.481,.822]);
   throttleActuator.rotation.y=.13;
   const throttleLever = cylinder(.022,.020,0x303a3d,'x',{metalness:.51,roughness:.42,segments:18});
   placeThrottle(throttleLever,[-.176,-.548,.829]);
+  throttleActuator.userData.photoFitExclude=true;
+  throttleLever.userData.photoFitExclude=true;
   const actuatorCable = throttleTube([
     [-.173,-.560,.829],[-.244,-.596,.838],[-.350,-.611,.810],[-.430,-.574,.774]
   ],.006,0x171b1d,{roughness:.88,metalness:.02,segments:22,radialSegments:6});
+  actuatorCable.userData.photoFitExclude=true;
   throttleFlange.userData.minLod=1;
   throttleActuator.userData.minLod=2;
   throttleLever.userData.minLod=2;
