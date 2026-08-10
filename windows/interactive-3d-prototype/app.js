@@ -1409,8 +1409,10 @@ function buildEngine() {
   const throttleBridge = tube([
     BAY_ANCHORS.throttle,throttleLayout.point([-.205,-.220,.808]),throttleLayout.point([-.230,-.164,.806])
   ],.056,0xaeb7b7,{metalness:.72,roughness:.34,segments:18,radialSegments:14});
-  throttleFit.add(throttleNeck);
-  manifoldFit.add(throttleBridge);
+  // The neck is the terminal intake/manifold casting, not the throttle-body
+  // housing itself.  Keep it continuous in the model while isolating the
+  // compact actuator/barrel silhouette for component-fit review.
+  manifoldFit.add(throttleNeck,throttleBridge);
   const throttleFlange = torus(.076,.007,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:30,radialSegments:8});
   throttleFlange.position.copy(vehicleToWorld([BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]-.118,BAY_ANCHORS.throttle[2]]));
   const throttleActuator = roundedBox(.066,.042,.062,.014,0x242c2e,{roughness:.69,metalness:.16,segments:5});
@@ -1651,7 +1653,10 @@ function buildEngineLandmarks() {
   registerPhotoFitGroup('battery',battery,'buildEngineLandmarks: driver-front battery assembly');
 
   const airbox = new THREE.Group();
-  const [airboxX,airboxY,airboxZ] = BAY_ANCHORS.airbox;
+  const [airboxX,airboxAnchorY,airboxZ] = BAY_ANCHORS.airbox;
+  // The filter case occupies the passenger-front corner, offset outboard of
+  // the MAF so the housing remains visible beside (not underneath) the duct.
+  const airboxY=airboxAnchorY-.090;
   // FI-5 / EPC order is deliberately authored as one installed assembly:
   // low passenger-front filter box -> AFM -> ribbed flex section -> one elbow.
   // The filter housing keeps a real stepped, asymmetrical plan rather than the
