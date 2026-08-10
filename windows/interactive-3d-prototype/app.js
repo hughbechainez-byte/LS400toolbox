@@ -1239,7 +1239,9 @@ function buildEngine() {
   ],.756,.054,0x929b99,{metalness:.71,roughness:.32,bevelSize:.030,bevelThickness:.013,bevelSegments:3,curveSegments:16});
   const runnerCrown = roundedBox(.496,.032,.576,.026,0xaeb8b6,{metalness:.75,roughness:.29,segments:7});
   placePhoto(runnerCrown,[-.545,0,.816]);
-  const darkRunnerBed = roundedBox(.478,.012,.554,.010,0x192123,{metalness:.18,roughness:.66,segments:5});
+  // Cast alloy sits beneath the runner crests; the close photo shows recessed
+  // gray channels, not a broad black void behind otherwise silver ribs.
+  const darkRunnerBed = roundedBox(.478,.012,.554,.010,0x53605f,{metalness:.43,roughness:.50,segments:5});
   placePhoto(darkRunnerBed,[-.545,0,.838]);
   photoSurfaces.add(passengerPlenumShoulder,driverPlenumShoulder);
 
