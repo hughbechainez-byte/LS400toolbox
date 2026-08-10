@@ -1936,9 +1936,14 @@ function buildEngineLandmarks() {
   const boosterVacuum=tube([
     [boosterX+.020,boosterY-.100,boosterZ+.005],[-.760,.820,.805],[-.560,.560,.825],[-.360,.245,.835]
   ],.018,0x151b1d,{roughness:.88,segments:32,radialSegments:10});
+  // The long vacuum hose is a separate route, not part of the booster/master
+  // housing silhouette used by the photo landmark.  Keep it visible in the
+  // model but exclude it from the housing-only semantic capture.
+  boosterVacuum.userData.qaExclude=true;
   booster.add(boosterVacuum);
   const checkValve=cylinder(.026,.078,0x1d2528,'z',{roughness:.72,metalness:.16,segments:20});
   checkValve.position.copy(vehicleToWorld([-.665,.700,.817]));
+  checkValve.userData.qaExclude=true;
   booster.add(checkValve);
   registerComponent(booster,'LANDMARK_BRAKE_BOOSTER',{minLod:1});
 }
