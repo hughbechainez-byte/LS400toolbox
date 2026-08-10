@@ -1010,19 +1010,19 @@ function buildCoolingStack() {
     [1.455,.074],[1.455,-.156],[1.420,-.361],[1.285,-.471]
   ],.690,.050,0x111719,{roughness:.84,metalness:.06,bevelSize:.032,bevelThickness:.014,bevelSegments:4,curveSegments:18});
   const shroudCentre = roundedBox(.470,.076,.278,.048,0x111719,{roughness:.82,metalness:.07,segments:8});
-  shroudCentre.position.copy(vehicleToWorld([.930,0,.438]));
+  shroudCentre.position.copy(vehicleToWorld([.930,0,.746]));
   const shroudPassenger = roundedBox(.430,.070,.338,.050,0x151c1e,{roughness:.80,metalness:.08,segments:8});
-  shroudPassenger.position.copy(vehicleToWorld([.924,-.430,.430]));
+  shroudPassenger.position.copy(vehicleToWorld([.924,-.430,.740]));
   shroudPassenger.rotation.y=-.08;
   const shroudDriver = roundedBox(.430,.070,.338,.050,0x151c1e,{roughness:.80,metalness:.08,segments:8});
-  shroudDriver.position.copy(vehicleToWorld([.924,.430,.430]));
+  shroudDriver.position.copy(vehicleToWorld([.924,.430,.740]));
   shroudDriver.rotation.y=.08;
   const centreOpening = roundedBox(.188,.012,.152,.030,0x050809,{roughness:.94,metalness:0,segments:6});
-  centreOpening.position.copy(vehicleToWorld([.892,0,.482]));
+  centreOpening.position.copy(vehicleToWorld([.892,0,.792]));
   const passengerOpening = roundedBox(.142,.012,.188,.028,0x050809,{roughness:.94,metalness:0,segments:6});
-  passengerOpening.position.copy(vehicleToWorld([.888,-.426,.470]));
+  passengerOpening.position.copy(vehicleToWorld([.888,-.426,.786]));
   const driverOpening = roundedBox(.142,.012,.188,.028,0x050809,{roughness:.94,metalness:0,segments:6});
-  driverOpening.position.copy(vehicleToWorld([.888,.426,.470]));
+  driverOpening.position.copy(vehicleToWorld([.888,.426,.786]));
   for (const detail of [shroudCentre,shroudPassenger,shroudDriver,centreOpening,passengerOpening,driverOpening]) detail.userData.photoFitExclude=true;
   shroudFit.add(shroudShell,shroudCentre,shroudPassenger,shroudDriver,centreOpening,passengerOpening,driverOpening);
   const shroudLip = tube([ [.833,-.73,.494],[.938,-.75,.508],[1.058,-.72,.502],[1.128,0,.494],[1.058,.72,.502],[.938,.75,.508],[.833,.73,.494] ],.020,0x242d2f,{roughness:.70,metalness:.26,segments:32,radialSegments:8});
