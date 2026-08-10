@@ -733,6 +733,22 @@ function buildHoodAndCowl() {
     slot.userData.minLod = 2;
     cowlFit.add(slot);
   }
+  // Recessed centre vent: the reference has a visible domed grille field
+  // between the weather strip and wipers, not a featureless black cowl band.
+  const cowlVentInset=vehicleTopProfile([
+    [-1.605,-.570],[-1.605,.570],[-1.500,.685],[-1.220,.675],[-1.105,.520],
+    [-1.105,-.520],[-1.220,-.675],[-1.500,-.685]
+  ],.942,.010,0x222b2d,{roughness:.69,metalness:.20,bevelSize:.012,bevelThickness:.006,bevelSegments:2,curveSegments:16});
+  cowlVentInset.userData.photoFitExclude=true;
+  cowlFit.add(cowlVentInset);
+  for(let i=-7;i<=7;i++){
+    const grilleBar=tube([
+      [-1.565,i*.070,.958],[-1.410,i*.076,.963],[-1.230,i*.070,.959]
+    ],.0038,0x4c585a,{roughness:.50,metalness:.36,segments:12,radialSegments:6});
+    grilleBar.userData.minLod=1;
+    grilleBar.userData.photoFitExclude=true;
+    cowlFit.add(grilleBar);
+  }
 
   // In the native photo the passenger-rear service cover is a broad, flat,
   // chamfered black rectangle.  Its centre is retained while the old rounded
@@ -1045,7 +1061,17 @@ function addPhotoValveCover(photoSurfaces, driverSide = false, layout) {
     ],.634,.037,0x596466,{roughness:.49,metalness:.48,bevelSize:.016,bevelThickness:.007,bevelSegments:3,curveSegments:14});
     const outerRail=route([[-.622,-.624,.683],[-.500,-.698,.690],[-.248,-.704,.690],[-.090,-.646,.682]],.007,0x848e8e,{metalness:.68,roughness:.33,segments:26,radialSegments:7});
     const innerRail=route([[-.606,-.494,.684],[-.442,-.450,.690],[-.238,-.446,.690],[-.080,-.530,.681]],.007,0x252e31,{metalness:.38,roughness:.56,segments:26,radialSegments:7});
-    photoSurfaces.add(passengerSkirt,passengerCrown,outerRail,innerRail);
+    const passengerLetterBed=profile([
+      [-.545,-.650],[-.460,-.688],[-.245,-.692],[-.118,-.646],[-.146,-.606],[-.455,-.608]
+    ],.675,.012,0x101618,{roughness:.74,metalness:.08,bevelSize:.006,bevelThickness:.003,bevelSegments:2,curveSegments:12});
+    const passengerLettering=textPlate('FOUR CAM 32',.420,.065,{fontSize:50,minLod:1,background:'#101618',border:'#6b7677',color:'#e5e8e4'});
+    passengerLettering.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+      new THREE.Vector3(0,0,-1),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,1,0)
+    ));
+    passengerLettering.position.copy(vehicleToWorld(point([-.325,-.651,.690])));
+    passengerLettering.renderOrder=5;
+    passengerLettering.userData.photoFitExclude=true;
+    photoSurfaces.add(passengerSkirt,passengerCrown,outerRail,innerRail,passengerLetterBed,passengerLettering);
     return;
   }
   if (driverSide) {
@@ -1347,7 +1373,12 @@ function buildEngine() {
     [-.817,-.673],[-.798,-.433],[-.752,-.374],[-.640,-.382],[-.617,-.439],
     [-.628,-.635],[-.697,-.697],[-.782,-.694]
   ],.886,.012,0x252e30,{roughness:.63,metalness:.18,bevelSize:.012,bevelThickness:.005,bevelSegments:2,curveSegments:12});
-  addSurface(tracModule,tracInset);
+  const tracWordmark=textPlate('TRAC',.172,.050,{fontSize:64,minLod:1,background:'#252e30',border:'#768182',color:'#edf0ea'});
+  tracWordmark.rotation.x=-Math.PI/2;
+  tracWordmark.position.copy(vehicleToWorld(photoLayout.point([-.714,-.535,.904])));
+  tracWordmark.renderOrder=5;
+  tracWordmark.userData.photoFitExclude=true;
+  addSurface(tracModule,tracInset,tracWordmark);
 
   photoFitTarget = manifoldFit;
   // The front section remains on the same centreline but becomes a low,
@@ -1818,6 +1849,15 @@ function buildEngineLandmarks() {
     rib.userData.photoFitExclude=true;
     intake.add(rib);
   }
+  // A low, rounded crown gives the broad outer casting the actual raised
+  // rubber duct read.  It remains inside the shell perimeter and continues
+  // into the throttle-side outlet rather than becoming a separate display
+  // hose.
+  const intakeCrown=tube([
+    [.188,-.620,.748],[.112,-.582,.752],[.028,-.545,.755],[-.061,-.510,.756],
+    [-.132,-.450,.754],[-.064,-.390,.750],[.018,-.347,.744]
+  ],.016,0x151d1f,{roughness:.86,metalness:.02,segments:42,radialSegments:14});
+  intake.add(intakeCrown);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
   registerPhotoFitGroup('intake-duct',intake,'buildEngineLandmarks: MAF and continuous intake route');
 
