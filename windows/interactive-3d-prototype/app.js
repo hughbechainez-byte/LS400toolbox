@@ -1229,7 +1229,7 @@ function buildEngine() {
   // the measured rear valley: forward -.79…-.30, lateral -.17…+.17 and top
   // .79… .89.  Broad shoulders sit outside that envelope and frame the pack
   // without recreating the earlier tall, narrow ladder.
-  const rearRunnerBase = roundedBox(.340,.044,.490,.028,0x737e7e,{metalness:.62,roughness:.42,segments:8});
+  const rearRunnerBase = roundedBox(.520,.044,.600,.036,0x737e7e,{metalness:.62,roughness:.42,segments:8});
   placePhoto(rearRunnerBase,[-.545,0,.783]);
   const passengerPlenumShoulder = photoProfile([
     [-.790,-.170],[-.760,-.300],[-.625,-.350],[-.355,-.322],[-.300,-.205],[-.336,-.158],[-.670,-.150]
@@ -1237,9 +1237,9 @@ function buildEngine() {
   const driverPlenumShoulder = photoProfile([
     [-.790,.170],[-.758,.302],[-.620,.354],[-.350,.326],[-.300,.205],[-.336,.158],[-.670,.150]
   ],.756,.054,0x929b99,{metalness:.71,roughness:.32,bevelSize:.030,bevelThickness:.013,bevelSegments:3,curveSegments:16});
-  const runnerCrown = roundedBox(.318,.032,.468,.022,0xaeb8b6,{metalness:.75,roughness:.29,segments:7});
+  const runnerCrown = roundedBox(.496,.032,.576,.026,0xaeb8b6,{metalness:.75,roughness:.29,segments:7});
   placePhoto(runnerCrown,[-.545,0,.816]);
-  const darkRunnerBed = roundedBox(.304,.012,.448,.008,0x192123,{metalness:.18,roughness:.66,segments:5});
+  const darkRunnerBed = roundedBox(.478,.012,.554,.010,0x192123,{metalness:.18,roughness:.66,segments:5});
   placePhoto(darkRunnerBed,[-.545,0,.838]);
   photoSurfaces.add(passengerPlenumShoulder,driverPlenumShoulder);
 
@@ -1247,12 +1247,12 @@ function buildEngine() {
   // fore/aft rhythm; the result is recognisable cast runner geometry rather
   // than eleven fine upright bars.
   for (const lateral of [-.125,-.075,-.025,.025,.075,.125]) {
-    const runner = roundedBox(.030,.050,.425,.008,0xc6cecb,{metalness:.80,roughness:.24,segments:5});
+    const runner = roundedBox(.032,.050,.536,.009,0xc6cecb,{metalness:.80,roughness:.24,segments:5});
     placePhoto(runner,[-.545,lateral,.858]);
     runner.userData.minLod = 1;
   }
   for (const lateral of [-.100,-.050,0,.050,.100]) {
-    const channel = roundedBox(.017,.010,.432,.004,0x111719,{metalness:.12,roughness:.76,segments:4});
+    const channel = roundedBox(.018,.010,.543,.004,0x111719,{metalness:.12,roughness:.76,segments:4});
     placePhoto(channel,[-.545,lateral,.846]);
     channel.userData.minLod = 1;
   }
