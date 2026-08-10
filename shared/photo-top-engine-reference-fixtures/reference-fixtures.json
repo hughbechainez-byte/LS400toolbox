@@ -1,0 +1,187 @@
+{
+  "fixtureSetId": "LS400_TOP_ENGINE_REFERENCE_FIXTURES_V1",
+  "reference": {
+    "path": "C:\\Users\\blowb\\Desktop\\LS400toolbox\\ls400_engine_bay_reference_exact.jpg",
+    "dimensionsPx": [
+      640,
+      484
+    ],
+    "sha256": "f8d74eec1af9c3014c107e0be18fc1fb83f5aff5d50e7ccd34d2da5318bfb725"
+  },
+  "fixtures": [
+    {
+      "id": "airbox-maf-assembly",
+      "label": "airbox / MAF assembly",
+      "mask": "airbox-maf-assembly.png",
+      "maskSha256": "50ab7acb0e5be4fa4ee2411a03fdfabe096fdbd027cfe5ae8e13f47dc13f063c",
+      "generatorIds": [
+        "airbox",
+        "intake-duct"
+      ],
+      "source": "direct visible-boundary trace from canonical exact JPG: black passenger-front air cleaner and metallic AFM housing",
+      "bboxPx": [
+        0,
+        252,
+        162,
+        356
+      ],
+      "visibleAreaPx": 13826,
+      "centerPx": [
+        72.174,
+        304.492
+      ],
+      "principalOrientationDeg": 0.601
+    },
+    {
+      "id": "corrugated-intake-duct",
+      "label": "corrugated intake duct",
+      "mask": "corrugated-intake-duct.png",
+      "maskSha256": "dbc7722769fe5f9a735868d15464c64c924a4c5db203efc94246da7891bd8cfc",
+      "generatorIds": [
+        "intake-duct"
+      ],
+      "source": "direct centreline and visible rubber-width samples from canonical exact JPG: AFM outlet through vertical sweep to throttle inlet",
+      "bboxPx": [
+        113,
+        139,
+        228,
+        304
+      ],
+      "visibleAreaPx": 8594,
+      "centerPx": [
+        163.584,
+        215.042
+      ],
+      "principalOrientationDeg": 114.066,
+      "centerlinePx": [
+        [
+          132,
+          285
+        ],
+        [
+          151,
+          263
+        ],
+        [
+          158,
+          230
+        ],
+        [
+          160,
+          196
+        ],
+        [
+          171,
+          171
+        ],
+        [
+          194,
+          157
+        ],
+        [
+          213,
+          171
+        ]
+      ],
+      "widthSamplesPx": [
+        38,
+        43,
+        47,
+        48,
+        43,
+        36,
+        31
+      ]
+    },
+    {
+      "id": "trac-throttle-assembly",
+      "label": "TRAC / throttle assembly",
+      "mask": "trac-throttle-assembly.png",
+      "maskSha256": "762fcf64029fc651bdd0df28dcb3cf4c54ad66c511ff43a9e7d7f39159af4955",
+      "generatorIds": [
+        "trac-housing",
+        "throttle-body"
+      ],
+      "source": "direct visible-boundary trace from canonical exact JPG: black TRAC cover plus adjoining offset throttle casting",
+      "bboxPx": [
+        184,
+        108,
+        311,
+        222
+      ],
+      "visibleAreaPx": 9041,
+      "centerPx": [
+        240.048,
+        155.184
+      ],
+      "principalOrientationDeg": 135.282
+    },
+    {
+      "id": "silver-intake-manifold",
+      "label": "silver intake manifold and Lexus plate",
+      "mask": "silver-intake-manifold.png",
+      "maskSha256": "1ce5030567c412fd15ee1086ca249b91670ca751b34c5a2d02daae47e1ecce11",
+      "generatorIds": [
+        "intake-manifold"
+      ],
+      "source": "direct visible-boundary trace from canonical exact JPG: curved alloy runner pack, center cover and Lexus plate",
+      "bboxPx": [
+        258,
+        121,
+        378,
+        269
+      ],
+      "visibleAreaPx": 14662,
+      "centerPx": [
+        316.996,
+        193.394
+      ],
+      "principalOrientationDeg": 76.795
+    },
+    {
+      "id": "valve-cover-passenger",
+      "label": "image-left valve cover",
+      "mask": "valve-cover-passenger.png",
+      "maskSha256": "77697d9699fb6751c7371caca38f9608022815d781fd5256280b32c64e848e20",
+      "generatorIds": [
+        "valve-cover-passenger"
+      ],
+      "source": "direct visible-boundary trace from canonical exact JPG: long passenger-bank cover",
+      "bboxPx": [
+        177,
+        169,
+        266,
+        287
+      ],
+      "visibleAreaPx": 7990,
+      "centerPx": [
+        220.177,
+        228.557
+      ],
+      "principalOrientationDeg": 67.722
+    },
+    {
+      "id": "valve-cover-driver-four-cam",
+      "label": "image-right FOUR CAM 32 valve cover",
+      "mask": "valve-cover-driver-four-cam.png",
+      "maskSha256": "41835a6bb9c6bf560f22e7ab09d65c2cc1dfa31bf18d77d679985058310b5467",
+      "generatorIds": [
+        "valve-cover-driver"
+      ],
+      "source": "direct visible-boundary trace from canonical exact JPG: long driver-bank FOUR CAM 32 cover",
+      "bboxPx": [
+        393,
+        153,
+        478,
+        312
+      ],
+      "visibleAreaPx": 10717,
+      "centerPx": [
+        434.584,
+        230.21
+      ],
+      "principalOrientationDeg": 82.22
+    }
+  ],
+  "labeledReferenceSha256": "f9dfac5702f6e88fb46c5b7fd29f8504d2f9dca9efc16cdb92f0bb37312f51c2"
+}
