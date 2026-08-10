@@ -1281,8 +1281,8 @@ function buildEngine() {
   passengerValveFit.position.copy(vehicleToWorld([-.026,.014,.016]));
   // Intake castings sit a little lower and driverward of the V-bank centre;
   // preserve that early-1UZ offset rather than centring them geometrically.
-  manifoldFit.position.copy(vehicleToWorld([-.070,.055,-.045]));
-  tracFit.position.copy(vehicleToWorld([-.060,.052,-.008]));
+  manifoldFit.position.copy(vehicleToWorld([-.020,.025,-.045]));
+  tracFit.position.copy(vehicleToWorld([.040,.082,-.008]));
   throttleFit.position.copy(vehicleToWorld([-.080,.070,.040]));
 
   // Leave the lower banks mostly recessed.  The former repeated cross-bank
@@ -1326,12 +1326,12 @@ function buildEngine() {
   // the housing instead of leaving this highly visible area as empty bay.
   photoFitTarget = tracFit;
   const tracModule = photoProfile([
-    [-.940,-.690],[-.902,-.422],[-.804,-.340],[-.562,-.350],[-.492,-.430],
-    [-.514,-.656],[-.672,-.720],[-.858,-.716]
+    [-.852,-.746],[-.829,-.384],[-.770,-.274],[-.625,-.287],[-.583,-.395],
+    [-.596,-.700],[-.691,-.787],[-.803,-.781]
   ],.824,.066,0x11181a,{roughness:.74,metalness:.10,bevelSize:.026,bevelThickness:.012,bevelSegments:3,curveSegments:16});
   const tracInset = photoProfile([
-    [-.882,-.636],[-.850,-.458],[-.774,-.414],[-.588,-.420],[-.550,-.462],
-    [-.568,-.606],[-.682,-.652],[-.824,-.650]
+    [-.817,-.673],[-.798,-.433],[-.752,-.374],[-.640,-.382],[-.617,-.439],
+    [-.628,-.635],[-.697,-.697],[-.782,-.694]
   ],.886,.012,0x252e30,{roughness:.63,metalness:.18,bevelSize:.012,bevelThickness:.005,bevelSegments:2,curveSegments:12});
   addSurface(tracModule,tracInset);
 
@@ -1342,6 +1342,10 @@ function buildEngine() {
   // instead of as a small ornament perched above the plenum.
   const frontPlenum = roundedBox(.250,.060,.212,.038,0xaab3b1,{metalness:.73,roughness:.31,segments:8});
   placePhoto(frontPlenum,[-.205,.005,.775]);
+  const manifoldLowerLobe = photoProfile([
+    [-.330,-.125],[-.312,.118],[-.118,.164],[.010,.096],[.042,-.072],[-.078,-.148],[-.258,-.146]
+  ],.716,.042,0x949e9d,{metalness:.67,roughness:.37,bevelSize:.024,bevelThickness:.010,bevelSegments:3,curveSegments:14});
+  addSurface(manifoldLowerLobe);
   const passengerCheek = roundedBox(.132,.040,.186,.028,0x8d9695,{metalness:.65,roughness:.39,segments:7});
   placePhoto(passengerCheek,[-.195,-.182,.748]);
   passengerCheek.rotation.y = .10;
@@ -1409,6 +1413,8 @@ function buildEngine() {
   const throttleBridge = tube([
     BAY_ANCHORS.throttle,throttleLayout.point([-.205,-.220,.808]),throttleLayout.point([-.230,-.164,.806])
   ],.056,0xaeb7b7,{metalness:.72,roughness:.34,segments:18,radialSegments:14});
+  throttleNeck.userData.photoFitExclude=true;
+  throttleBridge.userData.photoFitExclude=true;
   // The neck is the terminal intake/manifold casting, not the throttle-body
   // housing itself.  Keep it continuous in the model while isolating the
   // compact actuator/barrel silhouette for component-fit review.
