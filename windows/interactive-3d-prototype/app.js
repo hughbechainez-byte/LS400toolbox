@@ -646,6 +646,10 @@ function buildFrontBody() {
   for (const left of [-BAY_STRUCTURE.radiatorSupportHardpointHalfWidth,-.31,.31,BAY_STRUCTURE.radiatorSupportHardpointHalfWidth]) {
     const upright = roundedBox(.045,.55,.055,.011,0x283135,{metalness:.5,roughness:.58});
     upright.position.copy(vehicleToWorld([BAY_STRUCTURE.radiatorSupportX,left,.55]));
+    // These service-side brace uprights sit behind the photographed shroud.
+    // Leaving them exposed in the photo camera made the foreground read as an
+    // open rail/grille rather than the continuous radiator-support closure.
+    upright.userData.photoHidden = true;
     support.add(upright);
     const bolt = makeBolt(.012,.028);
     bolt.position.copy(vehicleToWorld([BAY_STRUCTURE.radiatorSupportX+.035,left,.79]));
@@ -658,6 +662,7 @@ function buildFrontBody() {
     [BAY_STRUCTURE.radiatorSupportX,-.50,.80],[BAY_STRUCTURE.radiatorSupportX,0,.82],
     [BAY_STRUCTURE.radiatorSupportX,.50,.80],[BAY_STRUCTURE.radiatorSupportX,BAY_STRUCTURE.radiatorSupportHardpointHalfWidth,.71]
   ], .022, 0x596468, { metalness:.68, roughness:.35, segments:42, radialSegments:8 });
+  upperReturn.userData.photoHidden = true;
   support.add(upperReturn);
   registerComponent(support,'LANDMARK_RADIATOR_SUPPORT',{minLod:1});
 
@@ -949,8 +954,10 @@ function buildCoolingStack() {
     [.205,.355,.565],[.345,.420,.575],[.510,.395,.550],[.655,.290,.545],[BAY_ANCHORS.radiator[0],.255,.565]
   ],.067,0x161c1e,{roughness:.87,segments:40,radialSegments:14});
   fans.add(driverUpperHose);
-  const photoShroud = roundedBox(1.48,.085,.310,.045,0x111719,{roughness:.82,metalness:.07,segments:8});
-  photoShroud.position.copy(vehicleToWorld([.725,0,.585]));
+  // A real moulded shroud fills the support-to-fan plane in the photo.  Its
+  // added fore/aft depth is a physical housing depth, not an image scale.
+  const photoShroud = roundedBox(1.48,.092,.440,.052,0x111719,{roughness:.82,metalness:.07,segments:8});
+  photoShroud.position.copy(vehicleToWorld([.680,0,.585]));
   fans.add(photoShroud);
   const shroudLip = tube([ [.595,-.73,.640],[.700,-.75,.654],[.820,-.72,.648],[.890,0,.640],[.820,.72,.648],[.700,.75,.654],[.595,.73,.640] ],.020,0x242d2f,{roughness:.70,metalness:.26,segments:32,radialSegments:8});
   fans.add(shroudLip);
