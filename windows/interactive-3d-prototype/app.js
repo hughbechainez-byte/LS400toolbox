@@ -1817,12 +1817,12 @@ function buildEngineLandmarks() {
   const corrugatedCenterline=[
     mafOutlet,[.156,-.632,.650],[.108,-.567,.725]
   ];
-  const corrugated=tube(corrugatedCenterline,.052,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
+  const corrugated=tube(corrugatedCenterline,.045,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
   intake.add(corrugated);
   const corrugatedCurve=new THREE.CatmullRomCurve3(corrugatedCenterline.map(vehicleToWorld),false,'centripetal',.4);
   for(let i=0;i<9;i++){
     const t=.055+i*.105;
-    const rib=torus(.061,.0050,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
+    const rib=torus(.052,.0046,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
     rib.position.copy(corrugatedCurve.getPointAt(t));
     rib.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     rib.userData.minLod=1;
@@ -1830,6 +1830,7 @@ function buildEngineLandmarks() {
   }
   for (const t of [.02,.98]) {
     const clamp=torus(.066,.006,0xb4bcbc,'z',{roughness:.32,metalness:.77,tubularSegments:30});
+    clamp.userData.photoFitExclude=true;
     clamp.position.copy(corrugatedCurve.getPointAt(t));
     clamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     intake.add(clamp);
@@ -1849,8 +1850,8 @@ function buildEngineLandmarks() {
   // wall, not a perfectly circular hose.  This tapered overlapping skin stays
   // on the same centreline route and widens only the outside of the turn.
   const elbowOuterWall=tube([
-    [.0445,-.434,.800],[-.045,-.366,.800],[-.138,-.309,.800],
-    [BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]+.075,BAY_ANCHORS.throttle[2]]
+    [.0445,-.464,.800],[-.045,-.396,.800],[-.138,-.339,.800],
+    [BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]+.045,BAY_ANCHORS.throttle[2]]
   ],.040,0x1c2426,{roughness:.82,metalness:.03,segments:32,radialSegments:10});
   intake.add(elbowOuterWall);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
