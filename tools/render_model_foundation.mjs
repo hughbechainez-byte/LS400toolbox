@@ -110,7 +110,10 @@ try {
   }
   if (!semanticMasks['body-shell']) throw new Error('Canonical body mask must identify its rendered components.');
   const componentDiagnostics = {};
-  for (const id of ['LANDMARK_BATTERY','LANDMARK_ENGINE_BAY_FUSE_BOX','LANDMARK_BRAKE_BOOSTER','LANDMARK_COOLANT_OVERFLOW_RESERVOIR']) {
+  for (const id of [
+    'ENGINE_1UZ_FE','LANDMARK_AIRBOX','LANDMARK_INTAKE_TUBE',
+    'LANDMARK_BATTERY','LANDMARK_ENGINE_BAY_FUSE_BOX','LANDMARK_BRAKE_BOOSTER','LANDMARK_COOLANT_OVERFLOW_RESERVOIR'
+  ]) {
     componentDiagnostics[id] = await page.evaluate(componentId => window.__LS400_QA__.renderComponentMaskDataUrl([componentId]), id);
   }
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());

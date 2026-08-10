@@ -301,6 +301,37 @@ def main() -> int:
         Image.fromarray(np.where(reference_mask, 255, 0).astype(np.uint8), "L").save(output / f"mask-{mask['id']}-reference.png")
         Image.fromarray(np.where(model_mask, 255, 0).astype(np.uint8), "L").save(output / f"mask-{mask['id']}-model.png")
 
+    # These are visible housing centroids, rendered through the fixed body
+    # occlusion.  They supplement anchor projection rows for the major named
+    # accessories whose routework would otherwise distort a grouped centroid.
+    landmark_by_id = {item["id"]: item for item in photo_landmarks["landmarks"]}
+    visible_component_targets = {
+        "ENGINE_1UZ_FE": "engine.center",
+        "LANDMARK_AIRBOX": "accessory.airbox",
+        "LANDMARK_BATTERY": "accessory.battery",
+        "LANDMARK_ENGINE_BAY_FUSE_BOX": "accessory.fuse_box",
+        "LANDMARK_BRAKE_BOOSTER": "accessory.brake_booster",
+        "LANDMARK_COOLANT_OVERFLOW_RESERVOIR": "accessory.coolant_reservoir",
+    }
+    visible_component_centers = []
+    for component_id, landmark_id in visible_component_targets.items():
+        mask_path = output / f"photo-component-{component_id}.png"
+        if not mask_path.exists() or landmark_id not in landmark_by_id:
+            continue
+        actual_center = centroid(silhouette_mask(mask_path))
+        expected_center = landmark_by_id[landmark_id]["referencePx"]
+        if actual_center is None:
+            continue
+        residual = float(np.linalg.norm(np.asarray(actual_center) - np.asarray(expected_center)))
+        visible_component_centers.append({
+            "componentId": component_id,
+            "landmarkId": landmark_id,
+            "referencePx": [round(float(value), 3) for value in expected_center],
+            "visibleCenterPx": [round(float(value), 3) for value in actual_center],
+            "residualPx": round(residual, 3),
+            "bbox": bbox(silhouette_mask(mask_path)),
+        })
+
     body_mask = next(item for item in photo_landmarks["masks"] if item["id"] == "body-shell")
     reference_body_geometry = region_mask(body_mask["referenceRegionsPx"], reference.size)
     body_intersection = np.logical_and(reference_body_geometry, rendered_photo_body).sum()
@@ -335,6 +366,7 @@ def main() -> int:
         "majorComponentCenterResidualPx": {"count": len(component_center_errors), "median": round(float(np.median(component_center_errors)), 3), "maximum": round(float(np.max(component_center_errors)), 3)},
         "tenLargestLandmarkResiduals": largest_residuals,
         "majorComponentCentroidErrorPx": {"count": len(centroid_errors), "median": float(np.median(centroid_errors)) if centroid_errors else None, "maximum": max(centroid_errors) if centroid_errors else None},
+        "visibleComponentCenters": visible_component_centers,
         "renderedBodyGeometry": {"referenceMaskPath": "reference-body-geometry-mask.png", "modelMaskPath": "photo-body-geometry-mask.png", "referenceBBox": reference_bbox, "modelBBox": rendered_body_bbox, **size_error, "intersectionOverUnion": round(body_iou, 6), "meanBoundaryDistancePx": round(body_boundary_error, 3), "missingPixels": int(body_missing), "extraPixels": int(body_extra), "referencePixels": int(reference_body_geometry.sum()), "modelPixels": int(rendered_photo_body.sum()), "source": body_mask["source"]},
         "masks": mask_metrics,
         "targets": {"bodyLandmarkMedianErrorPx": 14.07, "bodyLandmarkMaximumErrorPx": 28.14, "allLandmarkMedianErrorPx": round(landmark_median_target, 3), "allLandmarkMaximumErrorPx": round(landmark_maximum_target, 3), "majorComponentCenterMaximumErrorPx": round(component_center_target, 3), "majorProjectedWidthHeightErrorPercent": 5, "majorSilhouetteIoU": 0.92, "meanMajorBoundaryDistancePx": 18.76},
