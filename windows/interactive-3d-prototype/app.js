@@ -1755,7 +1755,7 @@ function buildEngineLandmarks() {
   // airbox neck, one AFM barrel, one accordion hose and one smooth elbow.  The
   // earlier overlapping sleeves and doubled curves made a broken black cone.
   const airboxToMaf=[
-    airboxOutletStart,[airboxX-.070,airboxY-.060,.628],[mafX+.152,mafY-.020,.636],[mafX+.103,mafY-.008,.640]
+    airboxOutletStart,[airboxX-.070,airboxY-.060,.628],[mafX+.152,mafY+.070,.636],[mafX+.103,mafY+.092,.640]
   ];
   const preMeter=tube(airboxToMaf,.068,0x171d20,{roughness:.88,metalness:.01,segments:26,radialSegments:18});
   // The short airbox neck belongs to the housing, leaving the locked-view
@@ -1767,28 +1767,28 @@ function buildEngineLandmarks() {
   // The AFM is a short cast meter with a clipped, stepped electronics cover.
   // The attached closeups show that this is not a plain tube: the black cover
   // spans the cast body, has mounting ears, and sits between two clamps.
-  const mafInlet=[mafX+.103,mafY-.008,.640];
-  const mafOutlet=[mafX-.015,mafY,.660];
+  const mafInlet=[mafX+.103,mafY+.092,.640];
+  const mafOutlet=[mafX-.015,mafY+.100,.660];
   const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
-  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.064,.070,0x626d6f,{roughness:.35,metalness:.66,segments:30});
+  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.040,.045,0x626d6f,{roughness:.35,metalness:.66,segments:30});
   intake.add(afmBarrel);
   for (const point of [mafInlet,mafOutlet]) {
-    const flange=torus(.091,.007,0xb9c1c1,'z',{roughness:.29,metalness:.79,tubularSegments:34});
+    const flange=torus(.052,.005,0xb9c1c1,'z',{roughness:.29,metalness:.79,tubularSegments:34});
     flange.position.copy(vehicleToWorld(point));
     flange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),mafAxis);
     intake.add(flange);
   }
   const afmShoulder=vehicleTopProfile([
-    [mafX+.116,mafY-.104],[mafX+.154,mafY-.072],[mafX+.146,mafY+.072],[mafX+.102,mafY+.106],
-    [mafX-.100,mafY+.102],[mafX-.132,mafY+.066],[mafX-.126,mafY-.070],[mafX-.086,mafY-.108]
-  ],mafZ+.050,.037,0x394346,{roughness:.58,metalness:.38,bevelSize:.015,bevelThickness:.006,bevelSegments:3,curveSegments:14});
+    [mafX+.055,mafY-.047],[mafX+.071,mafY-.033],[mafX+.067,mafY+.033],[mafX+.048,mafY+.049],
+    [mafX-.047,mafY+.047],[mafX-.061,mafY+.031],[mafX-.058,mafY-.032],[mafX-.041,mafY-.050]
+  ],mafZ+.060,.026,0x394346,{roughness:.58,metalness:.38,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
   intake.add(afmShoulder);
-  const afmCap=roundedBox(.168,.056,.150,.021,0x171f21,{roughness:.70,metalness:.11,segments:5});
-  afmCap.position.copy(vehicleToWorld([mafX+.002,mafY-.018,mafZ+.124]));
+  const afmCap=roundedBox(.090,.035,.080,.013,0x171f21,{roughness:.70,metalness:.11,segments:5});
+  afmCap.position.copy(vehicleToWorld([mafX-.008,mafY-.006,mafZ+.082]));
   afmCap.rotation.y=-.54;
   intake.add(afmCap);
-  const afmConnector=roundedBox(.062,.036,.054,.010,0x101719,{roughness:.80,metalness:.04,segments:4});
-  afmConnector.position.copy(vehicleToWorld([mafX-.048,mafY+.054,mafZ+.115]));
+  const afmConnector=roundedBox(.036,.024,.034,.007,0x101719,{roughness:.80,metalness:.04,segments:4});
+  afmConnector.position.copy(vehicleToWorld([mafX-.032,mafY+.032,mafZ+.080]));
   afmConnector.rotation.y=-.54;
   intake.add(afmConnector);
   for (const [forward,lateral] of [[.068,-.070],[.068,.070]]) {
@@ -1797,7 +1797,7 @@ function buildEngineLandmarks() {
     fastener.userData.minLod=2;
     intake.add(fastener);
   }
-  const meterFlange=torus(.074,.006,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
+  const meterFlange=torus(.045,.004,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
   meterFlange.position.copy(preMeterCurve.getPointAt(.98));
   meterFlange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),preMeterCurve.getTangentAt(.98).normalize());
   intake.add(meterFlange);
@@ -1809,19 +1809,19 @@ function buildEngineLandmarks() {
   const corrugatedCenterline=[
     mafOutlet,[.156,-.632,.650],[.108,-.567,.725]
   ];
-  const corrugated=tube(corrugatedCenterline,.071,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
+  const corrugated=tube(corrugatedCenterline,.055,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
   intake.add(corrugated);
   const corrugatedCurve=new THREE.CatmullRomCurve3(corrugatedCenterline.map(vehicleToWorld),false,'centripetal',.4);
   for(let i=0;i<9;i++){
     const t=.055+i*.105;
-    const rib=torus(.079,.0058,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
+    const rib=torus(.064,.0050,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
     rib.position.copy(corrugatedCurve.getPointAt(t));
     rib.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     rib.userData.minLod=1;
     intake.add(rib);
   }
   for (const t of [.02,.98]) {
-    const clamp=torus(.081,.007,0xb4bcbc,'z',{roughness:.32,metalness:.77,tubularSegments:30});
+    const clamp=torus(.066,.006,0xb4bcbc,'z',{roughness:.32,metalness:.77,tubularSegments:30});
     clamp.position.copy(corrugatedCurve.getPointAt(t));
     clamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     intake.add(clamp);
@@ -1835,7 +1835,7 @@ function buildEngineLandmarks() {
     corrugatedCenterline.at(-1),[.0445,-.504,.800],[-.045,-.476,.800],
     [-.138,-.419,.800],BAY_ANCHORS.throttle
   ];
-  const smoothElbow=tube(elbowCenterline,.076,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:18});
+  const smoothElbow=tube(elbowCenterline,.059,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:18});
   intake.add(smoothElbow);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
   registerPhotoFitGroup('intake-duct',intake,'buildEngineLandmarks: MAF and continuous intake route');
