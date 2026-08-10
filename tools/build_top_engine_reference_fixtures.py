@@ -148,7 +148,7 @@ def main() -> int:
         tint = Image.new("RGBA", SIZE, color)
         overlay.alpha_composite(Image.composite(tint, Image.new("RGBA", SIZE, (0, 0, 0, 0)), mask))
         draw.text((metrics(mask)["bboxPx"][0], max(0, metrics(mask)["bboxPx"][1] - 14)), f"{index + 1}. {spec['label']}", fill=(255, 246, 184, 255), stroke_width=2, stroke_fill=(0, 0, 0, 245))
-        manifest["fixtures"].append({"id": fixture_id, "label": spec["label"], "mask": filename, "maskSha256": sha256(path), "generatorIds": spec["generatorIds"], "source": spec["source"], **metrics(mask), **({"centerlinePx": spec["centerlinePx"], "widthSamplesPx": spec["widthSamplesPx"]} if "centerlinePx" in spec else {})})
+        manifest["fixtures"].append({"id": fixture_id, "label": spec["label"], "mask": filename, "maskSha256": sha256(path), "generatorIds": spec["generatorIds"], "source": spec["source"], **metrics(mask), **({"traceRegionsPx": spec["regions"]} if "regions" in spec else {}), **({"centerlinePx": spec["centerlinePx"], "widthSamplesPx": spec["widthSamplesPx"]} if "centerlinePx" in spec else {})})
     labeled.alpha_composite(overlay)
     labeled.save(OUTPUT / "labeled-reference.png")
     manifest["labeledReferenceSha256"] = sha256(OUTPUT / "labeled-reference.png")

@@ -19,6 +19,8 @@ const landmarkPath = path.join(root, 'shared', 'photo-layout-landmarks.json');
 const manifestPath = path.join(root, 'shared', 'model-manifest.json');
 const photoLandmarks = JSON.parse(fs.readFileSync(landmarkPath, 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+const topEngineFixturePath = path.join(root, 'shared', 'photo-top-engine-reference-fixtures', 'reference-fixtures.json');
+const topEngineFixtures = fs.existsSync(topEngineFixturePath) ? JSON.parse(fs.readFileSync(topEngineFixturePath, 'utf8')) : null;
 fs.mkdirSync(output, { recursive: true });
 
 const mime = {
@@ -91,6 +93,23 @@ try {
   const projectedIntakeRoute = photoLandmarks.intakeRouteFit
     ? await page.evaluate(points => window.__LS400_QA__.projectPoints(points), photoLandmarks.intakeRouteFit.modelCenterlineMm)
     : null;
+  const fixtureHeightsMm = {
+    'airbox-maf-assembly': 620,
+    'corrugated-intake-duct': 740,
+    'trac-throttle-assembly': 840,
+    'silver-intake-manifold': 820,
+    'valve-cover-passenger': 735,
+    'valve-cover-driver-four-cam': 745,
+  };
+  const topEnginePhotoPlanes = topEngineFixtures ? await Promise.all(topEngineFixtures.fixtures.map(async fixture => {
+    const points = fixture.centerlinePx || fixture.traceRegionsPx?.flat() || [];
+    return {
+      id: fixture.id,
+      heightMm: fixtureHeightsMm[fixture.id] || 740,
+      pointsPx: points,
+      vehiclePointsMm: await page.evaluate(({points, heightMm}) => window.__LS400_QA__.unprojectPhotoPlane(points, heightMm), {points, heightMm: fixtureHeightsMm[fixture.id] || 740}),
+    };
+  })) : [];
   const intakeRoutePixels = [[104, 252], [126, 222], [148, 190], [160, 178], [181, 166], [197, 178]];
   const intakePhotoPlaneIntersections = await page.evaluate(points => ({
     at650Mm: window.__LS400_QA__.unprojectPhotoPlane(points, 650),
@@ -123,6 +142,16 @@ try {
   for (const fit of photoLandmarks.componentFits || []) {
     componentFits[fit.id] = await page.evaluate(fitId => window.__LS400_QA__.renderPhotoFitMaskDataUrl([fitId]), fit.photoFitGroup);
   }
+  // The locked photo camera is used for every reference metric.  These two
+  // captures are inspection-only guards against a flat or intersecting fit.
+  const obliqueRenders = {};
+  for (const id of ['FRONT_DRIVER_CORNER', 'FRONT_PASSENGER_CORNER']) {
+    await page.evaluate(presetId => window.__LS400_QA__.setInspectionCamera(presetId), id);
+    await page.waitForTimeout(120);
+    obliqueRenders[id] = await page.evaluate(() => window.__LS400_QA__.renderDataUrl(false));
+  }
+  await page.evaluate(() => window.__LS400_QA__.setPhotoCamera());
+  await page.waitForTimeout(120);
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
   fs.writeFileSync(path.join(output, 'model-render.png'), decodeDataUrl(normalData));
   fs.writeFileSync(path.join(output, 'model-silhouette.png'), decodeDataUrl(silhouetteData));
@@ -135,6 +164,9 @@ try {
   }
   for (const [id, data] of Object.entries(componentFits)) {
     fs.writeFileSync(path.join(output, `photo-fit-${id}.png`), decodeDataUrl(data));
+  }
+  for (const [id, data] of Object.entries(obliqueRenders)) {
+    fs.writeFileSync(path.join(output, `oblique-${id.toLowerCase()}.png`), decodeDataUrl(data));
   }
   fs.copyFileSync(path.join(output, 'photo-mask-body-shell.png'), path.join(output, 'photo-body-geometry-mask.png'));
   fs.writeFileSync(path.join(output, 'runtime.json'), JSON.stringify({
@@ -161,6 +193,7 @@ try {
     pageErrors,
     failedResponses,
   }, null, 2) + '\n');
+  if (topEngineFixtures) fs.writeFileSync(path.join(output, 'top-engine-photo-plane.json'), JSON.stringify({ fixtureSetId: topEngineFixtures.fixtureSetId, fixtures: topEnginePhotoPlanes }, null, 2) + '\n');
 } finally {
   if (browser) await browser.close();
   server.close();
