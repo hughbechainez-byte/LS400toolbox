@@ -302,6 +302,65 @@ function tube(points, radius, color, options = {}) {
   return mesh;
 }
 
+// A real molded duct can change from a round hose to a flattened elbow.  This
+// loft keeps every section perpendicular to the routed centreline, so its
+// photo contour comes from a continuous physical shell rather than an
+// overlapping display-only tube.
+function variableSectionTube(points, sections, color, options = {}) {
+  const vectors = points.map(vehicleToWorld);
+  const curve = new THREE.CatmullRomCurve3(vectors, false, 'centripetal', .4);
+  const rings = options.rings ?? Math.max(20, vectors.length * 10);
+  const radialSegments = options.radialSegments ?? 14;
+  const positions=[];
+  const indices=[];
+  const interpolate = (values,t) => {
+    const scaled=t*(values.length-1);
+    const index=Math.min(values.length-2,Math.floor(scaled));
+    return THREE.MathUtils.lerp(values[index],values[index+1],scaled-index);
+  };
+  const lateral=sections.map(section=>section[0]);
+  const vertical=sections.map(section=>section[1]);
+  for(let ring=0;ring<=rings;ring++){
+    const t=ring/rings;
+    const center=curve.getPointAt(t);
+    const tangent=curve.getTangentAt(t).normalize();
+    const side=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tangent).normalize();
+    const rise=new THREE.Vector3().crossVectors(tangent,side).normalize();
+    const sideRadius=interpolate(lateral,t);
+    const riseRadius=interpolate(vertical,t);
+    for(let segment=0;segment<radialSegments;segment++){
+      const angle=segment/radialSegments*Math.PI*2;
+      const point=center.clone().addScaledVector(side,Math.cos(angle)*sideRadius).addScaledVector(rise,Math.sin(angle)*riseRadius);
+      positions.push(point.x,point.y,point.z);
+    }
+  }
+  for(let ring=0;ring<rings;ring++) for(let segment=0;segment<radialSegments;segment++){
+    const next=(segment+1)%radialSegments;
+    const a=ring*radialSegments+segment;
+    const b=ring*radialSegments+next;
+    const c=(ring+1)*radialSegments+next;
+    const d=(ring+1)*radialSegments+segment;
+    indices.push(a,b,c,a,c,d);
+  }
+  const first=positions.length/3;
+  positions.push(...curve.getPointAt(0).toArray());
+  const last=positions.length/3;
+  positions.push(...curve.getPointAt(1).toArray());
+  for(let segment=0;segment<radialSegments;segment++){
+    const next=(segment+1)%radialSegments;
+    indices.push(first,next,segment);
+    const base=rings*radialSegments;
+    indices.push(last,base+segment,base+next);
+  }
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  const mesh=applyShadow(new THREE.Mesh(geometry,material(color,options)));
+  mesh.userData.curve=curve;
+  return mesh;
+}
+
 function orientCylinderMesh(mesh, start, end) {
   const delta = end.clone().sub(start);
   const length = Math.max(.001, delta.length());
@@ -1757,11 +1816,12 @@ function buildEngineLandmarks() {
   const intake = new THREE.Group();
   const [mafX,mafY,mafZ] = BAY_ANCHORS.maf;
   const mafLayoutY=mafY+.060;
+  const mafLayoutZ=mafZ-.020;
   // Keep the photo-side assembly intentionally sparse: there is one short
   // airbox neck, one AFM barrel, one accordion hose and one smooth elbow.  The
   // earlier overlapping sleeves and doubled curves made a broken black cone.
   const airboxToMaf=[
-    airboxOutletStart,[airboxX-.070,airboxY-.060,.628],[mafX+.152,mafLayoutY-.030,.636],[mafX+.103,mafLayoutY-.008,.640]
+    airboxOutletStart,[airboxX-.070,airboxY-.060,.608],[mafX+.152,mafLayoutY-.030,.616],[mafX+.103,mafLayoutY-.008,.620]
   ];
   const preMeter=tube(airboxToMaf,.068,0x171d20,{roughness:.88,metalness:.01,segments:26,radialSegments:18});
   // The short airbox neck belongs to the housing, leaving the locked-view
@@ -1773,8 +1833,8 @@ function buildEngineLandmarks() {
   // The AFM is a short cast meter with a clipped, stepped electronics cover.
   // The attached closeups show that this is not a plain tube: the black cover
   // spans the cast body, has mounting ears, and sits between two clamps.
-  const mafInlet=[mafX+.103,mafLayoutY-.008,.640];
-  const mafOutlet=[mafX-.015,mafLayoutY,.660];
+  const mafInlet=[mafX+.103,mafLayoutY-.008,.620];
+  const mafOutlet=[mafX-.015,mafLayoutY,.640];
   const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
   const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.025,.030,0x626d6f,{roughness:.35,metalness:.66,segments:30});
   intake.add(afmBarrel);
@@ -1788,19 +1848,19 @@ function buildEngineLandmarks() {
   const afmShoulder=vehicleTopProfile([
     [mafX+.055,mafLayoutY-.047],[mafX+.071,mafLayoutY-.033],[mafX+.067,mafLayoutY+.033],[mafX+.048,mafLayoutY+.049],
     [mafX-.047,mafLayoutY+.047],[mafX-.061,mafLayoutY+.031],[mafX-.058,mafLayoutY-.032],[mafX-.041,mafLayoutY-.050]
-  ],mafZ+.060,.026,0x394346,{roughness:.58,metalness:.38,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
+  ],mafLayoutZ+.060,.026,0x394346,{roughness:.58,metalness:.38,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
   intake.add(afmShoulder);
   const afmCap=roundedBox(.065,.028,.060,.011,0x171f21,{roughness:.70,metalness:.11,segments:5});
-  afmCap.position.copy(vehicleToWorld([mafX-.008,mafLayoutY-.006,mafZ+.082]));
+  afmCap.position.copy(vehicleToWorld([mafX-.008,mafLayoutY-.006,mafLayoutZ+.082]));
   afmCap.rotation.y=-.54;
   intake.add(afmCap);
   const afmConnector=roundedBox(.036,.024,.034,.007,0x101719,{roughness:.80,metalness:.04,segments:4});
-  afmConnector.position.copy(vehicleToWorld([mafX-.032,mafLayoutY+.032,mafZ+.080]));
+  afmConnector.position.copy(vehicleToWorld([mafX-.032,mafLayoutY+.032,mafLayoutZ+.080]));
   afmConnector.rotation.y=-.54;
   intake.add(afmConnector);
   for (const [forward,lateral] of [[.068,-.070],[.068,.070]]) {
     const fastener=makeBolt(.008,.014);
-    fastener.position.copy(vehicleToWorld([mafX+forward,mafLayoutY+lateral,mafZ+.158]));
+    fastener.position.copy(vehicleToWorld([mafX+forward,mafLayoutY+lateral,mafLayoutZ+.158]));
     fastener.userData.minLod=2;
     intake.add(fastener);
   }
@@ -1815,7 +1875,7 @@ function buildEngineLandmarks() {
   // entire route: the distinct un-ribbed bend is what carries it up to the
   // throttle body.
   const corrugatedCenterline=[
-    mafOutlet,[.156,-.632,.650],[.108,-.567,.725]
+    mafOutlet,[.156,-.632,.630],[.108,-.567,.705]
   ];
   const corrugated=tube(corrugatedCenterline,.045,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
   intake.add(corrugated);
@@ -1841,19 +1901,13 @@ function buildEngineLandmarks() {
   // endpoints overlap the two adjoining assemblies, so the route is visibly
   // continuous with no concealed gap or decorative second hose.
   const elbowCenterline=[
-    corrugatedCenterline.at(-1),[.0445,-.504,.800],[-.045,-.476,.800],
-    [-.138,-.419,.800],BAY_ANCHORS.throttle
+    corrugatedCenterline.at(-1),[.0445,-.489,.800],[-.045,-.461,.800],
+    [-.138,-.404,.800],BAY_ANCHORS.throttle
   ];
-  const smoothElbow=tube(elbowCenterline,.058,0x151b1d,{roughness:.87,metalness:.015,segments:60,radialSegments:18});
+  const smoothElbow=variableSectionTube(elbowCenterline,[
+    [.045,.046],[.050,.058],[.058,.088],[.060,.105],[.050,.105]
+  ],0x1c2426,{roughness:.84,metalness:.02,rings:58,radialSegments:18});
   intake.add(smoothElbow);
-  // The photo's upper bend is a thick molded elbow with a reinforced outer
-  // wall, not a perfectly circular hose.  This tapered overlapping skin stays
-  // on the same centreline route and widens only the outside of the turn.
-  const elbowOuterWall=tube([
-    [.0445,-.464,.800],[-.045,-.396,.800],[-.138,-.339,.800],
-    [BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]+.045,BAY_ANCHORS.throttle[2]]
-  ],.040,0x1c2426,{roughness:.82,metalness:.03,segments:32,radialSegments:10});
-  intake.add(elbowOuterWall);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
   registerPhotoFitGroup('intake-duct',intake,'buildEngineLandmarks: MAF and continuous intake route');
 
