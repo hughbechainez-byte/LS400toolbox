@@ -1593,14 +1593,19 @@ function buildEngine() {
 }
 function buildEngineLandmarks() {
   const battery = new THREE.Group();
-  const [batteryX,batteryY,batteryZ] = BAY_ANCHORS.battery;
+  const [batteryAnchorX,batteryAnchorY,batteryZ] = BAY_ANCHORS.battery;
+  // In the photo the low driver battery is forward of the relay enclosure,
+  // with its rear face tucked beneath the shroud rather than high at the
+  // tower plane.
+  const batteryX=batteryAnchorX+.160;
+  const batteryY=batteryAnchorY-.053;
   // Keep the battery centred on its measured anchor while compacting the
   // physical case envelope to the low, wide driver-front battery in the
   // reference.  This is an in-place plan reduction, not a display scale.
   const batteryProfile = (points, baseUp, height, color, options = {}) => vehicleTopProfile(
     points.map(([forward,lateral]) => [
-      batteryX + (forward - batteryX) * .58,
-      batteryY + (lateral - batteryY) * .74
+      batteryX + (forward - batteryX) * .68,
+      batteryY + (lateral - batteryY) * .84
     ]), baseUp, height, color, options);
   // A battery is a low, chamfered clamped case in the photo, not another
   // anonymous cuboid.  The tray/case/top all remain centred on the documented
@@ -1644,11 +1649,12 @@ function buildEngineLandmarks() {
   }
   const positiveBoot=roundedBox(.070,.030,.058,.015,0xb54242,{roughness:.58,metalness:.12,segments:5});
   positiveBoot.position.copy(vehicleToWorld([batteryX+.102,batteryY-.110,batteryZ+.112]));
+  positiveBoot.userData.photoFitExclude=true;
   battery.add(positiveBoot);
   // The reference battery sits low in front of the relay box; move the
   // complete physical assembly down rather than relying on the tray to hide
   // an over-tall case.
-  battery.position.y -= .080;
+  battery.position.y -= .010;
   registerComponent(battery,'LANDMARK_BATTERY',{minLod:1});
   registerPhotoFitGroup('battery',battery,'buildEngineLandmarks: driver-front battery assembly');
 
@@ -2582,6 +2588,10 @@ window.__LS400_QA__ = {
         savedVisibility.push([node,node.visible]);
         node.visible=false;
       }
+      if (node.userData.photoFitExclude) {
+        savedVisibility.push([node,node.visible]);
+        node.visible=false;
+      }
       if (node.isMesh) {
         savedMaterials.push([node,node.material]);
         node.material=white;
@@ -2631,6 +2641,10 @@ window.__LS400_QA__ = {
     renderer.toneMapping = THREE.NoToneMapping;
     scene.traverse(node => {
       if (node.userData.qaExclude || node === geometryValidationGroup) {
+        savedVisibility.push([node,node.visible]);
+        node.visible=false;
+      }
+      if (node.userData.photoFitExclude) {
         savedVisibility.push([node,node.visible]);
         node.visible=false;
       }
