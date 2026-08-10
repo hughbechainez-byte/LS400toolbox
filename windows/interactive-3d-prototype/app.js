@@ -708,6 +708,8 @@ let hoodStruts;
 
 function buildHoodAndCowl() {
   const cowl = new THREE.Group();
+  const cowlFit = registerPhotoFitGroup('cowl-wipers',new THREE.Group(),'buildHoodAndCowl: vent grille and wiper deck');
+  cowl.add(cowlFit);
   // The rear cowl is a continuous stamped shelf behind the firewall.  The
   // earlier separated trim pieces left nonphysical photo-view gaps all the
   // way to the upper frame edge.
@@ -719,17 +721,17 @@ function buildHoodAndCowl() {
   // The photograph shows a narrow dark cowl lip, not a tall slab at the rear
   // of the bay.  Keep the documented J-j span, but model it as a stepped
   // weather-strip/vent field so the firewall edge remains readable.
-  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2,.052,.700,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
+  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2 + .300,.052,.700,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
   cowlLedge.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX,0,.912]));
-  cowl.add(cowlLedge);
-  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2-.030,.018,.210,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
+  cowlFit.add(cowlLedge);
+  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2+.240,.018,.210,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
   cowlWeatherStrip.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX-.038,0,.958]));
-  cowl.add(cowlWeatherStrip);
-  for (let i = -7; i <= 7; i++) {
+  cowlFit.add(cowlWeatherStrip);
+  for (let i = -9; i <= 9; i++) {
     const slot = box(.010,.008,.092,0x06090a,{roughness:.92});
     slot.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX+.005,i*.083,.944]));
     slot.userData.minLod = 2;
-    cowl.add(slot);
+    cowlFit.add(slot);
   }
 
   // In the native photo the passenger-rear service cover is a broad, flat,
@@ -779,10 +781,10 @@ function buildHoodAndCowl() {
     spindle.position.copy(vehicleToWorld(pivot));
     const arm=tube([pivot,tip,bladeEnd],.010,0x111719,{roughness:.84,metalness:.08,segments:20,radialSegments:6});
     const blade=tube([[bladeEnd[0]-.020,bladeEnd[1]-.105,bladeEnd[2]],[bladeEnd[0]-.020,bladeEnd[1]+.105,bladeEnd[2]]],.014,0x080c0d,{roughness:.90,metalness:0,segments:8,radialSegments:6});
-    cowl.add(spindle,arm,blade);
+    cowlFit.add(spindle,arm,blade);
   }
+  cowlFit.position.copy(vehicleToWorld([0,-.120,-.100]));
   registerComponent(cowl,'LANDMARK_COWL',{minLod:1});
-  registerPhotoFitGroup('cowl-wipers',cowl,'buildHoodAndCowl: vent grille and wiper deck');
 
   const hinges = new THREE.Group();
   for (const left of [-.68,.68]) {
@@ -2009,6 +2011,10 @@ function buildEngineLandmarks() {
   checkValve.position.copy(vehicleToWorld([-.665,.700,.817]));
   checkValve.userData.qaExclude=true;
   booster.add(checkValve);
+  // Master cylinder/reservoir sit lower and inboard of the firewall-side
+  // booster in the locked view; retain the physical separation from the
+  // driver cowl rather than flattening the whole assembly into its anchor.
+  booster.position.copy(vehicleToWorld([-.065,.055,-.050]));
   registerComponent(booster,'LANDMARK_BRAKE_BOOSTER',{minLod:1});
   registerPhotoFitGroup('brake-area',booster,'buildEngineLandmarks: booster, master cylinder and reservoir');
 }
