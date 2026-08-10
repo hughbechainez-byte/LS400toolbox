@@ -1506,7 +1506,16 @@ function buildEngine() {
     [.338,-.098],[.318,-.038],[.324,.068],[.382,.114],[.470,.103],
     [.510,.050],[.504,-.057],[.448,-.108]
   ],.560,.063,0x697474,{metalness:.60,roughness:.40,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
+  waterPumpCasting.userData.photoHidden=true;
   drive.add(waterPumpCasting);
+  // A shallow asymmetrical cast bridge spans the lower timing faces.  This is
+  // the broad mechanical layer visible in the photo; it replaces the former
+  // single large round-pulley read without turning the front into a box.
+  const accessoryBridge = frontProfile([
+    [.350,-.405],[.360,.335],[.405,.438],[.490,.410],
+    [.548,.250],[.558,.052],[.530,-.205],[.458,-.390]
+  ],.646,.046,0x343f42,{roughness:.64,metalness:.31,bevelSize:.030,bevelThickness:.013,bevelSegments:4,curveSegments:18});
+  drive.add(accessoryBridge);
   const waterPump = cylinder(.052,.052,0x899291,'z',{metalness:.69,roughness:.33,segments:28});
   placeDrive(waterPump,[.450,0,.610]);
   const waterPumpFace = cylinder(.031,.060,0xb6bfbd,'z',{metalness:.76,roughness:.26,segments:26});
@@ -1523,6 +1532,7 @@ function buildEngine() {
     [.610,0,.548],[.573,-.108,.558],[.522,-.164,.589],[.450,-.114,.658],
     [.426,0,.674],[.452,.118,.658],[.518,.168,.595],[.575,.112,.560]
   ],.008,0x0a0d0e,{roughness:.92,metalness:0,closed:true,segments:64,radialSegments:7});
+  for (const pulleyDetail of [waterPump,waterPumpFace,waterPumpRing,crankPulley,pumpPulley,passengerIdler,driverIdler,accessoryBelt]) pulleyDetail.userData.photoHidden=true;
   accessoryBelt.userData.minLod=1;
   drive.add(accessoryBelt);
   for (const [left,up] of [[-.052,.654],[.052,.654],[-.050,.570],[.050,.570]]) {
