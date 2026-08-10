@@ -101,15 +101,27 @@ try {
   const semanticMasks = {};
   for (const mask of photoLandmarks.masks) {
     if (!Array.isArray(mask.modelComponentIds) || !mask.modelComponentIds.length) continue;
-    semanticMasks[mask.id] = await page.evaluate(componentIds => window.__LS400_QA__.renderDataUrl(componentIds), mask.modelComponentIds);
+    semanticMasks[mask.id] = await page.evaluate(({componentIds, bodyMask}) => bodyMask
+      ? window.__LS400_QA__.renderDataUrl(componentIds)
+      : window.__LS400_QA__.renderComponentMaskDataUrl(componentIds), {
+        componentIds: mask.modelComponentIds,
+        bodyMask: mask.id === 'body-shell',
+      });
   }
   if (!semanticMasks['body-shell']) throw new Error('Canonical body mask must identify its rendered components.');
+  const componentDiagnostics = {};
+  for (const id of ['LANDMARK_BATTERY','LANDMARK_ENGINE_BAY_FUSE_BOX','LANDMARK_BRAKE_BOOSTER','LANDMARK_COOLANT_OVERFLOW_RESERVOIR']) {
+    componentDiagnostics[id] = await page.evaluate(componentId => window.__LS400_QA__.renderComponentMaskDataUrl([componentId]), id);
+  }
   const validation = await page.evaluate(() => window.__LS400_QA__.validation());
   fs.writeFileSync(path.join(output, 'model-render.png'), decodeDataUrl(normalData));
   fs.writeFileSync(path.join(output, 'model-silhouette.png'), decodeDataUrl(silhouetteData));
   fs.writeFileSync(path.join(output, 'body-silhouette.png'), decodeDataUrl(bodySilhouetteData));
   for (const [id, data] of Object.entries(semanticMasks)) {
     fs.writeFileSync(path.join(output, `photo-mask-${id}.png`), decodeDataUrl(data));
+  }
+  for (const [id, data] of Object.entries(componentDiagnostics)) {
+    fs.writeFileSync(path.join(output, `photo-component-${id}.png`), decodeDataUrl(data));
   }
   fs.copyFileSync(path.join(output, 'photo-mask-body-shell.png'), path.join(output, 'photo-body-geometry-mask.png'));
   fs.writeFileSync(path.join(output, 'runtime.json'), JSON.stringify({

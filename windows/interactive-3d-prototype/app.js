@@ -2481,6 +2481,57 @@ window.__LS400_QA__ = {
     renderer.render(scene, camera);
     return result;
   },
+  renderComponentMaskDataUrl(componentIds) {
+    // Semantic masks should contain only the portion of a component visible
+    // through the fixed photo camera.  Keep body geometry as black depth
+    // occluders instead of removing it and exposing parts behind the support.
+    const selected = new Set(componentIds || []);
+    const savedVisibility = [];
+    const savedMaterials = [];
+    const white = new THREE.MeshBasicMaterial({color:0xffffff});
+    const black = new THREE.MeshBasicMaterial({color:0x000000});
+    const oldBackground = scene.background;
+    const oldFog = scene.fog;
+    const oldTone = renderer.toneMapping;
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = null;
+    renderer.toneMapping = THREE.NoToneMapping;
+    scene.traverse(node => {
+      if (node.userData.qaExclude || node === geometryValidationGroup) {
+        savedVisibility.push([node,node.visible]);
+        node.visible=false;
+      }
+      if (node.isMesh) {
+        savedMaterials.push([node,node.material]);
+        node.material=white;
+      }
+    });
+    for (const group of registered) {
+      const id=group.userData.componentId;
+      if (selected.has(id)) continue;
+      if (BODY_IDS.has(id)) {
+        group.traverse(node => {
+          if (!node.isMesh) return;
+          savedMaterials.push([node,node.material]);
+          node.material=black;
+        });
+      } else {
+        savedVisibility.push([group,group.visible]);
+        group.visible=false;
+      }
+    }
+    renderer.render(scene,camera);
+    const result=renderer.domElement.toDataURL('image/png');
+    for (const [node,material] of savedMaterials.reverse()) node.material=material;
+    for (const [node,visible] of savedVisibility.reverse()) node.visible=visible;
+    white.dispose();
+    black.dispose();
+    scene.background=oldBackground;
+    scene.fog=oldFog;
+    renderer.toneMapping=oldTone;
+    renderer.render(scene,camera);
+    return result;
+  },
   validation() { return runValidation(); }
 };
 
