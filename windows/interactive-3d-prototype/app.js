@@ -1754,15 +1754,15 @@ function buildEngineLandmarks() {
     [coolantX+.150,coolantY-.142],[coolantX+.176,coolantY-.105],[coolantX+.176,coolantY+.105],
     [coolantX+.142,coolantY+.145],[coolantX-.146,coolantY+.145],[coolantX-.174,coolantY+.104],
     [coolantX-.174,coolantY-.105],[coolantX-.142,coolantY-.145]
-  ],coolantZ-.062,.084,0xb5b092,{roughness:.66,metalness:.01,bevelSize:.016,bevelThickness:.008,bevelSegments:4,curveSegments:18});
+  ],coolantZ-.062,.084,0x817d69,{roughness:.69,metalness:.01,bevelSize:.016,bevelThickness:.008,bevelSegments:4,curveSegments:18});
   coolantReservoir.add(coolantTank);
   const coolantTop=coolantProfile([
     [coolantX+.112,coolantY-.102],[coolantX+.135,coolantY-.074],[coolantX+.135,coolantY+.071],
     [coolantX+.105,coolantY+.104],[coolantX-.112,coolantY+.104],[coolantX-.136,coolantY+.071],
     [coolantX-.136,coolantY-.074],[coolantX-.109,coolantY-.104]
-  ],coolantZ+.022,.018,0xcec7a6,{roughness:.56,metalness:.02,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
+  ],coolantZ+.022,.018,0x9a9276,{roughness:.61,metalness:.02,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
   coolantReservoir.add(coolantTop);
-  const coolantFrontFace=roundedBox(.282,.057,.024,.012,0x999477,{roughness:.72,metalness:.01,segments:4});
+  const coolantFrontFace=roundedBox(.282,.057,.024,.012,0x6e6b5d,{roughness:.74,metalness:.01,segments:4});
   coolantFrontFace.position.copy(vehicleToWorld([coolantX+.174,coolantY,coolantZ-.018]));
   coolantReservoir.add(coolantFrontFace);
   const coolantMoulding=tube([
