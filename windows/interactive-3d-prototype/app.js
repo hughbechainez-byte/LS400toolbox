@@ -1899,21 +1899,26 @@ function buildEngineLandmarks() {
 
   const fuseBox = new THREE.Group();
   const [fuseX,fuseY] = BAY_ANCHORS.fuseBox;
+  const fuseProfile = (points, baseUp, height, color, options = {}) => vehicleTopProfile(
+    points.map(([forward,lateral]) => [
+      fuseX + (forward - fuseX) * .60,
+      fuseY + (lateral - fuseY) * .82
+    ]), baseUp, height, color, options);
   // A distinct stepped relay enclosure between the battery and reservoir,
   // retaining the same driver-side anchor and front-to-rear sequence.
-  const fuseBase=vehicleTopProfile([
+  const fuseBase=fuseProfile([
     [fuseX+.184,fuseY-.174],[fuseX+.210,fuseY-.126],[fuseX+.202,fuseY+.126],
     [fuseX+.158,fuseY+.174],[fuseX-.164,fuseY+.174],[fuseX-.202,fuseY+.126],
     [fuseX-.196,fuseY-.128],[fuseX-.154,fuseY-.176]
   ],BAY_ANCHORS.fuseBox[2]-.068,.086,0x1a2123,{roughness:.80,metalness:.03,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
   fuseBox.add(fuseBase);
-  const fuseLid=vehicleTopProfile([
+  const fuseLid=fuseProfile([
     [fuseX+.148,fuseY-.145],[fuseX+.178,fuseY-.103],[fuseX+.174,fuseY+.102],
     [fuseX+.138,fuseY+.145],[fuseX-.140,fuseY+.145],[fuseX-.176,fuseY+.102],
     [fuseX-.171,fuseY-.105],[fuseX-.134,fuseY-.148]
   ],BAY_ANCHORS.fuseBox[2]+.018,.042,0x0c1214,{roughness:.76,metalness:.025,bevelSize:.018,bevelThickness:.008,bevelSegments:3,curveSegments:14});
   fuseBox.add(fuseLid);
-  const fuseInset=vehicleTopProfile([
+  const fuseInset=fuseProfile([
     [fuseX+.090,fuseY-.097],[fuseX+.120,fuseY-.068],[fuseX+.115,fuseY+.067],
     [fuseX+.083,fuseY+.095],[fuseX-.087,fuseY+.095],[fuseX-.115,fuseY+.066],
     [fuseX-.110,fuseY-.069],[fuseX-.081,fuseY-.098]
@@ -1950,7 +1955,9 @@ function buildEngineLandmarks() {
   const fuseConduit=tube([
     [fuseX+.160,fuseY+.090,BAY_ANCHORS.fuseBox[2]+.070],[fuseX+.205,fuseY+.130,BAY_ANCHORS.fuseBox[2]+.075],[batteryX-.085,batteryY-.085,batteryZ+.075]
   ],.018,0x171d20,{roughness:.86,segments:18,radialSegments:8});
+  fuseConduit.userData.photoFitExclude=true;
   fuseBox.add(fuseConduit);
+  fuseBox.position.copy(vehicleToWorld([.050,-.030,0]));
   registerComponent(fuseBox,'LANDMARK_ENGINE_BAY_FUSE_BOX',{minLod:1});
   registerPhotoFitGroup('fuse-relay-box',fuseBox,'buildEngineLandmarks: driver-side fuse and relay enclosure');
 
@@ -2674,6 +2681,7 @@ window.__LS400_QA__ = {
       const group=photoFitGroups.get(id);
       if (!group) continue;
       group.traverse(node => {
+        if (node.userData.photoFitExclude) return;
         node.visible=true;
         if (node.isMesh) {
           savedMaterials.push([node,node.material]);
