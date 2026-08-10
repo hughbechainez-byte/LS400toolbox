@@ -1222,6 +1222,10 @@ function buildEngine() {
   const photoProfile = (points, ...args) => vehicleTopProfile(points.map(photoLayout.plan), ...args);
   const photoTube = (points, ...args) => tube(points.map(photoLayout.point), ...args);
   const frontProfile = (points, ...args) => vehicleTopProfile(points.map(frontLayout.plan), ...args);
+  // The lower timing shells are a narrower physical pair than the V-bank
+  // castings above them; author their installed plan separately so they do
+  // not read as two broad mirrored blocks in the photo layout.
+  const frontShellProfile = (points, ...args) => vehicleTopProfile(points.map(([forward,lateral]) => frontLayout.plan([.360 + (forward-.360)*.66,lateral*.72])), ...args);
   const frontTube = (points, ...args) => tube(points.map(frontLayout.point), ...args);
 
   // All photo-critical engine geometry lives in vehicle coordinates. The
@@ -1237,6 +1241,7 @@ function buildEngine() {
   const tracFit = registerPhotoFitGroup('trac-housing', new THREE.Group(), 'buildEngine: passenger-rear TRAC housing');
   const throttleFit = registerPhotoFitGroup('throttle-body', new THREE.Group(), 'buildEngine: offset passenger throttle body');
   const timingFit = registerPhotoFitGroup('front-engine', new THREE.Group(), 'buildEngine: timing covers and lower front shells');
+  timingFit.position.copy(vehicleToWorld([.040,.008,0]));
   photoSurfaces.add(coreFit, passengerValveFit, driverValveFit, manifoldFit, tracFit, throttleFit, timingFit);
   let photoFitTarget = coreFit;
   const addSurface = (...meshes) => photoFitTarget.add(...meshes);
@@ -1442,19 +1447,19 @@ function buildEngine() {
   // The old solid front collector is intentionally gone.  These two
   // separately shaped lower-bank shells stop short of the centre and frame a
   // genuinely open, mechanically layered accessory/water-pump cluster.
-  const passengerFrontShell = frontProfile([
-    [.105,-.780],[.198,-.858],[.398,-.852],[.574,-.750],[.612,-.578],
-    [.528,-.430],[.382,-.342],[.222,-.352],[.124,-.468]
+  const passengerFrontShell = frontShellProfile([
+    [.105,-.780],[.198,-.858],[.398,-.852],[.498,-.750],[.512,-.578],
+    [.468,-.430],[.362,-.342],[.222,-.352],[.124,-.468]
   ],.590,.102,0x141a1c,{roughness:.75,metalness:.10,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
-  const driverFrontShell = frontProfile([
-    [.116,.776],[.224,.858],[.420,.866],[.602,.758],[.636,.582],
-    [.550,.426],[.394,.350],[.226,.358],[.128,.478]
+  const driverFrontShell = frontShellProfile([
+    [.116,.776],[.224,.858],[.420,.866],[.512,.758],[.526,.582],
+    [.484,.426],[.374,.350],[.226,.358],[.128,.478]
   ],.588,.104,0x151b1e,{roughness:.74,metalness:.11,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
-  const passengerShellCrown = frontProfile([
+  const passengerShellCrown = frontShellProfile([
     [.166,-.722],[.250,-.782],[.405,-.780],[.514,-.704],[.520,-.570],
     [.452,-.458],[.328,-.402],[.210,-.410],[.150,-.496]
   ],.685,.035,0x161d20,{roughness:.68,metalness:.14,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
-  const driverShellCrown = frontProfile([
+  const driverShellCrown = frontShellProfile([
     [.172,.720],[.258,.786],[.428,.790],[.542,.706],[.550,.566],
     [.474,.452],[.336,.402],[.214,.412],[.154,.502]
   ],.683,.037,0x161d20,{roughness:.68,metalness:.14,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
@@ -1464,11 +1469,14 @@ function buildEngine() {
   // deliberately shallow and stops before the pump face, so the photo reads
   // as one trapezoidal front cover with a small centred accessory reveal—not
   // nested upright bars or a giant closed foreground polygon.
-  const timingCover = frontProfile([
+  const timingCover = frontShellProfile([
     [.142,-.204],[.164,-.254],[.324,-.270],[.406,-.216],[.432,-.142],
     [.430,.142],[.400,.216],[.316,.268],[.166,.252],[.138,.202]
   ],.658,.046,0x151b1d,{roughness:.72,metalness:.12,bevelSize:.020,bevelThickness:.009,bevelSegments:3,curveSegments:16});
-  addSurface(timingCover);
+  const timingCenterLower = frontShellProfile([
+    [.252,-.178],[.252,.178],[.422,.214],[.548,.126],[.570,0],[.548,-.126],[.422,-.214]
+  ],.602,.052,0x161d20,{roughness:.70,metalness:.13,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:14});
+  addSurface(timingCover,timingCenterLower);
   // Timing covers are smooth cast shells with only their perimeter break;
   // repeated lateral rungs here were reading as an oversized generic grille.
 
