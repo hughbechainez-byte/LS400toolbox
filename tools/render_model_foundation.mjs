@@ -142,6 +142,9 @@ try {
   for (const fit of photoLandmarks.componentFits || []) {
     componentFits[fit.id] = await page.evaluate(fitId => window.__LS400_QA__.renderPhotoFitMaskDataUrl([fitId]), fit.photoFitGroup);
   }
+  // A dedicated AFM capture keeps the airbox/MAF fixture independent from
+  // the corrugated duct; it is not an aggregate proxy.
+  componentFits['maf-housing'] = await page.evaluate(() => window.__LS400_QA__.renderPhotoFitMaskDataUrl(['maf-housing']));
   // The locked photo camera is used for every reference metric.  These two
   // captures are inspection-only guards against a flat or intersecting fit.
   const obliqueRenders = {};

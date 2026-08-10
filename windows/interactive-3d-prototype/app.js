@@ -1236,6 +1236,112 @@ function makePulley(position,radius,depth=.055) {
   return group;
 }
 
+// Frozen-photo component builders.  Their plan vertices are vehicle-space
+// millimetre intersections of the locked photo-camera rays with physically
+// plausible top planes; every result is still a vertically extruded casting,
+// never a screen-facing card.  Keeping these builders separate makes the
+// recognition-critical 1UZ shapes independently selectable and testable.
+function tracedTopProfile(pointsMm, topMm, thicknessMm, color, options = {}) {
+  return vehicleTopProfile(pointsMm.map(([forward, lateral]) => [forward / 1000, lateral / 1000]), (topMm - thicknessMm) / 1000, thicknessMm / 1000, color, options);
+}
+
+function insetTrace(pointsMm, amount = .84) {
+  const centre = pointsMm.reduce((sum, point) => [sum[0] + point[0], sum[1] + point[1]], [0, 0]).map(value => value / pointsMm.length);
+  return pointsMm.map(([forward, lateral]) => [centre[0] + (forward - centre[0]) * amount, centre[1] + (lateral - centre[1]) * amount]);
+}
+
+function traceTube(pointsMm, topMm, radiusMm, color, options = {}) {
+  return tube(pointsMm.map(([forward, lateral]) => [forward / 1000, lateral / 1000, topMm / 1000]), radiusMm / 1000, color, options);
+}
+
+function buildTracedValveCover(group, driverSide) {
+  const outlineRaw = driverSide ? [
+    [-374,272],[-332,414],[-124,466],[174,467],[634,398],[706,308],[576,237],[319,221],[-26,229]
+  ] : [
+    [-156,-436],[-267,-346],[-172,-244],[60,-175],[305,-148],[545,-185],[533,-283],[374,-365],[130,-414]
+  ];
+  const outline = insetTrace(outlineRaw,.925);
+  const top = driverSide ? 745 : 735;
+  const skirt = tracedTopProfile(outline, top, 28, 0x111719,{roughness:.76,metalness:.09,bevelSize:.012,bevelThickness:.005,bevelSegments:3,curveSegments:18});
+  const crown = tracedTopProfile(insetTrace(outline,.82), top + 10, 12, 0x394346,{roughness:.48,metalness:.45,bevelSize:.009,bevelThickness:.004,bevelSegments:2,curveSegments:16});
+  const outerRail = traceTube([...outline,outline[0]], top + 16, 4, 0x778283,{metalness:.58,roughness:.38,segments:48,radialSegments:7});
+  const innerRail = traceTube([...insetTrace(outline,.69),insetTrace(outline,.69)[0]], top + 18, 3, 0x202a2c,{metalness:.35,roughness:.60,segments:48,radialSegments:6});
+  group.add(skirt,crown,outerRail,innerRail);
+  if (driverSide) {
+    const letteringBed = tracedTopProfile(insetTrace(outline,.55), top + 22, 7, 0x080d0f,{roughness:.80,metalness:.04,bevelSize:.006,bevelThickness:.002,bevelSegments:2,curveSegments:12});
+    const lettering = textPlate('FOUR CAM 32',.128,.500,{fontSize:64,minLod:1,background:'#080d0f',border:'#edf1ec',color:'#f8faf5'});
+    lettering.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(0,0,-1),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,1,0)));
+    lettering.position.copy(vehicleToWorld([.132,.337,.800]));
+    lettering.userData.photoFitExclude=true;
+    group.add(letteringBed,lettering);
+  }
+}
+
+function buildTracedIntakeManifold(group) {
+  const outer = insetTrace([[-429,-152],[-464,46],[-308,136],[-81,172],[259,171],[498,123],[606,59],[582,-50],[442,-132],[211,-172],[-97,-178]],.925);
+  const plate = insetTrace([[-176,-97],[-176,86],[-58,120],[293,99],[398,46],[339,-56],[190,-98]],.925);
+  const casting = tracedTopProfile(outer,820,28,0xb8c1bf,{metalness:.74,roughness:.27,bevelSize:.014,bevelThickness:.006,bevelSegments:3,curveSegments:20});
+  const centerCover = tracedTopProfile(plate,832,14,0xd0d6d1,{metalness:.80,roughness:.20,bevelSize:.010,bevelThickness:.004,bevelSegments:2,curveSegments:16});
+  const recess = tracedTopProfile(insetTrace(plate,.66),846,6,0x536062,{metalness:.48,roughness:.42,bevelSize:.005,bevelThickness:.002,bevelSegments:2,curveSegments:12});
+  group.add(casting,centerCover,recess);
+  const runnerStarts = [[-350,-96],[-320,-56],[-285,-16],[-250,24],[-214,64],[-174,94]];
+  runnerStarts.forEach(([forward,lateral], index) => {
+    const side = index < 3 ? -1 : 1;
+    const runner = traceTube([[forward,lateral],[forward + 78,lateral + side * 28],[forward + 183,lateral + side * 68],[forward + 305,lateral + side * 60]],876,13,0xd7ddd6,{metalness:.82,roughness:.22,segments:28,radialSegments:9});
+    group.add(runner);
+  });
+  const badge = textPlate('LEXUS',.118,.042,{fontSize:56,minLod:1,background:'#cfd6d1',border:'#697476',color:'#222b2d'});
+  badge.rotation.x=-Math.PI/2;
+  badge.position.copy(vehicleToWorld([.120,0,.904]));
+  badge.userData.photoFitExclude=true;
+  group.add(badge);
+}
+
+function buildTracedTracThrottle(tracGroup, throttleGroup) {
+  const trac = insetTrace([[-531,-374],[-530,-58],[-430,-19],[-192,-28],[-112,-96],[-145,-308],[-259,-361]],.93);
+  const throttle = insetTrace([[-161,-389],[-185,-267],[-66,-192],[136,-171],[309,-205],[355,-278],[241,-356],[63,-394]],.75);
+  const housing = tracedTopProfile(trac,840,26,0x101719,{roughness:.77,metalness:.08,bevelSize:.012,bevelThickness:.005,bevelSegments:3,curveSegments:18});
+  const inset = tracedTopProfile(insetTrace(trac,.78),850,8,0x273133,{roughness:.62,metalness:.18,bevelSize:.007,bevelThickness:.003,bevelSegments:2,curveSegments:14});
+  const wordmark=textPlate('TRAC',.162,.050,{fontSize:60,minLod:1,background:'#273133',border:'#879191',color:'#f2f3ed'});
+  wordmark.rotation.x=-Math.PI/2;
+  wordmark.position.copy(vehicleToWorld([-.330,-.195,.902]));
+  wordmark.userData.photoFitExclude=true;
+  tracGroup.add(housing,inset,wordmark);
+  const cast = tracedTopProfile(throttle,812,24,0x9fa9a8,{metalness:.70,roughness:.31,bevelSize:.012,bevelThickness:.005,bevelSegments:3,curveSegments:16});
+  const barrel = traceTube([[150,-351],[112,-314],[69,-270],[24,-232]],826,25,0xbfc8c5,{metalness:.76,roughness:.27,segments:24,radialSegments:14});
+  const actuator = tracedTopProfile(insetTrace(throttle,.46),836,10,0x202a2c,{roughness:.68,metalness:.15,bevelSize:.006,bevelThickness:.002,bevelSegments:2,curveSegments:12});
+  throttleGroup.add(cast,barrel,actuator);
+}
+
+function buildTracedAirboxMaf(airbox, intake, mafFit) {
+  const airboxOutline = insetTrace([[135,-946],[102,-790],[162,-686],[285,-595],[462,-545],[632,-548],[717,-615],[690,-847]],.95);
+  const mafOutline = insetTrace([[266,-702],[95,-641],[215,-530],[450,-437],[643,-455],[615,-542],[491,-619]],.72);
+  const caseMesh = tracedTopProfile(airboxOutline,620,30,0x101719,{roughness:.82,metalness:.03,bevelSize:.014,bevelThickness:.006,bevelSegments:3,curveSegments:18});
+  const lid = tracedTopProfile(insetTrace(airboxOutline,.84),632,12,0x232c2e,{roughness:.69,metalness:.18,bevelSize:.009,bevelThickness:.003,bevelSegments:2,curveSegments:16});
+  airbox.add(caseMesh,lid);
+  const mafCasting = tracedTopProfile(mafOutline,660,24,0x9aa4a5,{metalness:.72,roughness:.31,bevelSize:.010,bevelThickness:.004,bevelSegments:2,curveSegments:16});
+  const electronics = tracedTopProfile(insetTrace(mafOutline,.50),670,9,0x151c1e,{roughness:.74,metalness:.05,bevelSize:.006,bevelThickness:.002,bevelSegments:2,curveSegments:12});
+  mafFit.add(mafCasting,electronics);
+  const ductLine = [[542,-504],[409,-465],[195,-464],[-46,-479],[-239,-461],[-354,-396],[-239,-328]];
+  // This is one physical moulded duct assembled from tangent-overlapped,
+  // tapered sections.  The measured diameter grows through the tall bend and
+  // contracts at both real end collars instead of reading as a uniform hose.
+  const ductRadii = [70,70,82,84,76,64,70];
+  for (let index = 0; index < ductLine.length - 1; index++) {
+    const ductSection = traceTube([ductLine[index],ductLine[index + 1]],740,(ductRadii[index] + ductRadii[index + 1]) / 2,0x141b1d,{roughness:.86,metalness:.02,segments:12,radialSegments:18});
+    intake.add(ductSection);
+  }
+  const curve = new THREE.CatmullRomCurve3(ductLine.map(([forward,lateral]) => vehicleToWorld([forward/1000,lateral/1000,.750])),false,'centripetal',.4);
+  for (let index=0; index<10; index++) {
+    const t=.08 + index*.084;
+    const rib=torus(.076,.0045,0x4a5658,'z',{roughness:.76,metalness:.12,tubularSegments:22,radialSegments:8});
+    rib.position.copy(curve.getPointAt(t));
+    rib.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),curve.getTangentAt(t).normalize());
+    rib.userData.photoFitExclude=true;
+    intake.add(rib);
+  }
+}
+
 function buildEngine() {
   const engine = new THREE.Group();
   engine.position.copy(vehicleToWorld(BAY_ANCHORS.engine));
@@ -1270,11 +1376,11 @@ function buildEngine() {
   photoSurfaces.position.copy(engine.position).multiplyScalar(-1);
   engine.add(photoSurfaces);
   const coreFit = registerPhotoFitGroup('engine-core', new THREE.Group(), 'buildEngine: asymmetric block castings');
-  const passengerValveFit = registerPhotoFitGroup('valve-cover-passenger', new THREE.Group(), 'addPhotoValveCover: passenger 1UZ cover');
-  const driverValveFit = registerPhotoFitGroup('valve-cover-driver', new THREE.Group(), 'addPhotoValveCover: driver FOUR CAM 32 cover');
-  const manifoldFit = registerPhotoFitGroup('intake-manifold', new THREE.Group(), 'buildEngine: curved alloy plenum and runners');
-  const tracFit = registerPhotoFitGroup('trac-housing', new THREE.Group(), 'buildEngine: passenger-rear TRAC housing');
-  const throttleFit = registerPhotoFitGroup('throttle-body', new THREE.Group(), 'buildEngine: offset passenger throttle body');
+  const passengerValveFit = registerPhotoFitGroup('valve-cover-passenger', new THREE.Group(), 'buildTracedValveCover: passenger long 1UZ cover');
+  const driverValveFit = registerPhotoFitGroup('valve-cover-driver', new THREE.Group(), 'buildTracedValveCover: driver FOUR CAM 32 cover');
+  const manifoldFit = registerPhotoFitGroup('intake-manifold', new THREE.Group(), 'buildTracedIntakeManifold: curved alloy plenum and Lexus plate');
+  const tracFit = registerPhotoFitGroup('trac-housing', new THREE.Group(), 'buildTracedTracThrottle: black TRAC housing');
+  const throttleFit = registerPhotoFitGroup('throttle-body', new THREE.Group(), 'buildTracedTracThrottle: offset throttle casting');
   const timingFit = registerPhotoFitGroup('front-engine', new THREE.Group(), 'buildEngine: timing covers and lower front shells');
   timingFit.position.copy(vehicleToWorld([.040,.008,0]));
   photoSurfaces.add(coreFit, passengerValveFit, driverValveFit, manifoldFit, tracFit, throttleFit, timingFit);
@@ -1654,6 +1760,20 @@ function buildEngine() {
   }
   registerComponent(tps,'ENGINE_THROTTLE_POSITION_SENSOR_WIRING',{minLod:1,parent:engine});
 
+  // Replace the former generic top-engine primitive stacks with independently
+  // named frozen-trace castings.  The old generated children are discarded
+  // before render, while service IDs and the engine mount remain unchanged.
+  for (const group of [passengerValveFit,driverValveFit,manifoldFit,tracFit,throttleFit]) group.clear();
+  passengerValveFit.position.set(0,0,0);
+  driverValveFit.position.set(0,0,0);
+  manifoldFit.position.set(0,0,0);
+  tracFit.position.set(0,0,0);
+  throttleFit.position.set(0,0,0);
+  buildTracedValveCover(passengerValveFit,false);
+  buildTracedValveCover(driverValveFit,true);
+  buildTracedIntakeManifold(manifoldFit);
+  buildTracedTracThrottle(tracFit,throttleFit);
+
   registerComponent(engine,'ENGINE_1UZ_FE',{minLod:1});
   collisionObjects.push({object:engine,kind:'engine'});
 
@@ -1806,9 +1926,11 @@ function buildEngineLandmarks() {
     airbox.add(clip);
   }
   registerComponent(airbox,'LANDMARK_AIRBOX',{minLod:1});
-  registerPhotoFitGroup('airbox',airbox,'buildEngineLandmarks: passenger-front filter box');
+  registerPhotoFitGroup('airbox',airbox,'buildTracedAirboxMaf: passenger-front filter box');
 
   const intake = new THREE.Group();
+  const mafFit = registerPhotoFitGroup('maf-housing',new THREE.Group(),'buildTracedAirboxMaf: metallic AFM housing and connector');
+  airbox.add(mafFit);
   const [mafX,mafY,mafZ] = BAY_ANCHORS.maf;
   const mafLayoutY=mafY+.060;
   const mafLayoutZ=mafZ-.020;
@@ -1882,7 +2004,15 @@ function buildEngineLandmarks() {
   ],.016,0x151d1f,{roughness:.86,metalness:.02,segments:42,radialSegments:14});
   intake.add(intakeCrown);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
-  registerPhotoFitGroup('intake-duct',intake,'buildEngineLandmarks: MAF and continuous intake route');
+  registerPhotoFitGroup('intake-duct',intake,'buildTracedAirboxMaf: tapered continuous corrugated duct');
+
+  // Replace the previous short interior airbox/duct placeholder with the
+  // frozen-trace passenger-front assembly.  Both root groups keep their
+  // original stable selection and service-route metadata.
+  airbox.clear();
+  intake.clear();
+  airbox.add(mafFit);
+  buildTracedAirboxMaf(airbox,intake,mafFit);
 
   const towers = new THREE.Group();
   for (const anchor of [BAY_ANCHORS.strutTowerPassenger,BAY_ANCHORS.strutTowerDriver]) {
@@ -2588,6 +2718,9 @@ window.__LS400_QA__ = {
     return [renderer.domElement.width, renderer.domElement.height];
   },
   setPhotoCamera() { setCameraPreset('ENGINE_BAY_PHOTO_LAYOUT', true); return this.cameraState(); },
+  // QA-only camera selection for multi-view geometry review.  This calls the
+  // existing preset unchanged and is never persisted into the photo layout.
+  setInspectionCamera(id) { setCameraPreset(id, true); return this.cameraState(); },
   cameraState() {
     const vehicleCamera = worldToVehicle(camera.position).multiplyScalar(1000);
     const vehicleTarget = worldToVehicle(controls.target).multiplyScalar(1000);
