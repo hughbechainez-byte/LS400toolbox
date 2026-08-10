@@ -1298,9 +1298,16 @@ function buildEngine() {
   const lexusStroke = photoTube([
     [-.182,.005,.854],[-.166,-.004,.856],[-.148,.005,.854],[-.166,.014,.856]
   ],.0038,0x3d474a,{metalness:.68,roughness:.32,segments:12,radialSegments:6});
+  // Keep the front casting recognisable in the native photo view: the emblem
+  // and wordmark sit on the same recessed plaque instead of reading as a lone
+  // round fastener on a generic V-engine cover.
+  const lexusWordmark = textPlate('LEXUS',.158,.038,{fontSize:62,minLod:1,background:'#cbd3d0',border:'#657072',color:'#232b2d'});
+  lexusWordmark.rotation.x=-Math.PI/2;
+  lexusWordmark.position.copy(vehicleToWorld(photoLayout.point([-.092,.005,.862])));
   lexusOval.userData.minLod=1;
   lexusStroke.userData.minLod=1;
-  photoSurfaces.add(lexusOval,lexusStroke);
+  lexusWordmark.userData.minLod=1;
+  photoSurfaces.add(lexusOval,lexusStroke,lexusWordmark);
 
   // Passenger-side throttle: one connected cast assembly comes off the MAF
   // hose, crosses into the plenum shoulder and terminates exactly at the
