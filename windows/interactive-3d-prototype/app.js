@@ -1905,7 +1905,7 @@ function buildEngineLandmarks() {
     [-.138,-.404,.800],BAY_ANCHORS.throttle
   ];
   const smoothElbow=variableSectionTube(elbowCenterline,[
-    [.045,.046],[.050,.058],[.058,.088],[.060,.105],[.050,.105]
+    [.045,.046],[.050,.055],[.058,.074],[.060,.083],[.050,.082]
   ],0x1c2426,{roughness:.84,metalness:.02,rings:58,radialSegments:18});
   intake.add(smoothElbow);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
