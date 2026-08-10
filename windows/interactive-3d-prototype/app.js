@@ -1257,6 +1257,19 @@ function buildEngine() {
     photoSurfaces.add(runnerRail);
   }
 
+  // The reference carries a separate, broad black traction-control module on
+  // the passenger-rear shoulder.  Give it the recessed, clipped silhouette of
+  // the housing instead of leaving this highly visible area as empty bay.
+  const tracModule = photoProfile([
+    [-.940,-.690],[-.902,-.422],[-.804,-.340],[-.562,-.350],[-.492,-.430],
+    [-.514,-.656],[-.672,-.720],[-.858,-.716]
+  ],.824,.066,0x11181a,{roughness:.74,metalness:.10,bevelSize:.026,bevelThickness:.012,bevelSegments:3,curveSegments:16});
+  const tracInset = photoProfile([
+    [-.882,-.636],[-.850,-.458],[-.774,-.414],[-.588,-.420],[-.550,-.462],
+    [-.568,-.606],[-.682,-.652],[-.824,-.650]
+  ],.886,.012,0x252e30,{roughness:.63,metalness:.18,bevelSize:.012,bevelThickness:.005,bevelSegments:2,curveSegments:12});
+  photoSurfaces.add(tracModule,tracInset);
+
   // The front section remains on the same centreline but becomes a low,
   // rounded rectangular badge face over forward -.31…-.02.  It is visibly
   // lower than the rear runner crests, so Lexus reads on the front casting
