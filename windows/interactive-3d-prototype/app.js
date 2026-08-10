@@ -1021,26 +1021,42 @@ function addPhotoValveCover(photoSurfaces, driverSide = false, layout) {
   // a generic V8 even when their centres happened to line up.
   const side = driverSide ? 1 : -1;
   const lateral = value => side * value;
+  if (!driverSide) {
+    // Passenger bank: a low, long, partly duct-obscured casting.  This is a
+    // dedicated cover outline rather than the old mirrored polygon/rib pack.
+    const passengerSkirt = profile([
+      [-.660,-.470],[-.646,-.635],[-.535,-.730],[-.242,-.742],[-.072,-.682],
+      [-.032,-.552],[-.095,-.428],[-.316,-.390],[-.570,-.410]
+    ],.578,.056,0x111719,{roughness:.74,metalness:.11,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:16});
+    const passengerCrown = profile([
+      [-.620,-.505],[-.604,-.610],[-.510,-.682],[-.250,-.696],[-.102,-.645],
+      [-.074,-.556],[-.136,-.475],[-.332,-.440],[-.535,-.454]
+    ],.634,.037,0x596466,{roughness:.49,metalness:.48,bevelSize:.016,bevelThickness:.007,bevelSegments:3,curveSegments:14});
+    const outerRail=route([[-.622,-.624,.683],[-.500,-.698,.690],[-.248,-.704,.690],[-.090,-.646,.682]],.007,0x848e8e,{metalness:.68,roughness:.33,segments:26,radialSegments:7});
+    const innerRail=route([[-.606,-.494,.684],[-.442,-.450,.690],[-.238,-.446,.690],[-.080,-.530,.681]],.007,0x252e31,{metalness:.38,roughness:.56,segments:26,radialSegments:7});
+    photoSurfaces.add(passengerSkirt,passengerCrown,outerRail,innerRail);
+    return;
+  }
   if (driverSide) {
     // The photographed driver cover is a slim, almost continuous longitudinal
     // FOUR CAM 32 rail.  Keep its inner and outer edges deliberately parallel
     // so it reads as one black strip in the photo corridor, rather than a
     // broad faceted V-bank or a ladder made from crosswise fins.
     const driverSkirt = profile([
-      [-.692,.565],[-.682,.694],[-.520,.788],[-.160,.782],[.105,.690],
-      [.182,.596],[.126,.518],[-.160,.500],[-.510,.510],[-.660,.548]
+      [-.680,.558],[-.670,.710],[-.510,.800],[-.165,.794],[.040,.704],
+      [.074,.602],[.022,.514],[-.180,.496],[-.510,.506],[-.654,.542]
     ],.584,.061,0x12181a,{roughness:.72,metalness:.10,bevelSize:.024,bevelThickness:.011,bevelSegments:3,curveSegments:18});
     const driverCrown = profile([
-      [-.646,.594],[-.625,.681],[-.490,.742],[-.170,.740],[.070,.666],
-      [.118,.594],[.070,.548],[-.180,.535],[-.488,.542],[-.620,.574]
+      [-.640,.588],[-.620,.695],[-.482,.750],[-.175,.748],[.018,.674],
+      [.050,.596],[.014,.544],[-.198,.531],[-.486,.538],[-.616,.568]
     ],.642,.046,0x6b7472,{roughness:.43,metalness:.55,bevelSize:.019,bevelThickness:.008,bevelSegments:3,curveSegments:16});
     photoSurfaces.add(driverSkirt,driverCrown);
 
     const outerRail = route([
-      [-.650,.682,.703],[-.510,.752,.708],[-.160,.748,.706],[.082,.668,.700]
+      [-.645,.690,.703],[-.505,.760,.708],[-.165,.756,.706],[.028,.674,.700]
     ],.0075,0x4f5b5d,{metalness:.56,roughness:.38,segments:30,radialSegments:7});
     const innerRail = route([
-      [-.640,.593,.704],[-.470,.548,.709],[-.180,.540,.708],[.090,.566,.700]
+      [-.635,.590,.704],[-.465,.542,.709],[-.190,.534,.708],[.022,.566,.700]
     ],.008,0x101719,{metalness:.38,roughness:.55,segments:30,radialSegments:7});
     outerRail.userData.minLod=2;
     innerRail.userData.minLod=2;
@@ -1257,6 +1273,15 @@ function buildEngine() {
   // The cover helper is intentionally asymmetric and direct-coordinate.
   addPhotoValveCover(driverValveFit,true,photoLayout);
   addPhotoValveCover(passengerValveFit,false,photoLayout);
+  // Retain the separate bank elevations and offsets seen from the fixed
+  // overhead view; these are physical installed offsets, not a camera fit.
+  driverValveFit.position.copy(vehicleToWorld([-.045,.035,.025]));
+  passengerValveFit.position.copy(vehicleToWorld([-.026,.014,.016]));
+  // Intake castings sit a little lower and driverward of the V-bank centre;
+  // preserve that early-1UZ offset rather than centring them geometrically.
+  manifoldFit.position.copy(vehicleToWorld([-.070,.055,-.045]));
+  tracFit.position.copy(vehicleToWorld([-.060,.052,-.008]));
+  throttleFit.position.copy(vehicleToWorld([-.080,.070,.040]));
 
   // Leave the lower banks mostly recessed.  The former repeated cross-bank
   // ridges made the silhouette look like two short mirrored toy covers.
@@ -1357,38 +1382,39 @@ function buildEngine() {
     return mesh;
   };
   const throttleCasting = throttleProfile([
-    [-.468,-.594],[-.280,-.598],[-.126,-.519],[-.070,-.402],[-.104,-.287],
-    [-.222,-.217],[-.380,-.257],[-.490,-.390]
-  ],.639,.052,0x4e595b,{metalness:.54,roughness:.48,bevelSize:.036,bevelThickness:.016,bevelSegments:3,curveSegments:18});
+    [-.420,-.548],[-.282,-.552],[-.178,-.496],[-.146,-.405],[-.180,-.326],
+    [-.292,-.278],[-.398,-.312],[-.442,-.402]
+  ],.649,.044,0x4e595b,{metalness:.54,roughness:.48,bevelSize:.026,bevelThickness:.012,bevelSegments:3,curveSegments:16});
   const throttleUpper = throttleProfile([
-    [-.375,-.494],[-.262,-.548],[-.134,-.501],[-.081,-.402],[-.135,-.302],
-    [-.250,-.263],[-.347,-.326]
-  ],.690,.080,0x9fa8a7,{metalness:.71,roughness:.33,bevelSize:.031,bevelThickness:.014,bevelSegments:3,curveSegments:16});
+    [-.354,-.482],[-.266,-.522],[-.174,-.484],[-.148,-.406],[-.190,-.337],
+    [-.274,-.308],[-.348,-.350]
+  ],.692,.052,0x9fa8a7,{metalness:.71,roughness:.33,bevelSize:.022,bevelThickness:.010,bevelSegments:3,curveSegments:14});
   throttleFit.add(throttleCasting,throttleUpper);
   // The photo's throttle is a substantial horizontal cast barrel.  Give it
   // the real visual diameter and one continuous run from the black elbow;
   // a small pipe here was disappearing into the passenger bank.
-  const throttleBody = cylinder(.096,.214,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:30});
+  const throttleBody = cylinder(.070,.158,0xb9c1c0,'x',{metalness:.76,roughness:.29,segments:28});
   placeThrottle(throttleBody,[-.315,-.426,.798]);
   for (const left of [-.534,-.318]) {
-    const collar = torus(.098,.008,0x5f6b6d,'x',{metalness:.62,roughness:.35,tubularSegments:30,radialSegments:8});
+    const collar = torus(.072,.006,0x5f6b6d,'x',{metalness:.62,roughness:.35,tubularSegments:28,radialSegments:8});
     collar.position.copy(vehicleToWorld(throttleLayout.point([-.315,left,.798])));
     collar.userData.minLod=2;
     throttleFit.add(collar);
   }
   const throttleNeck = tube([
     throttleLayout.point([-.315,-.318,.798]),throttleLayout.point([-.266,-.294,.804]),throttleLayout.point([-.226,-.270,.810]),BAY_ANCHORS.throttle
-  ],.082,0xaeb7b7,{metalness:.72,roughness:.33,segments:24,radialSegments:14});
+  ],.043,0xaeb7b7,{metalness:.72,roughness:.33,segments:24,radialSegments:10});
   const throttleBridge = tube([
     BAY_ANCHORS.throttle,throttleLayout.point([-.205,-.220,.808]),throttleLayout.point([-.230,-.164,.806])
   ],.056,0xaeb7b7,{metalness:.72,roughness:.34,segments:18,radialSegments:14});
-  throttleFit.add(throttleNeck,throttleBridge);
-  const throttleFlange = torus(.121,.010,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:36,radialSegments:8});
+  throttleFit.add(throttleNeck);
+  manifoldFit.add(throttleBridge);
+  const throttleFlange = torus(.076,.007,0x6d7879,'x',{metalness:.67,roughness:.34,tubularSegments:30,radialSegments:8});
   throttleFlange.position.copy(vehicleToWorld([BAY_ANCHORS.throttle[0],BAY_ANCHORS.throttle[1]-.118,BAY_ANCHORS.throttle[2]]));
-  const throttleActuator = roundedBox(.104,.065,.102,.022,0x242c2e,{roughness:.69,metalness:.16,segments:5});
+  const throttleActuator = roundedBox(.066,.042,.062,.014,0x242c2e,{roughness:.69,metalness:.16,segments:5});
   placeThrottle(throttleActuator,[-.178,-.481,.822]);
   throttleActuator.rotation.y=.13;
-  const throttleLever = cylinder(.035,.028,0x303a3d,'x',{metalness:.51,roughness:.42,segments:20});
+  const throttleLever = cylinder(.022,.020,0x303a3d,'x',{metalness:.51,roughness:.42,segments:18});
   placeThrottle(throttleLever,[-.176,-.548,.829]);
   const actuatorCable = throttleTube([
     [-.173,-.560,.829],[-.244,-.596,.838],[-.350,-.611,.810],[-.430,-.574,.774]
