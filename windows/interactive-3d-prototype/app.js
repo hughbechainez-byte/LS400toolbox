@@ -993,7 +993,7 @@ function addPhotoValveCover(photoSurfaces, driverSide = false, layout) {
     const driverCrown = profile([
       [-.646,.594],[-.625,.681],[-.490,.742],[-.170,.740],[.070,.666],
       [.118,.594],[.070,.548],[-.180,.535],[-.488,.542],[-.620,.574]
-    ],.642,.046,0x20282a,{roughness:.57,metalness:.24,bevelSize:.019,bevelThickness:.008,bevelSegments:3,curveSegments:16});
+    ],.642,.046,0x6b7472,{roughness:.43,metalness:.55,bevelSize:.019,bevelThickness:.008,bevelSegments:3,curveSegments:16});
     photoSurfaces.add(driverSkirt,driverCrown);
 
     const outerRail = route([
