@@ -302,65 +302,6 @@ function tube(points, radius, color, options = {}) {
   return mesh;
 }
 
-// A real molded duct can change from a round hose to a flattened elbow.  This
-// loft keeps every section perpendicular to the routed centreline, so its
-// photo contour comes from a continuous physical shell rather than an
-// overlapping display-only tube.
-function variableSectionTube(points, sections, color, options = {}) {
-  const vectors = points.map(vehicleToWorld);
-  const curve = new THREE.CatmullRomCurve3(vectors, false, 'centripetal', .4);
-  const rings = options.rings ?? Math.max(20, vectors.length * 10);
-  const radialSegments = options.radialSegments ?? 14;
-  const positions=[];
-  const indices=[];
-  const interpolate = (values,t) => {
-    const scaled=t*(values.length-1);
-    const index=Math.min(values.length-2,Math.floor(scaled));
-    return THREE.MathUtils.lerp(values[index],values[index+1],scaled-index);
-  };
-  const lateral=sections.map(section=>section[0]);
-  const vertical=sections.map(section=>section[1]);
-  for(let ring=0;ring<=rings;ring++){
-    const t=ring/rings;
-    const center=curve.getPointAt(t);
-    const tangent=curve.getTangentAt(t).normalize();
-    const side=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),tangent).normalize();
-    const rise=new THREE.Vector3().crossVectors(tangent,side).normalize();
-    const sideRadius=interpolate(lateral,t);
-    const riseRadius=interpolate(vertical,t);
-    for(let segment=0;segment<radialSegments;segment++){
-      const angle=segment/radialSegments*Math.PI*2;
-      const point=center.clone().addScaledVector(side,Math.cos(angle)*sideRadius).addScaledVector(rise,Math.sin(angle)*riseRadius);
-      positions.push(point.x,point.y,point.z);
-    }
-  }
-  for(let ring=0;ring<rings;ring++) for(let segment=0;segment<radialSegments;segment++){
-    const next=(segment+1)%radialSegments;
-    const a=ring*radialSegments+segment;
-    const b=ring*radialSegments+next;
-    const c=(ring+1)*radialSegments+next;
-    const d=(ring+1)*radialSegments+segment;
-    indices.push(a,b,c,a,c,d);
-  }
-  const first=positions.length/3;
-  positions.push(...curve.getPointAt(0).toArray());
-  const last=positions.length/3;
-  positions.push(...curve.getPointAt(1).toArray());
-  for(let segment=0;segment<radialSegments;segment++){
-    const next=(segment+1)%radialSegments;
-    indices.push(first,next,segment);
-    const base=rings*radialSegments;
-    indices.push(last,base+segment,base+next);
-  }
-  const geometry=new THREE.BufferGeometry();
-  geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  const mesh=applyShadow(new THREE.Mesh(geometry,material(color,options)));
-  mesh.userData.curve=curve;
-  return mesh;
-}
-
 function orientCylinderMesh(mesh, start, end) {
   const delta = end.clone().sub(start);
   const length = Math.max(.001, delta.length());
@@ -1828,86 +1769,55 @@ function buildEngineLandmarks() {
   // intake mask to start at the actual metallic MAF rather than across the
   // passenger-front fender.
   airbox.add(preMeter);
-  const preMeterCurve=new THREE.CatmullRomCurve3(airboxToMaf.map(vehicleToWorld),false,'centripetal',.4);
 
-  // The AFM is a short cast meter with a clipped, stepped electronics cover.
-  // The attached closeups show that this is not a plain tube: the black cover
-  // spans the cast body, has mounting ears, and sits between two clamps.
-  const mafInlet=[mafX+.103,mafLayoutY-.008,.620];
-  const mafOutlet=[mafX-.015,mafLayoutY,.640];
-  const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
-  const afmBarrel=betweenTaperedCylinder(vehicleToWorld(mafInlet),vehicleToWorld(mafOutlet),.025,.030,0x626d6f,{roughness:.35,metalness:.66,segments:30});
-  intake.add(afmBarrel);
-  for (const point of [mafInlet,mafOutlet]) {
-    const flange=torus(.052,.005,0xb9c1c1,'z',{roughness:.29,metalness:.79,tubularSegments:34});
-    flange.position.copy(vehicleToWorld(point));
-    flange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),mafAxis);
-    flange.userData.photoFitExclude=true;
-    intake.add(flange);
-  }
-  const afmShoulder=vehicleTopProfile([
-    [mafX+.055,mafLayoutY-.047],[mafX+.071,mafLayoutY-.033],[mafX+.067,mafLayoutY+.033],[mafX+.048,mafLayoutY+.049],
-    [mafX-.047,mafLayoutY+.047],[mafX-.061,mafLayoutY+.031],[mafX-.058,mafLayoutY-.032],[mafX-.041,mafLayoutY-.050]
-  ],mafLayoutZ+.060,.026,0x394346,{roughness:.58,metalness:.38,bevelSize:.010,bevelThickness:.004,bevelSegments:3,curveSegments:14});
-  intake.add(afmShoulder);
-  const afmCap=roundedBox(.065,.028,.060,.011,0x171f21,{roughness:.70,metalness:.11,segments:5});
-  afmCap.position.copy(vehicleToWorld([mafX-.008,mafLayoutY-.006,mafLayoutZ+.082]));
-  afmCap.rotation.y=-.54;
-  intake.add(afmCap);
-  const afmConnector=roundedBox(.036,.024,.034,.007,0x101719,{roughness:.80,metalness:.04,segments:4});
-  afmConnector.position.copy(vehicleToWorld([mafX-.032,mafLayoutY+.032,mafLayoutZ+.080]));
-  afmConnector.rotation.y=-.54;
-  intake.add(afmConnector);
-  for (const [forward,lateral] of [[.068,-.070],[.068,.070]]) {
-    const fastener=makeBolt(.008,.014);
-    fastener.position.copy(vehicleToWorld([mafX+forward,mafLayoutY+lateral,mafLayoutZ+.158]));
-    fastener.userData.minLod=2;
-    intake.add(fastener);
-  }
-  const meterFlange=torus(.045,.004,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
-  meterFlange.position.copy(preMeterCurve.getPointAt(.98));
-  meterFlange.userData.photoFitExclude=true;
-  meterFlange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),preMeterCurve.getTangentAt(.98).normalize());
-  intake.add(meterFlange);
-
-  // The accordion stops at the passenger-front shoulder, then hands off to a
-  // smooth rising elbow.  In the reference the ribbed section is not the
-  // entire route: the distinct un-ribbed bend is what carries it up to the
-  // throttle body.
+  // One molded intake housing now replaces the duplicated AFM barrel,
+  // corrugated tube and offset elbow.  It is a real shallow casting with the
+  // lower MAF bellmouth, a ribbed shoulder, and a throttle-side outlet all
+  // connected to the adjacent physical parts.
+  const photoIntakeShellPlan=[
+    [.328,-.703],[.230,-.621],[.059,-.590],[-.203,-.566],[-.441,-.530],
+    [-.510,-.437],[-.365,-.336],[-.125,-.304],[.030,-.356],[-.148,-.436],
+    [-.203,-.490],[-.050,-.514],[.177,-.537],[.360,-.588],[.471,-.636]
+  ].map(([forward,lateral]) => [-.055+(forward+.055)*.86,-.505+(lateral+.505)*.94]);
+  const photoIntakeShell=vehicleTopProfile(
+    photoIntakeShellPlan,.722,.022,0x1b2325,
+    {roughness:.80,metalness:.03,bevelSize:.008,bevelThickness:.005,bevelSegments:2,curveSegments:16}
+  );
+  intake.add(photoIntakeShell);
+  const meterInlet=tube([
+    airboxToMaf.at(-1),[.274,-.691,.722]
+  ],.036,0x242d2e,{roughness:.73,metalness:.16,segments:14,radialSegments:10});
+  const throttleOutlet=tube([
+    [.018,-.347,.744],BAY_ANCHORS.throttle
+  ],.038,0x20292b,{roughness:.79,metalness:.08,segments:20,radialSegments:12});
+  // These two short boots are the adjoining airbox and throttle interfaces;
+  // they remain visible in the real assembly but are not the molded duct's
+  // external silhouette.
+  airbox.add(meterInlet);
+  throttleOutlet.userData.photoFitExclude=true;
+  intake.add(throttleOutlet);
+  const mafCasting=vehicleTopProfile([
+    [.262,-.674],[.208,-.647],[.132,-.610],[.143,-.571],[.214,-.551],[.278,-.588],[.300,-.633]
+  ],.745,.010,0x9ca6a6,{metalness:.71,roughness:.34,bevelSize:.006,bevelThickness:.004,bevelSegments:2,curveSegments:10});
+  mafCasting.userData.photoFitExclude=true;
+  const mafElectronics=roundedBox(.056,.014,.038,.006,0x101719,{roughness:.75,metalness:.04,segments:4});
+  mafElectronics.userData.photoFitExclude=true;
+  mafElectronics.position.copy(vehicleToWorld([.212,-.611,.759]));
+  mafElectronics.rotation.y=-.46;
+  intake.add(mafCasting,mafElectronics);
   const corrugatedCenterline=[
-    mafOutlet,[.156,-.632,.630],[.108,-.567,.705]
+    [.202,-.622,.758],[.122,-.584,.758],[.030,-.548,.758],[-.066,-.515,.758]
   ];
-  const corrugated=tube(corrugatedCenterline,.045,0x171d20,{roughness:.90,metalness:.01,segments:56,radialSegments:20});
-  intake.add(corrugated);
   const corrugatedCurve=new THREE.CatmullRomCurve3(corrugatedCenterline.map(vehicleToWorld),false,'centripetal',.4);
-  for(let i=0;i<9;i++){
-    const t=.055+i*.105;
-    const rib=torus(.052,.0046,0x465154,'z',{roughness:.78,metalness:.12,tubularSegments:30});
+  for(let i=0;i<8;i++){
+    const t=.08+i*.115;
+    const rib=torus(.030,.0038,0x4a5658,'z',{roughness:.78,metalness:.12,tubularSegments:22});
     rib.position.copy(corrugatedCurve.getPointAt(t));
     rib.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
     rib.userData.minLod=1;
+    rib.userData.photoFitExclude=true;
     intake.add(rib);
   }
-  for (const t of [.02,.98]) {
-    const clamp=torus(.066,.006,0xb4bcbc,'z',{roughness:.32,metalness:.77,tubularSegments:30});
-    clamp.userData.photoFitExclude=true;
-    clamp.position.copy(corrugatedCurve.getPointAt(t));
-    clamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),corrugatedCurve.getTangentAt(t).normalize());
-    intake.add(clamp);
-  }
-
-  // One tangent, uninterrupted elbow rises from that last rib through the
-  // photographed upper bend and ends inside the silver throttle collar.  Its
-  // endpoints overlap the two adjoining assemblies, so the route is visibly
-  // continuous with no concealed gap or decorative second hose.
-  const elbowCenterline=[
-    corrugatedCenterline.at(-1),[.0445,-.489,.800],[-.045,-.461,.800],
-    [-.138,-.404,.800],BAY_ANCHORS.throttle
-  ];
-  const smoothElbow=variableSectionTube(elbowCenterline,[
-    [.045,.046],[.050,.055],[.058,.074],[.060,.083],[.050,.082]
-  ],0x1c2426,{roughness:.84,metalness:.02,rings:58,radialSegments:18});
-  intake.add(smoothElbow);
   registerComponent(intake,'LANDMARK_INTAKE_TUBE',{minLod:1});
   registerPhotoFitGroup('intake-duct',intake,'buildEngineLandmarks: MAF and continuous intake route');
 
