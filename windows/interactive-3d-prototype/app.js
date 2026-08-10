@@ -1641,9 +1641,9 @@ function buildEngineLandmarks() {
   intake.add(preMeter);
   const preMeterCurve=new THREE.CatmullRomCurve3(airboxToMaf.map(vehicleToWorld),false,'centripetal',.4);
 
-  // The AFM is a short exposed metallic cylinder, with two bright flanges and
-  // one raised rectangular electronics cap.  It avoids the old dark cone while
-  // preserving the authored MAF centre and passenger-front placement.
+  // The AFM is a short cast meter with a clipped, stepped electronics cover.
+  // The attached closeups show that this is not a plain tube: the black cover
+  // spans the cast body, has mounting ears, and sits between two clamps.
   const mafInlet=[mafX+.103,mafY-.008,.640];
   const mafOutlet=[mafX-.015,mafY,.660];
   const mafAxis=vehicleToWorld(mafOutlet).sub(vehicleToWorld(mafInlet)).normalize();
@@ -1655,7 +1655,12 @@ function buildEngineLandmarks() {
     flange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),mafAxis);
     intake.add(flange);
   }
-  const afmCap=roundedBox(.132,.052,.100,.017,0x171f21,{roughness:.70,metalness:.11,segments:5});
+  const afmShoulder=vehicleTopProfile([
+    [mafX+.116,mafY-.104],[mafX+.154,mafY-.072],[mafX+.146,mafY+.072],[mafX+.102,mafY+.106],
+    [mafX-.100,mafY+.102],[mafX-.132,mafY+.066],[mafX-.126,mafY-.070],[mafX-.086,mafY-.108]
+  ],mafZ+.050,.037,0x394346,{roughness:.58,metalness:.38,bevelSize:.015,bevelThickness:.006,bevelSegments:3,curveSegments:14});
+  intake.add(afmShoulder);
+  const afmCap=roundedBox(.168,.056,.150,.021,0x171f21,{roughness:.70,metalness:.11,segments:5});
   afmCap.position.copy(vehicleToWorld([mafX+.002,mafY-.018,mafZ+.124]));
   afmCap.rotation.y=-.54;
   intake.add(afmCap);
@@ -1663,6 +1668,12 @@ function buildEngineLandmarks() {
   afmConnector.position.copy(vehicleToWorld([mafX-.048,mafY+.054,mafZ+.115]));
   afmConnector.rotation.y=-.54;
   intake.add(afmConnector);
+  for (const [forward,lateral] of [[.068,-.070],[.068,.070]]) {
+    const fastener=makeBolt(.008,.014);
+    fastener.position.copy(vehicleToWorld([mafX+forward,mafY+lateral,mafZ+.158]));
+    fastener.userData.minLod=2;
+    intake.add(fastener);
+  }
   const meterFlange=torus(.074,.006,0xaeb7b8,'z',{roughness:.32,metalness:.77,tubularSegments:30});
   meterFlange.position.copy(preMeterCurve.getPointAt(.98));
   meterFlange.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),preMeterCurve.getTangentAt(.98).normalize());
