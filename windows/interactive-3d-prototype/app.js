@@ -1548,6 +1548,18 @@ function buildEngine() {
     [.548,.250],[.558,.052],[.530,-.205],[.458,-.390]
   ],.646,.046,0x343f42,{roughness:.64,metalness:.31,bevelSize:.030,bevelThickness:.013,bevelSegments:4,curveSegments:18});
   drive.add(accessoryBridge);
+  // Low service faces sit in the casting rather than projecting an exposed
+  // generic pulley stack into the photograph.  They make the 1UZ timing
+  // cover read as a layered accessory drive while staying inside its bridge.
+  const pumpInspectionFace=cylinder(.026,.010,0x6d7979,'z',{metalness:.65,roughness:.36,segments:24});
+  placeDrive(pumpInspectionFace,[.472,-.018,.700]);
+  pumpInspectionFace.userData.photoFitExclude=true;
+  const idlerInspectionFace=cylinder(.018,.009,0x2b3537,'z',{metalness:.52,roughness:.46,segments:20});
+  placeDrive(idlerInspectionFace,[.487,.168,.696]);
+  idlerInspectionFace.userData.photoFitExclude=true;
+  const timingBoss=roundedBox(.064,.014,.088,.012,0x4b5859,{metalness:.55,roughness:.42,segments:4});
+  placeDrive(timingBoss,[.425,-.175,.697]);
+  timingBoss.userData.photoFitExclude=true;
   const waterPump = cylinder(.052,.052,0x899291,'z',{metalness:.69,roughness:.33,segments:28});
   placeDrive(waterPump,[.450,0,.610]);
   const waterPumpFace = cylinder(.031,.060,0xb6bfbd,'z',{metalness:.76,roughness:.26,segments:26});
