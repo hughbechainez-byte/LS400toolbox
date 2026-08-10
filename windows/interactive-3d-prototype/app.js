@@ -1344,17 +1344,28 @@ function buildEngine() {
     [-.720,-.130],[-.764,-.050],[-.748,.080],[-.662,.142],[-.422,.136],[-.320,.070],[-.302,-.070],[-.388,-.136],[-.632,-.150]
   ],.782,.044,0x8e9897,{metalness:.68,roughness:.35,bevelSize:.025,bevelThickness:.011,bevelSegments:3,curveSegments:16});
   addSurface(manifoldSaddle);
-  for (const side of [-1,1]) {
-    for (let i=0;i<4;i++) {
-      const rear=-.735+i*.070;
-      const inner=side*(.050+i*.014);
-      const outer=side*(.205+i*.030);
-      const runner=photoTube([
-        [rear,inner,.842],[rear+.070,inner+side*.020,.862],[-.525,outer,.838],[-.402,outer+side*.020,.803],[-.330,side*.175,.782]
-      ],.021,0xbac2c0,{metalness:.78,roughness:.25,segments:30,radialSegments:10});
-      runner.userData.minLod=1;
-      addSurface(runner);
-    }
+  const runnerBanks=[
+    // Passenger (photo-left): the TRAC-side runners rise longer from the
+    // rear shoulder and visibly sweep around the offset throttle corridor.
+    { radius:.020, paths:[
+      [[-.772,-.046,.820],[-.708,-.078,.836],[-.592,-.196,.820],[-.440,-.252,.784],[-.350,-.178,.762]],
+      [[-.710,-.070,.824],[-.654,-.104,.838],[-.565,-.230,.818],[-.424,-.278,.780],[-.336,-.192,.758]],
+      [[-.648,-.094,.820],[-.594,-.132,.834],[-.530,-.258,.812],[-.406,-.300,.775],[-.326,-.208,.754]],
+      [[-.585,-.118,.812],[-.536,-.158,.826],[-.492,-.282,.804],[-.388,-.318,.770],[-.314,-.222,.750]]
+    ]},
+    // Driver: the bank is intentionally lower and shorter in the photo, not
+    // a mirrored copy of the passenger-side tube fan.
+    { radius:.018, paths:[
+      [[-.748,.050,.796],[-.688,.072,.808],[-.602,.184,.794],[-.468,.238,.764],[-.382,.158,.744]],
+      [[-.688,.072,.798],[-.634,.098,.810],[-.568,.210,.792],[-.450,.260,.760],[-.370,.172,.742]],
+      [[-.626,.096,.794],[-.578,.124,.806],[-.536,.236,.790],[-.430,.280,.756],[-.360,.186,.740]],
+      [[-.566,.120,.788],[-.522,.150,.800],[-.500,.258,.784],[-.412,.300,.752],[-.350,.200,.738]]
+    ]}
+  ];
+  for (const bank of runnerBanks) for (const points of bank.paths) {
+    const runner=photoTube(points,bank.radius,0xbac2c0,{metalness:.78,roughness:.25,segments:30,radialSegments:10});
+    runner.userData.minLod=1;
+    addSurface(runner);
   }
   const manifoldCenterRail=photoTube([
     [-.744,0,.852],[-.635,0,.871],[-.478,0,.852],[-.334,0,.798]
