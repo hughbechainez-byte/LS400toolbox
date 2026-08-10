@@ -678,10 +678,10 @@ function buildHoodAndCowl() {
   // The photograph shows a narrow dark cowl lip, not a tall slab at the rear
   // of the bay.  Keep the documented J-j span, but model it as a stepped
   // weather-strip/vent field so the firewall edge remains readable.
-  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2,.052,.205,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
+  const cowlLedge = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2,.052,.405,.024,0x151b1e,{roughness:.82,metalness:.08,segments:6});
   cowlLedge.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX,0,.912]));
   cowl.add(cowlLedge);
-  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2-.030,.018,.060,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
+  const cowlWeatherStrip = roundedBox(BAY_STRUCTURE.cowlOuterHalfWidth * 2-.030,.018,.120,.012,0x080b0b,{roughness:.90,metalness:.01,segments:4});
   cowlWeatherStrip.position.copy(vehicleToWorld([BAY_STRUCTURE.cowlX-.038,0,.958]));
   cowl.add(cowlWeatherStrip);
   for (let i = -7; i <= 7; i++) {
