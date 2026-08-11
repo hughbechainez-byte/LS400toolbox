@@ -7,9 +7,9 @@
   },
   "camera": {
     "positionMm": [
-      4152.877,
-      -25.281999999999133,
-      2611.524
+      4152.8769999999995,
+      -25.28199999999913,
+      2611.5239999999994
     ],
     "targetMm": [
       39.537000000000006,
@@ -36,9 +36,9 @@
   "consoleErrors": [],
   "pageErrors": [],
   "generatedFiles": [
-    "_tmp.png",
     "baseline-candidate-mask-overlay-50.png",
     "baseline-candidate-overlay-50.png",
+    "baseline-pixel-guard.png",
     "candidate-reference-contours.png",
     "driver-oblique-ab.png",
     "driver-oblique-baseline.png",
@@ -48,6 +48,7 @@
     "isolated-three-quarter-candidate.png",
     "labeled-reference.jpg",
     "labeled-render.png",
+    "outlet-neck-detail.png",
     "passenger-oblique-ab.png",
     "passenger-oblique-baseline.png",
     "passenger-oblique-candidate.png",
