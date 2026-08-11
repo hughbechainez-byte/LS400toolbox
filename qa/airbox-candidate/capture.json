@@ -1,0 +1,62 @@
+{
+  "referencePath": "C:\\Users\\blowb\\Desktop\\LS400toolbox\\ls400_engine_bay_reference_exact.jpg",
+  "referenceSha256": "f8d74eec1af9c3014c107e0be18fc1fb83f5aff5d50e7ccd34d2da5318bfb725",
+  "viewport": {
+    "width": 640,
+    "height": 484
+  },
+  "camera": {
+    "positionMm": [
+      4152.877,
+      -25.281999999999133,
+      2611.524
+    ],
+    "targetMm": [
+      39.537000000000006,
+      -16.878,
+      300
+    ],
+    "fovDeg": 18.291916,
+    "aspect": 1.322314049586777,
+    "rollDeg": 0.032774,
+    "principalPointOffset": [
+      -0.0126777,
+      0.19350395
+    ]
+  },
+  "modes": [
+    "baseline",
+    "candidate",
+    "both-isolated"
+  ],
+  "candidateGenerator": {
+    "id": "candidate-airbox-maf",
+    "generator": "buildCandidateAirboxMaf (experimental, inactive by default)"
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "generatedFiles": [
+    "_tmp.png",
+    "baseline-candidate-mask-overlay-50.png",
+    "baseline-candidate-overlay-50.png",
+    "candidate-reference-contours.png",
+    "driver-oblique-ab.png",
+    "driver-oblique-baseline.png",
+    "driver-oblique-candidate.png",
+    "isolated-three-quarter-ab.png",
+    "isolated-three-quarter-baseline.png",
+    "isolated-three-quarter-candidate.png",
+    "labeled-reference.jpg",
+    "labeled-render.png",
+    "passenger-oblique-ab.png",
+    "passenger-oblique-baseline.png",
+    "passenger-oblique-candidate.png",
+    "photo-baseline-mask.png",
+    "photo-baseline.png",
+    "photo-candidate-isolated-mask.png",
+    "photo-candidate-mask.png",
+    "photo-candidate.png",
+    "reference-baseline-candidate-photo.png",
+    "reference.jpg"
+  ]
+}
