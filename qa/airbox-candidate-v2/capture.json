@@ -1,0 +1,109 @@
+{
+  "referencePath": "C:\\Users\\blowb\\Desktop\\LS400toolbox\\ls400_engine_bay_reference_exact.jpg",
+  "referenceSha256": "f8d74eec1af9c3014c107e0be18fc1fb83f5aff5d50e7ccd34d2da5318bfb725",
+  "viewport": {
+    "width": 640,
+    "height": 484
+  },
+  "camera": {
+    "positionMm": [
+      4152.8769999999995,
+      -25.28199999999913,
+      2611.5239999999994
+    ],
+    "targetMm": [
+      39.537000000000006,
+      -16.878,
+      300
+    ],
+    "fovDeg": 18.291916,
+    "aspect": 1.322314049586777,
+    "rollDeg": 0.032774,
+    "principalPointOffset": [
+      -0.0126777,
+      0.19350395
+    ]
+  },
+  "modes": [
+    "baseline",
+    "candidate-v1",
+    "candidate-v2",
+    "both-isolated"
+  ],
+  "photoFitGenerators": [
+    {
+      "id": "cowl-wipers",
+      "generator": "buildHoodAndCowl: vent grille and wiper deck"
+    },
+    {
+      "id": "front-shroud",
+      "generator": "buildCoolingStack: segmented fan shroud and cooling cover"
+    },
+    {
+      "id": "engine-core",
+      "generator": "buildEngine: asymmetric block castings"
+    },
+    {
+      "id": "valve-cover-passenger",
+      "generator": "addPhotoValveCover: passenger 1UZ cover"
+    },
+    {
+      "id": "valve-cover-driver",
+      "generator": "addPhotoValveCover: driver FOUR CAM 32 cover"
+    },
+    {
+      "id": "intake-manifold",
+      "generator": "buildEngine: curved alloy plenum and runners"
+    },
+    {
+      "id": "trac-housing",
+      "generator": "buildEngine: passenger-rear TRAC housing"
+    },
+    {
+      "id": "throttle-body",
+      "generator": "buildEngine: offset passenger throttle body"
+    },
+    {
+      "id": "front-engine",
+      "generator": "buildEngine: timing covers and lower front shells"
+    },
+    {
+      "id": "front-accessories",
+      "generator": "buildEngine: timing drive, ignition and throttle sensor layers"
+    },
+    {
+      "id": "battery",
+      "generator": "buildEngineLandmarks: driver-front battery assembly"
+    },
+    {
+      "id": "airbox",
+      "generator": "buildEngineLandmarks: passenger-front filter box"
+    },
+    {
+      "id": "intake-duct",
+      "generator": "buildEngineLandmarks: MAF and continuous intake route"
+    },
+    {
+      "id": "coolant-reservoir",
+      "generator": "buildEngineLandmarks: driver-front coolant overflow reservoir"
+    },
+    {
+      "id": "fuse-relay-box",
+      "generator": "buildEngineLandmarks: driver-side fuse and relay enclosure"
+    },
+    {
+      "id": "brake-area",
+      "generator": "buildEngineLandmarks: booster, master cylinder and reservoir"
+    },
+    {
+      "id": "candidate-airbox-maf",
+      "generator": "buildCandidateAirboxMaf (experimental, inactive by default)"
+    },
+    {
+      "id": "candidate-airbox-maf-v2",
+      "generator": "buildCandidateAirboxMafV2 (experimental, inactive by default; eBay references)"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

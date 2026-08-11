@@ -1,0 +1,11 @@
+{
+  "defaultMode": "baseline",
+  "candidateV2Hidden": true,
+  "candidateBranchBaselineSha256": "bf8f2f0131434af45ca11d92eee5cbe46b3583c5497629800f4b5f1ba01aa9f2",
+  "recoveredBaselineSha256": "bf8f2f0131434af45ca11d92eee5cbe46b3583c5497629800f4b5f1ba01aa9f2",
+  "byteIdentical": true,
+  "viewport": [
+    640,
+    484
+  ]
+}

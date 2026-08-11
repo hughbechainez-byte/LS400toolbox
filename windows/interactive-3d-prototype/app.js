@@ -7,6 +7,7 @@ import {
 } from './model-data.js?foundation=ee073ee0504f56ef';
 import { MODEL_FOUNDATION_BUILD_KEY, MODEL_FOUNDATION_SUMMARY, MODEL_FOUNDATION_METRES } from './model-foundation.generated.js?foundation=ee073ee0504f56ef';
 import { buildCandidateAirboxMaf } from './airbox-maf-candidate.js';
+import { buildCandidateAirboxMafV2 } from './airbox-maf-candidate-v2.js';
 
 const stage = document.getElementById('stage');
 const viewport = document.getElementById('viewport');
@@ -21,6 +22,7 @@ const registered = [];
 // housings without pretending that an entire engine is one silhouette.
 const photoFitGroups = new Map();
 let candidateAirboxMafGroup = null;
+let candidateAirboxMafV2Group = null;
 let airboxMafMode = 'baseline';
 
 function registerPhotoFitGroup(id, group, generator) {
@@ -34,13 +36,17 @@ function registerPhotoFitGroup(id, group, generator) {
 // is untouched when the candidate is disabled.  Candidate mode hides both
 // recovered airbox/MAF fit groups only for an explicit visual comparison.
 function setAirboxMafMode(mode = 'baseline') {
-  const next = ['baseline', 'candidate', 'both-isolated'].includes(mode) ? mode : 'baseline';
+  const next = ['baseline', 'candidate', 'candidate-v1', 'candidate-v2', 'both-isolated'].includes(mode) ? mode : 'baseline';
   airboxMafMode = next;
   const baselineAirbox = photoFitGroups.get('airbox');
   const baselineIntake = photoFitGroups.get('intake-duct');
-  if (baselineAirbox) baselineAirbox.visible = next !== 'candidate';
-  if (baselineIntake) baselineIntake.visible = next !== 'candidate';
-  if (candidateAirboxMafGroup) candidateAirboxMafGroup.visible = next !== 'baseline';
+  const v1Visible = next === 'candidate-v1' || next === 'both-isolated';
+  const v2Visible = next === 'candidate' || next === 'candidate-v2' || next === 'both-isolated';
+  const baselineVisible = next === 'baseline' || next === 'both-isolated';
+  if (baselineAirbox) baselineAirbox.visible = baselineVisible;
+  if (baselineIntake) baselineIntake.visible = baselineVisible;
+  if (candidateAirboxMafGroup) candidateAirboxMafGroup.visible = v1Visible;
+  if (candidateAirboxMafV2Group) candidateAirboxMafV2Group.visible = v2Visible;
   return airboxMafMode;
 }
 const pickables = [];
@@ -2581,6 +2587,13 @@ function buildExperimentalAirboxMafCandidate() {
   candidateAirboxMafGroup.visible = false;
 }
 
+function buildExperimentalAirboxMafCandidateV2() {
+  candidateAirboxMafV2Group = buildCandidateAirboxMafV2({ THREE, BAY_ANCHORS, vehicleToWorld, material });
+  modelRoot.add(candidateAirboxMafV2Group);
+  registerPhotoFitGroup('candidate-airbox-maf-v2', candidateAirboxMafV2Group, 'buildCandidateAirboxMafV2 (experimental, inactive by default; eBay references)');
+  candidateAirboxMafV2Group.visible = false;
+}
+
 function buildScene() {
   buildGround();
   buildBodyShell();
@@ -2591,6 +2604,7 @@ function buildScene() {
   buildEngine();
   buildEngineLandmarks();
   buildExperimentalAirboxMafCandidate();
+  buildExperimentalAirboxMafCandidateV2();
   buildCompressor();
   buildReceiverAndServiceDetails();
   buildHvac();
@@ -2646,6 +2660,23 @@ window.__LS400_QA__ = {
     stage.classList.remove('photo-layout');
     return { centerMm: worldToVehicle(center).multiplyScalar(1000).toArray(), sizeMm: size.toArray().map(value => value * 1000), fovDeg: camera.fov };
   },
+  setCandidateV2ThreeQuarterCamera(underside = false) {
+    if (!candidateAirboxMafV2Group) return null;
+    candidateAirboxMafV2Group.updateWorldMatrix(true, true);
+    const bounds = new THREE.Box3().setFromObject(candidateAirboxMafV2Group);
+    const center = bounds.getCenter(new THREE.Vector3());
+    const size = bounds.getSize(new THREE.Vector3());
+    const direction = underside ? new THREE.Vector3(-1.05, .52, -1.08).normalize() : new THREE.Vector3(1.15, .86, .72).normalize();
+    const distance = Math.max(.62, size.length() * 1.70);
+    camera.position.copy(center).add(direction.multiplyScalar(distance));
+    controls.target.copy(center);
+    camera.fov = 38;
+    camera.userData.photoProjectionOffset = [0, 0];
+    camera.lookAt(center);
+    camera.updateProjectionMatrix();
+    stage.classList.remove('photo-layout');
+    return { underside, centerMm: worldToVehicle(center).multiplyScalar(1000).toArray(), sizeMm: size.toArray().map(value => value * 1000), fovDeg: camera.fov };
+  },
   renderAirboxCandidateIsolatedDataUrl() {
     if (!candidateAirboxMafGroup) return null;
     const saved = modelRoot.children.map(child => [child, child.visible]);
@@ -2686,6 +2717,21 @@ window.__LS400_QA__ = {
     return result;
   },
   renderAirboxCandidateMaskDataUrl() { return this.renderPhotoFitMaskDataUrl(['candidate-airbox-maf']); },
+  renderAirboxCandidateV2IsolatedDataUrl() {
+    if (!candidateAirboxMafV2Group) return null;
+    const saved = modelRoot.children.map(child => [child, child.visible]);
+    const oldBackground = scene.background; const oldFog = scene.fog;
+    modelRoot.children.forEach(child => { child.visible = child === candidateAirboxMafV2Group; });
+    scene.background = new THREE.Color(0x080d11); scene.fog = null;
+    candidateAirboxMafV2Group.visible = true;
+    renderer.render(scene, camera);
+    const result = renderer.domElement.toDataURL('image/png');
+    for (const [child, visible] of saved.reverse()) child.visible = visible;
+    scene.background = oldBackground; scene.fog = oldFog;
+    renderer.render(scene, camera);
+    return result;
+  },
+  renderAirboxCandidateV2MaskDataUrl() { return this.renderPhotoFitMaskDataUrl(['candidate-airbox-maf-v2']); },
   cameraState() {
     const vehicleCamera = worldToVehicle(camera.position).multiplyScalar(1000);
     const vehicleTarget = worldToVehicle(controls.target).multiplyScalar(1000);

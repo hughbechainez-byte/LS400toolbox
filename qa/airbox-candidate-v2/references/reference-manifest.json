@@ -1,0 +1,51 @@
+{
+  "source": "user-supplied eBay photographs",
+  "images": [
+    {
+      "attachmentIdentifier": "Photo 1.jpg",
+      "copiedPath": "C:\\Users\\blowb\\Documents\\ls400 3d\\.worktrees\\model-foundation-20260809\\qa\\airbox-candidate-v2\\references\\1-Photo-1.jpg",
+      "nativeDimensions": [
+        1280,
+        1275
+      ],
+      "sha256": "0f11ba1546fdaa42a0bb6fd4d2b9ecd79f726930bc4a1188668036680290ffa5",
+      "viewDescription": "full airbox/MAF assembly; deep two-piece airbox, cast MAF, ribbed boot, clamp and mounting ears",
+      "supports": [
+        "airbox-depth",
+        "lid-seam",
+        "cast-maf",
+        "ribbed-boot",
+        "mounting-ears"
+      ]
+    },
+    {
+      "attachmentIdentifier": "Photo 2.jpg",
+      "copiedPath": "C:\\Users\\blowb\\Documents\\ls400 3d\\.worktrees\\model-foundation-20260809\\qa\\airbox-candidate-v2\\references\\2-Photo-2.jpg",
+      "nativeDimensions": [
+        1280,
+        1280
+      ],
+      "sha256": "b58e12505af0d92797e00acf34ceba001bdd3dbd9a5d71598477a56bcd982e95",
+      "viewDescription": "close sensor view; rectangular Hitachi sensor/connector cover and fasteners",
+      "supports": [
+        "hitachi-sensor-cover",
+        "connector-region"
+      ]
+    },
+    {
+      "attachmentIdentifier": "Photo 3.jpg",
+      "copiedPath": "C:\\Users\\blowb\\Documents\\ls400 3d\\.worktrees\\model-foundation-20260809\\qa\\airbox-candidate-v2\\references\\3-Photo-3.jpg",
+      "nativeDimensions": [
+        1280,
+        1279
+      ],
+      "sha256": "05e4637338f8bcd0d864b2e4824343e3059b165f605a60bcbd57466f83575fca",
+      "viewDescription": "underside/side view; lower resonator/outlet, brackets and MAF coupling",
+      "supports": [
+        "lower-resonator-outlet",
+        "brackets",
+        "maf-coupling"
+      ]
+    }
+  ]
+}

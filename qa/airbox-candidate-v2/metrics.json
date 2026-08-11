@@ -1,0 +1,152 @@
+{
+  "referenceMask": "C:\\Users\\blowb\\Documents\\ls400 3d\\.worktrees\\model-foundation-20260809\\shared\\photo-top-engine-reference-fixtures\\airbox-maf-assembly.png",
+  "variants": {
+    "baseline": {
+      "reference": {
+        "bbox": [
+          0,
+          252,
+          163,
+          357
+        ],
+        "visibleAreaPx": 13826,
+        "centerPx": [
+          72.17394763489078,
+          304.49247794011285
+        ],
+        "orientationDeg": 0.6006656347275907
+      },
+      "candidate": {
+        "bbox": [
+          0,
+          143,
+          218,
+          363
+        ],
+        "visibleAreaPx": 17343,
+        "centerPx": [
+          87.90653289511619,
+          266.6922101135905
+        ],
+        "orientationDeg": 133.73901338552426
+      },
+      "bboxEdgeResidualPx": [
+        0,
+        109,
+        55,
+        6
+      ],
+      "centerResidualPx": [
+        15.732585260225406,
+        37.80026782652237
+      ],
+      "visibleAreaRatio": 1.2543758136843628,
+      "orientationDifferenceDeg": 46.86165224920333,
+      "silhouetteIoU": 0.49778952426717926,
+      "meanBoundaryDistancePx": 25.79968658829516
+    },
+    "candidate-v1": {
+      "reference": {
+        "bbox": [
+          0,
+          252,
+          163,
+          357
+        ],
+        "visibleAreaPx": 13826,
+        "centerPx": [
+          72.17394763489078,
+          304.49247794011285
+        ],
+        "orientationDeg": 0.6006656347275907
+      },
+      "candidate": {
+        "bbox": [
+          0,
+          201,
+          179,
+          398
+        ],
+        "visibleAreaPx": 22876,
+        "centerPx": [
+          78.53772512677041,
+          301.0909249868858
+        ],
+        "orientationDeg": 141.92488634362323
+      },
+      "bboxEdgeResidualPx": [
+        0,
+        51,
+        16,
+        41
+      ],
+      "centerResidualPx": [
+        6.363777491879631,
+        3.4015529532270534
+      ],
+      "visibleAreaRatio": 1.654563865181542,
+      "orientationDifferenceDeg": 38.67577929110436,
+      "silhouetteIoU": 0.5923467395548614,
+      "meanBoundaryDistancePx": 16.75308529967024
+    },
+    "candidate-v2": {
+      "reference": {
+        "bbox": [
+          0,
+          252,
+          163,
+          357
+        ],
+        "visibleAreaPx": 13826,
+        "centerPx": [
+          72.17394763489078,
+          304.49247794011285
+        ],
+        "orientationDeg": 0.6006656347275907
+      },
+      "candidate": {
+        "bbox": [
+          0,
+          249,
+          159,
+          361
+        ],
+        "visibleAreaPx": 13558,
+        "centerPx": [
+          72.15098097064464,
+          304.5516300339283
+        ],
+        "orientationDeg": 176.4519143584334
+      },
+      "bboxEdgeResidualPx": [
+        0,
+        3,
+        4,
+        4
+      ],
+      "centerResidualPx": [
+        0.022966664246141022,
+        0.05915209381544173
+      ],
+      "visibleAreaRatio": 0.9806162302907565,
+      "orientationDifferenceDeg": 4.148751276294178,
+      "silhouetteIoU": 0.8095552765479416,
+      "meanBoundaryDistancePx": 5.831851543235075
+    }
+  },
+  "targets": {
+    "silhouetteIoUMin": 0.75,
+    "bboxEdgeResidualMaxPx": 12,
+    "visibleAreaRatioRange": [
+      0.9,
+      1.1
+    ],
+    "orientationDifferenceMaxDeg": 8
+  },
+  "passesNumericTargets": {
+    "baseline": false,
+    "candidate-v1": false,
+    "candidate-v2": true
+  },
+  "status": "CANDIDATE V2 READY FOR HUMAN REVIEW"
+}
